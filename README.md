@@ -1,2 +1,2 @@
 # pkg
-Collection of Go libraries.
+Collection of Go modules.
