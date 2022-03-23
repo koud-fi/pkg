@@ -37,6 +37,12 @@ func New() *Request {
 	return &Request{client: http.DefaultClient}
 }
 
+func Get(url string) *Request    { return New().Method(http.MethodGet).URL(url) }
+func Head(url string) *Request   { return New().Method(http.MethodHead).URL(url) }
+func Post(url string) *Request   { return New().Method(http.MethodPost).URL(url) }
+func Put(url string) *Request    { return New().Method(http.MethodPut).URL(url) }
+func Delete(url string) *Request { return New().Method(http.MethodDelete).URL(url) }
+
 func (r Request) Method(m string) *Request {
 	r.method = m
 	return &r
