@@ -51,3 +51,23 @@ func parseTime(s string, loc *time.Location) (time.Time, error) {
 	}
 	return time.Parse("2006-1-2 15:04", s)
 }
+
+func (e Entry) String() string {
+	var sb strings.Builder
+	sb.WriteString(e.Start().Format("2006-1-2") + " " + formatTime(e.Start()))
+	if e.End() != nil {
+		sb.WriteString(formatTime(*e.End()))
+	}
+	if e.Body != "" {
+		sb.WriteByte(' ')
+		sb.WriteString(e.Body)
+	}
+	return sb.String()
+}
+
+func formatTime(t time.Time) string {
+	if t.Minute() == 0 {
+		return t.Format("15")
+	}
+	return t.Format("15:04")
+}
