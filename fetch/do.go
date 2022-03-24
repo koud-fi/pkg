@@ -11,9 +11,9 @@ import (
 
 const maxErrLen = 1 << 12
 
-func (r Request) Open() (io.ReadCloser, error) { return r.OpenFile() }
+func (r *Request) Open() (io.ReadCloser, error) { return r.OpenFile() }
 
-func (r Request) OpenFile() (fs.File, error) {
+func (r *Request) OpenFile() (fs.File, error) {
 	res, req, err := r.do()
 	if err != nil {
 		return nil, err
@@ -22,6 +22,15 @@ func (r Request) OpenFile() (fs.File, error) {
 		fileInfo: &fileInfo{url: req.URL, header: res.Header},
 		body:     res.Body,
 	}, nil
+}
+
+func (r *Request) Stat() (os.FileInfo, error) {
+	res, req, err := r.do()
+	if err != nil {
+		return nil, err
+	}
+	res.Body.Close()
+	return &fileInfo{url: req.URL, header: res.Header}, nil
 }
 
 func (r *Request) do() (*http.Response, *http.Request, error) {
