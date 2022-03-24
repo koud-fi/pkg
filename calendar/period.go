@@ -17,6 +17,14 @@ type MutablePeriod interface {
 	SetEnd(*time.Time)
 }
 
+func Duration(p Period) time.Duration {
+	end := p.End()
+	if end == nil {
+		return 0
+	}
+	return end.Sub(p.Start())
+}
+
 func Normalize(ps []MutablePeriod) error {
 
 	// TODO: add options for time "smoothing" and overlap elmination
