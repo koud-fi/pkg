@@ -17,6 +17,6 @@ HTTP(S) request library, requests implement fs.File and blob interfaces.
 [![Go Reference](https://pkg.go.dev/badge/github.com/koud-fi/pkg/fetch.svg)](https://pkg.go.dev/github.com/koud-fi/pkg/fetch)
 
 ### file
-Common types and operations for file processing.
+Common types and operations for file processing, based on blob interface.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/koud-fi/pkg/file.svg)](https://pkg.go.dev/github.com/koud-fi/pkg/file)
