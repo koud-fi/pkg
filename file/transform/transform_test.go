@@ -11,7 +11,7 @@ import (
 	"github.com/koud-fi/pkg/file/transform"
 )
 
-func Test(t *testing.T) {
+func TestToImage(t *testing.T) {
 	os.RemoveAll("temp")
 	os.Mkdir("temp", os.FileMode(0700))
 
@@ -23,6 +23,10 @@ func Test(t *testing.T) {
 		if d.IsDir() {
 			return nil
 		}
+
+		// TODO: add more parameter variants
+		// TODO: check that the resulting images are of correct size
+
 		var (
 			params, _ = transform.ParseParams("300x")
 			outPath   = filepath.Join("temp", fmt.Sprintf("%s.%s.jpg", d.Name(), params))
