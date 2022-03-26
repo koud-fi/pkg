@@ -1,7 +1,9 @@
-github.com/koud-fi/pkg/blob v0.0.0-20220325061700-7ab00980137e h1:/HGSyCHV3bggTl1FW0Ei02+yTMd2bTkPaWg8MewkPko=
-github.com/koud-fi/pkg/blob v0.0.0-20220325061700-7ab00980137e/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
-github.com/koud-fi/pkg/shell v0.0.0-20220326085939-e348399053b0 h1:w1aDz6nMJWERh68aA6bvRWk5LuCrrBW4lSpcjhrp+UU=
-github.com/koud-fi/pkg/shell v0.0.0-20220326085939-e348399053b0/go.mod h1:YPBaNqT8I64WApjEKX+JO3jujprm1InnGVLIa9Uds+g=
+github.com/koud-fi/pkg/blob v0.0.0-20220326180430-20712f1bc055 h1:/lbFv9Od/JzzNYzbkcKQjp56NIk1FjsSl1/CdAXC/50=
+github.com/koud-fi/pkg/blob v0.0.0-20220326180430-20712f1bc055/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
+github.com/koud-fi/pkg/blob v0.0.0-20220326182236-0c4243c96d1c h1:S2Qnlwi2ZPca8SqWnOQ5Q78Gkp8XkevB0fiObizNLPg=
+github.com/koud-fi/pkg/blob v0.0.0-20220326182236-0c4243c96d1c/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
+github.com/koud-fi/pkg/shell v0.0.0-20220326182236-0c4243c96d1c h1:JAQQiQLpHHGVDakdHF8Ct1vGWe3mwkxQzFUDkW+rpY4=
+github.com/koud-fi/pkg/shell v0.0.0-20220326182236-0c4243c96d1c/go.mod h1:YPBaNqT8I64WApjEKX+JO3jujprm1InnGVLIa9Uds+g=
 golang.org/x/image v0.0.0-20220321031419-a8550c1d254a h1:LnH9RNcpPv5Kzi15lXg42lYMPUf0x8CuPv1YnvBWZAg=
 golang.org/x/image v0.0.0-20220321031419-a8550c1d254a/go.mod h1:023OzeP/+EPmXeapQh35lcL3II3LrY8Ic+EFFKVhULM=
 golang.org/x/sync v0.0.0-20210220032951-036812b2e83c h1:5KslGYwFpkhGh+Q16bwMP3cOontH8FOep7tGV86Y7SQ=
