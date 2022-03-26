@@ -3,27 +3,34 @@ package shell
 import (
 	"bytes"
 	"fmt"
+	"hash/crc64"
 	"io"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
+	"unsafe"
 
 	"github.com/koud-fi/pkg/blob"
 
 	"golang.org/x/sync/singleflight"
 )
 
-var ctrlMap sync.Map
+var (
+	ctrlMap  sync.Map
+	crcTable = crc64.MakeTable(crc64.ISO)
+)
 
 func Run(cmd string, args ...interface{}) blob.Blob {
 	return blob.Func(func() (io.ReadCloser, error) {
 		var (
 			ctrl    = cmdCtrl(cmd)
-			key     = cmd // TODO: optimize key generation (use CRC sum or something)
+			keyCrc  = crc64.New(crcTable)
 			argStrs = make([]string, 0, len(args))
 			stdin   blob.Blob
 		)
+		keyCrc.Write(*(*[]byte)(unsafe.Pointer(&cmd)))
 		for _, arg := range args {
 			switch v := arg.(type) {
 			case blob.Blob:
@@ -31,9 +38,10 @@ func Run(cmd string, args ...interface{}) blob.Blob {
 				continue
 			}
 			argStr := fmt.Sprint(arg)
-			key += " " + argStr
+			keyCrc.Write(*(*[]byte)(unsafe.Pointer(&argStr)))
 			argStrs = append(argStrs, argStr)
 		}
+		key := strconv.FormatUint(keyCrc.Sum64(), 36)
 		out, err, _ := ctrl.group.Do(key, func() (interface{}, error) {
 			ctrl.throttle <- struct{}{}
 			defer func() { <-ctrl.throttle }()
