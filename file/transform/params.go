@@ -61,16 +61,22 @@ func StdImagePreviewParamsList(attrs file.MediaAttributes) []Params {
 }
 
 func (p Params) String() string {
-	var sb strings.Builder
-	for i, k := range paramKeys {
+	var (
+		sb    strings.Builder
+		lastV *int
+	)
+	for _, k := range paramKeys {
+		v, ok := p[k]
+		if !ok {
+			continue
+		}
 		sb.WriteString(k)
-
-		v := p[k]
 		if v > 0 {
 			sb.WriteString(strconv.Itoa(v))
-		} else if i < len(paramKeys)-1 {
+		} else if lastV != nil && *lastV == 0 {
 			sb.WriteString("_")
 		}
+		lastV = &v
 	}
 	return sb.String()
 }
