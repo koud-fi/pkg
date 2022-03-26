@@ -2,29 +2,27 @@ package transform
 
 import (
 	"bufio"
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"image"
-	"image/png"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/shell"
 )
 
+/*
 var (
 	defaultImageOnce sync.Once
 	defaultImage     []byte
 )
+*/
 
 func ToImage(b blob.Blob, contentType string, p Params) blob.Blob {
 	return blob.Func(func() (io.ReadCloser, error) {
@@ -38,7 +36,8 @@ func ToImage(b blob.Blob, contentType string, p Params) blob.Blob {
 		case "video":
 			return videoToImage(src, p)
 		default:
-			return generateDefaultImage(), nil
+			//return generateDefaultImage(), nil
+			return nil, fmt.Errorf("unsupported content-type: %s", contentType)
 		}
 	})
 }
@@ -124,6 +123,7 @@ func videoToImage(src string, p Params) (io.ReadCloser, error) {
 	return shell.Run(context.TODO(), "ffmpeg", append(args, "-f", "mjpeg", "-")...).Open()
 }
 
+/*
 func generateDefaultImage() io.ReadCloser {
 
 	// TODO: scale output correctly
@@ -135,3 +135,4 @@ func generateDefaultImage() io.ReadCloser {
 	})
 	return io.NopCloser(bytes.NewReader(defaultImage))
 }
+*/
