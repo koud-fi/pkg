@@ -31,7 +31,7 @@ func TestToImage(t *testing.T) {
 			params, _ = transform.ParseParams("300x")
 			outPath   = filepath.Join("temp", fmt.Sprintf("%s.%s.jpg", d.Name(), params))
 			in        = blob.FromFS(fsys, path)
-			out       = transform.ToImage(in, "", params)
+			out       = transform.ToImage(in, params)
 		)
 		if err := blob.WriteFile(outPath, out, os.FileMode(0600)); err != nil {
 			t.Log("ERROR:", err)
