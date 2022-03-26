@@ -2,13 +2,13 @@ package shell
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"hash/crc64"
 	"io"
 	"os/exec"
 	"runtime"
 	"strconv"
-	"strings"
 	"sync"
 	"unsafe"
 
@@ -22,7 +22,7 @@ var (
 	crcTable = crc64.MakeTable(crc64.ISO)
 )
 
-func Run(cmd string, args ...interface{}) blob.Blob {
+func Run(ctx context.Context, cmd string, args ...interface{}) blob.Blob {
 	return blob.Func(func() (io.ReadCloser, error) {
 		var (
 			ctrl    = cmdCtrl(cmd)
@@ -55,12 +55,28 @@ func Run(cmd string, args ...interface{}) blob.Blob {
 				defer rc.Close()
 				cmd.Stdin = rc
 			}
-			out, err := cmd.CombinedOutput() // TODO: read output separately
-			if err != nil {
-				return []byte{}, fmt.Errorf("%w: %s", err,
-					strings.TrimSpace(strings.ReplaceAll(string(out), "\r\n", " ")))
+			var (
+				outBuf = bytes.NewBuffer(nil)
+				errBuf = bytes.NewBuffer(nil)
+			)
+			cmd.Stdout = outBuf
+			cmd.Stderr = errBuf
+
+			if err := cmd.Run(); err != nil {
+				if ctxErr := ctx.Err(); ctxErr != nil {
+					return nil, ctxErr
+				}
+				switch err := err.(type) {
+				case *exec.ExitError:
+					msg, _ := errBuf.ReadString('\n')
+
+					// TODO: support multi-line error output
+
+					return nil, fmt.Errorf("exit status %d: %s", err.ExitCode(), msg)
+				}
+				return nil, err
 			}
-			return out, nil
+			return outBuf.Bytes(), nil
 		})
 
 		// TODO: avoid copying the full output to memory
