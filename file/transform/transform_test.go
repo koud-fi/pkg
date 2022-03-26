@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/koud-fi/pkg/blob"
+	"github.com/koud-fi/pkg/file"
 	"github.com/koud-fi/pkg/file/transform"
 )
 
@@ -23,18 +24,22 @@ func TestToImage(t *testing.T) {
 		if d.IsDir() {
 			return nil
 		}
+		in := blob.FromFS(fsys, path)
+		attrs, err := file.ResolveAttrs(in, file.MediaAttrs())
+		if err != nil {
+			return err
+		}
+		for _, params := range transform.StdImagePreviewParamsList(attrs.MediaAttributes) {
+			var (
+				outPath = filepath.Join("temp", fmt.Sprintf("%s.%s.jpg", d.Name(), params))
+				out     = transform.ToImage(in, params)
+			)
+			if err := blob.WriteFile(outPath, out, os.FileMode(0600)); err != nil {
+				t.Log("ERROR:", err)
+			}
 
-		// TODO: add more parameter variants
-		// TODO: check that the resulting images are of correct size
+			// TODO: actually check that the resulting images are of correct size
 
-		var (
-			params, _ = transform.ParseParams("300x")
-			outPath   = filepath.Join("temp", fmt.Sprintf("%s.%s.jpg", d.Name(), params))
-			in        = blob.FromFS(fsys, path)
-			out       = transform.ToImage(in, params)
-		)
-		if err := blob.WriteFile(outPath, out, os.FileMode(0600)); err != nil {
-			t.Log("ERROR:", err)
 		}
 		return nil
 
