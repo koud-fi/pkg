@@ -24,6 +24,8 @@ var (
 )
 */
 
+// TODO: options
+
 func ToImage(b blob.Blob, contentType string, p Params) blob.Blob {
 	return blob.Func(func() (io.ReadCloser, error) {
 		src, contentType, err := srcAndType(b, contentType)
