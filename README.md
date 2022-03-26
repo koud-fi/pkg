@@ -20,3 +20,8 @@ HTTP(S) request library, requests implement fs.File and blob interfaces.
 Common types and operations for file processing, based on blob interface.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/koud-fi/pkg/file.svg)](https://pkg.go.dev/github.com/koud-fi/pkg/file)
+
+### shell
+Higher level wrapper over standard exec package.
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/koud-fi/pkg/shell.svg)](https://pkg.go.dev/github.com/koud-fi/pkg/shell)
