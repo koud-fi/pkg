@@ -1,6 +1,10 @@
-github.com/koud-fi/pkg/blob v0.0.0-20220324064510-4720bb485366 h1:MMG9/U9yM2J/kjOQftMJ5v7c7Qu1crRk658Gp7YXauM=
-github.com/koud-fi/pkg/blob v0.0.0-20220324064510-4720bb485366/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
+github.com/koud-fi/pkg/blob v0.0.0-20220325061700-7ab00980137e h1:/HGSyCHV3bggTl1FW0Ei02+yTMd2bTkPaWg8MewkPko=
+github.com/koud-fi/pkg/blob v0.0.0-20220325061700-7ab00980137e/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
+github.com/koud-fi/pkg/shell v0.0.0-20220326085939-e348399053b0 h1:w1aDz6nMJWERh68aA6bvRWk5LuCrrBW4lSpcjhrp+UU=
+github.com/koud-fi/pkg/shell v0.0.0-20220326085939-e348399053b0/go.mod h1:YPBaNqT8I64WApjEKX+JO3jujprm1InnGVLIa9Uds+g=
 golang.org/x/image v0.0.0-20220321031419-a8550c1d254a h1:LnH9RNcpPv5Kzi15lXg42lYMPUf0x8CuPv1YnvBWZAg=
 golang.org/x/image v0.0.0-20220321031419-a8550c1d254a/go.mod h1:023OzeP/+EPmXeapQh35lcL3II3LrY8Ic+EFFKVhULM=
+golang.org/x/sync v0.0.0-20210220032951-036812b2e83c h1:5KslGYwFpkhGh+Q16bwMP3cOontH8FOep7tGV86Y7SQ=
+golang.org/x/sync v0.0.0-20210220032951-036812b2e83c/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/text v0.3.6/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=
 golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=

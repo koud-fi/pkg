@@ -1,6 +1,8 @@
 package file
 
 import (
+	"context"
+	"encoding/json"
 	"image"
 	"image/gif"
 	"image/jpeg"
@@ -12,6 +14,7 @@ import (
 	_ "golang.org/x/image/webp"
 
 	"github.com/koud-fi/pkg/blob"
+	"github.com/koud-fi/pkg/shell"
 )
 
 type MediaAttributes struct {
@@ -89,27 +92,24 @@ func resolveVideoAttrs(a *MediaAttributes, b blob.Blob) error {
 
 	// TODO: native implementation
 
-	/*
-		var info ffprobeInfo
-		if err := blob.Unmarshal(json.Unmarshal, shell.Cmd("ffprobe",
-			"-i", "-", b,
-			"-v", "fatal",
-			"-of", "json",
-			"-show_format", "-show_streams",
-		), &info); err != nil {
-			return err
-		}
-		vstream := info.findStream("video")
-		if vstream == nil {
-			return nil
-		}
-		a.Width = vstream.Width
-		a.Height = vstream.Height
-		a.Duration = info.Format.Duration
-		a.HasAudio = info.findStream("audio") != nil
+	var info ffprobeInfo
+	if err := blob.Unmarshal(json.Unmarshal, shell.Run(context.TODO(), "ffprobe",
+		"-i", "-", b,
+		"-v", "fatal",
+		"-of", "json",
+		"-show_format", "-show_streams",
+	), &info); err != nil {
+		return err
+	}
+	vstream := info.findStream("video")
+	if vstream == nil {
 		return nil
-	*/
-	panic("TODO")
+	}
+	a.Width = vstream.Width
+	a.Height = vstream.Height
+	a.Duration = info.Format.Duration
+	a.HasAudio = info.findStream("audio") != nil
+	return nil
 }
 
 type ffprobeInfo struct {
