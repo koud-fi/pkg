@@ -1,2 +1,6 @@
+github.com/koud-fi/pkg/blob v0.0.0-20220327122653-d43f9a445527 h1:H+LQeQUXHm0uU9iNiKQFe9jLFNtBcTk6O2+mcfqQ/Yo=
+github.com/koud-fi/pkg/blob v0.0.0-20220327122653-d43f9a445527/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
 github.com/koud-fi/pkg/pk v0.0.0-20220327125302-7974dfc3c412 h1:riWVChQtGLpD6RJncLkpassBnqNQ6dmJtMwgiagBQas=
 github.com/koud-fi/pkg/pk v0.0.0-20220327125302-7974dfc3c412/go.mod h1:CLYSmSWCX7DFvVnPv4UkXEApTOIsLmTurbIR0y22ikI=
+github.com/koud-fi/pkg/schema v0.0.0-20220327140300-c7c56dbc97f0 h1:+KsP390SD7vUOfRE2bzu9e6OyREffTZblKtIG1yzmkU=
+github.com/koud-fi/pkg/schema v0.0.0-20220327140300-c7c56dbc97f0/go.mod h1:SLRFpCDtLo9AJOoVXYE6DO/L6+qPIm8ZeNW3on/sKFk=
