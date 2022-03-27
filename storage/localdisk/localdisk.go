@@ -17,24 +17,40 @@ const (
 	defaultFilePerm = os.FileMode(0600)
 )
 
+type Option func(*Storage)
+
+func HideFunc(fn func(name string) bool) func(*Storage) { return func(s *Storage) { s.hideFunc = fn } }
+func DirPerm(m os.FileMode) func(*Storage)              { return func(s *Storage) { s.dirPerm = m } }
+func FilePerm(m os.FileMode) func(*Storage)             { return func(s *Storage) { s.filePerm = m } }
+
 var _ blob.Storage = (*Storage)(nil)
 
 type Storage struct {
 	root     string
+	hideFunc func(string) bool
 	dirPerm  os.FileMode
 	filePerm os.FileMode
 }
 
-func NewStorage(root string) (*Storage, error) {
+func NewStorage(root string, opt ...Option) (*Storage, error) {
 	absRoot, err := filepath.Abs(root)
 	if err != nil {
 		return nil, err
 	}
-	return &Storage{
+	s := Storage{
 		root:     absRoot,
-		dirPerm:  defaultDirPerm,  // TODO: make configurable
-		filePerm: defaultFilePerm, // TODO: make configurable
-	}, nil
+		hideFunc: defaultHideFunc,
+		dirPerm:  defaultDirPerm,
+		filePerm: defaultFilePerm,
+	}
+	for _, opt := range opt {
+		opt(&s)
+	}
+	return &s, nil
+}
+
+func defaultHideFunc(name string) bool {
+	return strings.HasPrefix(name, ".")
 }
 
 func (s Storage) Fetch(_ context.Context, ref string) blob.Blob {
@@ -62,7 +78,7 @@ func (s Storage) enumDir(ctx context.Context, dirPath string, fn func(string, in
 		return err
 	}
 	for _, d := range dir {
-		if s.isHidden(d.Name()) {
+		if s.hideFunc(d.Name()) {
 			continue
 		}
 		path := filepath.Join(dirPath, d.Name())
@@ -90,13 +106,6 @@ func (s Storage) enumDir(ctx context.Context, dirPath string, fn func(string, in
 		}
 	}
 	return nil
-}
-
-func (s Storage) isHidden(name string) bool {
-
-	// TODO: make configurable
-
-	return strings.HasPrefix(name, ".") || filepath.Ext(name) == ".db"
 }
 
 func (s Storage) Stat(_ context.Context, refs []string, fn func(string, int64) error) error {
