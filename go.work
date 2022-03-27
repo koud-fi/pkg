@@ -1,6 +1,12 @@
 go 1.18
 
 use (
+	./api/timecamp
+	./blob
+	./calendar
+	./fetch
+	./file
+	./shell
 	./storage/bolt
 	./storage/storagetest
 )
