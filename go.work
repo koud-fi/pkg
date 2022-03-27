@@ -6,6 +6,7 @@ use (
 	./calendar
 	./fetch
 	./file
+	./pk
 	./shell
 	./storage/bolt
 	./storage/localdisk
