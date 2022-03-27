@@ -8,6 +8,7 @@ use (
 	./fetch
 	./file
 	./pk
+	./schema
 	./shell
 	./storage/bolt
 	./storage/localdisk
