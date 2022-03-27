@@ -1,5 +1,5 @@
-github.com/koud-fi/pkg/blob v0.0.0-20220327050829-a42b23db8cca h1:88DK49fKVcbhaGqD/C9HpIgz0grn4J3askgYUR4XuBE=
-github.com/koud-fi/pkg/blob v0.0.0-20220327050829-a42b23db8cca/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
+github.com/koud-fi/pkg/blob v0.0.0-20220327060204-ae6c3c511994 h1:fm2+Nqm5QzvVAPgowQIlpqXEFLMaxI6pu0uNbsGllqE=
+github.com/koud-fi/pkg/blob v0.0.0-20220327060204-ae6c3c511994/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
 go.etcd.io/bbolt v1.3.6 h1:/ecaJf0sk1l4l6V4awd65v2C3ILy7MSj+s/x1ADCIMU=
 go.etcd.io/bbolt v1.3.6/go.mod h1:qXsaaIqmgQH0T+OPdb99Bf+PKfBBQVAdyD6TY9G8XM4=
 golang.org/x/sys v0.0.0-20200923182605-d9f96fdee20d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
