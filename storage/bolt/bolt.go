@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/koud-fi/pkg/blob"
 
@@ -56,10 +57,20 @@ func (s Storage) Fetch(ctx context.Context, ref string) blob.Blob {
 }
 
 func (s Storage) Receive(ctx context.Context, ref string, r io.Reader) error {
-
-	// ???
-
-	panic("TODO")
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return err
+	}
+	return s.db.Update(func(tx *bolt.Tx) error {
+		key := []byte(ref)
+		return wrapTx(tx).
+			useBucket(s.dataBucket, false, func(b *bolt.Bucket) error {
+				return b.Put(key, data)
+			}).
+			useBucket(s.statBucket, false, func(b *bolt.Bucket) error {
+				return b.Put(key, []byte(strconv.Itoa(len(data))))
+			}).err
+	})
 }
 
 func (s Storage) Enumerate(ctx context.Context, after string, fn func(string, int64) error) error {
@@ -70,17 +81,41 @@ func (s Storage) Enumerate(ctx context.Context, after string, fn func(string, in
 }
 
 func (s Storage) Stat(ctx context.Context, refs []string, fn func(string, int64) error) error {
-
-	// ???
-
-	panic("TODO")
+	return s.db.View(func(tx *bolt.Tx) error {
+		for _, ref := range refs {
+			if err := wrapTx(tx).useBucket(s.statBucket, true, func(b *bolt.Bucket) error {
+				buf := b.Get([]byte(ref))
+				if buf == nil {
+					return nil
+				}
+				size, err := strconv.ParseInt(string(buf), 10, 64)
+				if err != nil {
+					return err
+				}
+				return fn(ref, size)
+			}).err; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (s Storage) Remove(ctx context.Context, refs ...string) error {
-
-	// ???
-
-	panic("TODO")
+	return s.db.Update(func(tx *bolt.Tx) error {
+		for _, ref := range refs {
+			key := []byte(ref)
+			return wrapTx(tx).
+				useBucket(s.statBucket, true, func(b *bolt.Bucket) error {
+					return b.Delete(key)
+				}).
+				useBucket(s.dataBucket, true, func(b *bolt.Bucket) error {
+					return b.Delete(key)
+				}).
+				err
+		}
+		return nil
+	})
 }
 
 type txWrapper struct {
