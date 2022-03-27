@@ -20,7 +20,7 @@ func NewTID(now time.Time, n uint) TID {
 
 func newTID(ts, n int64) TID {
 	if n < 0 || n >= tidTimeStep {
-		panic("pk: invalid 'n' for TID")
+		panic("tid: invalid 'n' for TID")
 	}
 	return TID(ts*tidTimeStep + n)
 }
@@ -29,7 +29,7 @@ func newTID(ts, n int64) TID {
 func ParseTID(s string) (TID, error) {
 	n, err := strconv.ParseInt(s, 36, 64)
 	if err != nil {
-		return 0, fmt.Errorf("pk: %w", err)
+		return 0, fmt.Errorf("tid: %w", err)
 	}
 	return TID(n), nil
 }

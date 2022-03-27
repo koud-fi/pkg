@@ -20,10 +20,10 @@ type ID int64
 // it will panic if any of the given IDs are out of range.
 func NewID(typeID int16, shardID uint16, localID int64) ID {
 	if typeID < 1 || typeID > typeIDMax {
-		panic(fmt.Sprintf("pk: type ID out of range (1-%d): %d", typeIDMax, typeID))
+		panic(fmt.Sprintf("type ID out of range (1-%d): %d", typeIDMax, typeID))
 	}
 	if localID < 1 || localID > typeIDMax {
-		panic(fmt.Sprintf("pk: local ID out of range (1-%d): %d", localIDMax, localID))
+		panic(fmt.Sprintf("local ID out of range (1-%d): %d", localIDMax, localID))
 	}
 	return ID(int64(typeID)<<typeIDOffset | int64(shardID)<<shardIDOffset | localID)
 }
