@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/koud-fi/pkg/blob"
+	"github.com/koud-fi/pkg/blob/localfile"
 	"github.com/koud-fi/pkg/file"
 	"github.com/koud-fi/pkg/file/transform"
 )
@@ -34,7 +35,7 @@ func TestToImage(t *testing.T) {
 				outPath = filepath.Join("temp", fmt.Sprintf("%s.%s.jpg", d.Name(), params))
 				out     = transform.ToImage(in, params)
 			)
-			if err := blob.WriteFile(outPath, out, os.FileMode(0600)); err != nil {
+			if err := localfile.Write(outPath, out, os.FileMode(0600)); err != nil {
 				t.Log("ERROR:", err)
 			}
 
