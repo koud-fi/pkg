@@ -36,7 +36,7 @@ func NewStorage(db *DB, bucket string) *Storage {
 	}
 }
 
-func (s Storage) Fetch(ctx context.Context, ref string) blob.Blob {
+func (s Storage) Fetch(_ context.Context, ref string) blob.Blob {
 	return blob.ByteFunc(func() (data []byte, err error) {
 		err = s.db.View(func(tx *bolt.Tx) error {
 			return wrapTx(tx).useBucket(s.dataBucket, false, func(b *bolt.Bucket) error {
@@ -56,7 +56,7 @@ func (s Storage) Fetch(ctx context.Context, ref string) blob.Blob {
 	})
 }
 
-func (s Storage) Receive(ctx context.Context, ref string, r io.Reader) error {
+func (s Storage) Receive(_ context.Context, ref string, r io.Reader) error {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
@@ -74,13 +74,42 @@ func (s Storage) Receive(ctx context.Context, ref string, r io.Reader) error {
 }
 
 func (s Storage) Enumerate(ctx context.Context, after string, fn func(string, int64) error) error {
-
-	// ???
-
-	panic("TODO")
+	tx, err := s.db.Begin(false)
+	if err != nil {
+		return err
+	}
+	b := tx.Bucket(s.statBucket)
+	if b == nil {
+		return nil
+	}
+	var (
+		c          *bolt.Cursor
+		afterBytes = []byte(after)
+		k, v       []byte
+	)
+	if after == "" {
+		k, v = c.First()
+	} else {
+		c.Seek(afterBytes)
+		k, v = c.Next()
+	}
+	for k != nil {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			size, err := strconv.ParseInt(string(v), 10, 64)
+			if err != nil {
+				return err
+			}
+			fn(string(k), size)
+			k, v = c.Next()
+		}
+	}
+	return nil
 }
 
-func (s Storage) Stat(ctx context.Context, refs []string, fn func(string, int64) error) error {
+func (s Storage) Stat(_ context.Context, refs []string, fn func(string, int64) error) error {
 	return s.db.View(func(tx *bolt.Tx) error {
 		for _, ref := range refs {
 			if err := wrapTx(tx).useBucket(s.statBucket, true, func(b *bolt.Bucket) error {
@@ -101,7 +130,7 @@ func (s Storage) Stat(ctx context.Context, refs []string, fn func(string, int64)
 	})
 }
 
-func (s Storage) Remove(ctx context.Context, refs ...string) error {
+func (s Storage) Remove(_ context.Context, refs ...string) error {
 	return s.db.Update(func(tx *bolt.Tx) error {
 		for _, ref := range refs {
 			key := []byte(ref)
