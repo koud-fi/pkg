@@ -20,7 +20,7 @@ func (fn FetchFunc) Fetch(ctx context.Context, ref pk.Ref) (any, error) {
 	return fn(ctx, ref)
 }
 
-func Register[T any](s pk.Scheme, f Fetcher) {
+func Register(s pk.Scheme, f Fetcher) {
 	registry[s] = f
 }
 
