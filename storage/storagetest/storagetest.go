@@ -30,7 +30,6 @@ func Test(t *testing.T, s blob.Storage) {
 	t.Log(blobStr(s.Fetch(ctx, "b")))
 
 	// TODO: test stat
-
 	testEnumerate(ctx, t, s)
 }
 
