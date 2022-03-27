@@ -1,6 +1,7 @@
 package file_test
 
 import (
+	"crypto"
 	"fmt"
 	"io/fs"
 	"os"
@@ -17,7 +18,8 @@ func TestAttributes(t *testing.T) {
 			return err
 		}
 		attrs, err := file.ResolveAttrs(blob.FromFS(fsys, path),
-			file.MediaAttrs())
+			file.MediaAttrs(),
+			file.Digests(crypto.MD5, crypto.SHA1))
 		if err != nil {
 			return fmt.Errorf("%s: %w", path, err)
 		}

@@ -18,8 +18,9 @@ import (
 const defaultHeaderPeekSize = 512
 
 type Attributes struct {
-	Size        int64  `json:"size,omitempty"`
-	ContentType string `json:"contentType,omitempty"`
+	Size        int64             `json:"size,omitempty"`
+	ContentType string            `json:"contentType,omitempty"`
+	Digest      map[string]string `json:"digest,omitempty"`
 	MediaAttributes
 	Info
 }
