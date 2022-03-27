@@ -78,16 +78,18 @@ func (s Storage) Enumerate(ctx context.Context, after string, fn func(string, in
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
+
 	b := tx.Bucket(s.statBucket)
 	if b == nil {
 		return nil
 	}
 	var (
-		c          *bolt.Cursor
+		c          = b.Cursor()
 		afterBytes = []byte(after)
 		k, v       []byte
 	)
-	if after == "" {
+	if len(afterBytes) == 0 {
 		k, v = c.First()
 	} else {
 		c.Seek(afterBytes)
@@ -96,7 +98,7 @@ func (s Storage) Enumerate(ctx context.Context, after string, fn func(string, in
 	for k != nil {
 		select {
 		case <-ctx.Done():
-			return nil
+			break
 		default:
 			size, err := strconv.ParseInt(string(v), 10, 64)
 			if err != nil {
