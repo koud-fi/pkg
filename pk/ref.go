@@ -102,7 +102,7 @@ func (r *Ref) parse(s string) (err error) {
 	)
 	switch len(paramsParts) {
 	case 1:
-		*r, err = NewRef(scheme, "", refKeySeparator)
+		*r, err = NewRef(scheme, "", unescapedKey)
 	case 2:
 		*r, err = NewRef(scheme, paramsParts[1], unescapedKey)
 	}
