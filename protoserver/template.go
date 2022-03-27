@@ -13,6 +13,27 @@ func RegisterTemplate(s pk.Scheme, src fs.FS) {
 	Register(s, templateFetcher{src: src})
 }
 
+func RegisterTemplateFS(fsys fs.FS) error {
+	dir, err := fs.ReadDir(fsys, ".")
+	if err != nil {
+		return nil
+	}
+	for _, d := range dir {
+
+		// TODO: support single file templates
+
+		if d.IsDir() {
+			name := d.Name()
+			src, err := fs.Sub(fsys, name)
+			if err != nil {
+				return err
+			}
+			RegisterTemplate(pk.Scheme(name), src)
+		}
+	}
+	return nil
+}
+
 type templateFetcher struct {
 	src fs.FS
 }
