@@ -46,14 +46,11 @@ func (f templateFetcher) Fetch(ctx context.Context, ref pk.Ref) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	tc := templateContext{ctx: ctx}
-	if ref.Key() != "" {
-		tc.Ref, err = pk.ParseRef(ref.Key())
-		if err != nil {
-			return nil, err
-		}
-	}
 	var (
+		tc = templateContext{
+			ctx: ctx,
+			Key: ref.Key(),
+		}
 		buf  = bytes.NewBuffer(nil)
 		name = ref.Params()
 	)
@@ -68,9 +65,13 @@ func (f templateFetcher) Fetch(ctx context.Context, ref pk.Ref) (any, error) {
 
 type templateContext struct {
 	ctx context.Context
-	Ref pk.Ref
+	Key string
 }
 
-func (tc templateContext) Fetch(ref pk.Ref) (any, error) {
+func (tc templateContext) Fetch(refStr string) (any, error) {
+	ref, err := pk.ParseRef(refStr)
+	if err != nil {
+		return nil, err
+	}
 	return Fetch(tc.ctx, ref)
 }
