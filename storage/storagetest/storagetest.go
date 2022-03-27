@@ -6,13 +6,15 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 	"unicode"
 
 	"github.com/koud-fi/pkg/blob"
 )
 
 func Test(t *testing.T, s blob.Storage) {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+	defer cancel()
 
 	// TODO: actually test things...
 
