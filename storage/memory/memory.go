@@ -21,7 +21,7 @@ func NewStorage() *Storage {
 	return new(Storage)
 }
 
-func (s *Storage) Fetch(_ context.Context, ref string) blob.Blob {
+func (s *Storage) Get(_ context.Context, ref string) blob.Blob {
 	return blob.ByteFunc(func() ([]byte, error) {
 		s.mu.RLock()
 		defer s.mu.RUnlock()
@@ -33,7 +33,7 @@ func (s *Storage) Fetch(_ context.Context, ref string) blob.Blob {
 	})
 }
 
-func (s *Storage) Receive(_ context.Context, ref string, r io.Reader) error {
+func (s *Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
@@ -83,7 +83,7 @@ func (s *Storage) Stat(_ context.Context, refs []string, fn func(string, int64) 
 	return nil
 }
 
-func (s *Storage) Remove(_ context.Context, refs ...string) error {
+func (s *Storage) Delete(_ context.Context, refs ...string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

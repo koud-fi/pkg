@@ -6,19 +6,19 @@ import (
 )
 
 type Storage interface {
-	Fetcher
-	Receiver
+	Getter
+	Setter
 	Enumerator
 	Statter
-	Remover
+	Deleter
 }
 
-type Fetcher interface {
-	Fetch(ctx context.Context, ref string) Blob
+type Getter interface {
+	Get(ctx context.Context, ref string) Blob
 }
 
-type Receiver interface {
-	Receive(ctx context.Context, ref string, r io.Reader) error
+type Setter interface {
+	Set(ctx context.Context, ref string, r io.Reader) error
 }
 
 type Enumerator interface {
@@ -29,6 +29,6 @@ type Statter interface {
 	Stat(ctx context.Context, refs []string, fn func(string, int64) error) error
 }
 
-type Remover interface {
-	Remove(ctx context.Context, refs ...string) error
+type Deleter interface {
+	Delete(ctx context.Context, refs ...string) error
 }

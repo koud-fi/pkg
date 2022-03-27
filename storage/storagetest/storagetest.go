@@ -19,17 +19,17 @@ func Test(t *testing.T, s blob.Storage) {
 	// TODO: actually test things...
 
 	// TODO: log errors
-	s.Receive(ctx, "a", strings.NewReader("av"))
-	s.Receive(ctx, "b", strings.NewReader("bv"))
-	s.Receive(ctx, "d", strings.NewReader("dv"))
-	s.Receive(ctx, "c", strings.NewReader("cv"))
-	s.Receive(ctx, "e", strings.NewReader("ev"))
-	s.Receive(ctx, "f", strings.NewReader("fv"))
-	s.Receive(ctx, "g", strings.NewReader("gv"))
-	s.Receive(ctx, "h", strings.NewReader("hv"))
+	s.Set(ctx, "a", strings.NewReader("av"))
+	s.Set(ctx, "b", strings.NewReader("bv"))
+	s.Set(ctx, "d", strings.NewReader("dv"))
+	s.Set(ctx, "c", strings.NewReader("cv"))
+	s.Set(ctx, "e", strings.NewReader("ev"))
+	s.Set(ctx, "f", strings.NewReader("fv"))
+	s.Set(ctx, "g", strings.NewReader("gv"))
+	s.Set(ctx, "h", strings.NewReader("hv"))
 
-	s.Remove(ctx, "b")
-	t.Log(blobStr(s.Fetch(ctx, "b")))
+	s.Delete(ctx, "b")
+	t.Log(blobStr(s.Get(ctx, "b")))
 
 	// TODO: test stat
 	testEnumerate(ctx, t, s)
@@ -37,7 +37,7 @@ func Test(t *testing.T, s blob.Storage) {
 
 func testEnumerate(ctx context.Context, t *testing.T, s blob.Storage) {
 	if err := s.Enumerate(context.Background(), "", func(ref string, size int64) error {
-		header, err := blob.Peek(s.Fetch(ctx, ref), 1<<10)
+		header, err := blob.Peek(s.Get(ctx, ref), 1<<10)
 		if err != nil {
 			return fmt.Errorf("%v: %v", ref, err)
 		}

@@ -36,7 +36,7 @@ func NewStorage(db *DB, bucket string) *Storage {
 	}
 }
 
-func (s Storage) Fetch(_ context.Context, ref string) blob.Blob {
+func (s Storage) Get(_ context.Context, ref string) blob.Blob {
 	return blob.ByteFunc(func() (data []byte, err error) {
 		err = s.db.View(func(tx *bolt.Tx) error {
 			return wrapTx(tx).useBucket(s.dataBucket, false, func(b *bolt.Bucket) error {
@@ -56,7 +56,7 @@ func (s Storage) Fetch(_ context.Context, ref string) blob.Blob {
 	})
 }
 
-func (s Storage) Receive(_ context.Context, ref string, r io.Reader) error {
+func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func (s Storage) Stat(_ context.Context, refs []string, fn func(string, int64) e
 	})
 }
 
-func (s Storage) Remove(_ context.Context, refs ...string) error {
+func (s Storage) Delete(_ context.Context, refs ...string) error {
 	return s.db.Update(func(tx *bolt.Tx) error {
 		for _, ref := range refs {
 			key := []byte(ref)

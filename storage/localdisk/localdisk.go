@@ -53,11 +53,11 @@ func defaultHideFunc(name string) bool {
 	return strings.HasPrefix(name, ".")
 }
 
-func (s Storage) Fetch(_ context.Context, ref string) blob.Blob {
+func (s Storage) Get(_ context.Context, ref string) blob.Blob {
 	return localfile.New(s.refPath(ref))
 }
 
-func (s Storage) Receive(_ context.Context, ref string, r io.Reader) error {
+func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	path := s.refPath(ref)
 	if err := os.MkdirAll(filepath.Dir(path), s.dirPerm); err != nil {
 		return err
@@ -124,7 +124,7 @@ func (s Storage) Stat(_ context.Context, refs []string, fn func(string, int64) e
 	return nil
 }
 
-func (s Storage) Remove(_ context.Context, refs ...string) error {
+func (s Storage) Delete(_ context.Context, refs ...string) error {
 	for _, ref := range refs {
 		if err := os.Remove(s.refPath(ref)); err != nil {
 			return err
