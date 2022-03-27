@@ -2,9 +2,11 @@ package localdisk
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/blob/localfile"
@@ -30,8 +32,8 @@ func NewStorage(root string) (*Storage, error) {
 	}
 	return &Storage{
 		root:     absRoot,
-		dirPerm:  defaultDirPerm,
-		filePerm: defaultFilePerm,
+		dirPerm:  defaultDirPerm,  // TODO: make configurable
+		filePerm: defaultFilePerm, // TODO: make configurable
 	}, nil
 }
 
@@ -40,14 +42,61 @@ func (s Storage) Fetch(_ context.Context, ref string) blob.Blob {
 }
 
 func (s Storage) Receive(_ context.Context, ref string, r io.Reader) error {
-	return localfile.WriteReader(s.refPath(ref), r, s.filePerm)
+	path := s.refPath(ref)
+	if err := os.MkdirAll(filepath.Dir(path), s.dirPerm); err != nil {
+		return err
+	}
+	return localfile.WriteReader(path, r, s.filePerm)
 }
 
 func (s Storage) Enumerate(ctx context.Context, after string, fn func(string, int64) error) error {
+	if after != "" {
+		return errors.New("localdisk.Enumerate: after not supported") // TODO: implement "after"
+	}
+	return s.enumDir(ctx, s.root, fn)
+}
 
-	// ???
+func (s Storage) enumDir(ctx context.Context, dirPath string, fn func(string, int64) error) error {
+	dir, err := os.ReadDir(dirPath)
+	if err != nil {
+		return err
+	}
+	for _, d := range dir {
+		if s.isHidden(d.Name()) {
+			continue
+		}
+		path := filepath.Join(dirPath, d.Name())
+		if d.IsDir() {
+			if err := s.enumDir(ctx, path, fn); err != nil {
+				return err
+			}
+			continue
+		}
+		ref, err := s.pathRef(path)
+		if err != nil {
+			return err
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			stat, err := d.Info()
+			if err != nil {
+				return err
+			}
+			if err := fn(ref, stat.Size()); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
 
-	panic("TODO")
+func (s Storage) isHidden(name string) bool {
+
+	// TODO: make configurable
+
+	return strings.HasPrefix(name, ".") || filepath.Ext(name) == ".db"
 }
 
 func (s Storage) Stat(_ context.Context, refs []string, fn func(string, int64) error) error {
@@ -77,4 +126,8 @@ func (s Storage) Remove(_ context.Context, refs ...string) error {
 
 func (s Storage) refPath(ref string) string {
 	return filepath.Join(s.root, ref)
+}
+
+func (s Storage) pathRef(path string) (string, error) {
+	return filepath.Rel(s.root, path)
 }
