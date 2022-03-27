@@ -51,10 +51,22 @@ func (s *Storage) Receive(_ context.Context, ref string, r io.Reader) error {
 }
 
 func (s *Storage) Enumerate(ctx context.Context, after string, fn func(string, int64) error) error {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
-	// ???
-
-	panic("TODO")
+	i, _ := s.search(after)
+	for i < len(s.data) {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			if err := fn(s.data[i].ref, int64(len(s.data[i].data))); err != nil {
+				return err
+			}
+			i++
+		}
+	}
+	return nil
 }
 
 func (s *Storage) Stat(_ context.Context, refs []string, fn func(string, int64) error) error {

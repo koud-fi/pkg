@@ -8,5 +8,6 @@ use (
 	./file
 	./shell
 	./storage/bolt
+	./storage/memory
 	./storage/storagetest
 )

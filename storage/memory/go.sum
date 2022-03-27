@@ -1,0 +1,4 @@
+github.com/koud-fi/pkg/blob v0.0.0-20220327071929-73cdb37bce2a h1:meYcf0q5X6vSbPFEGH5k08uPyl0deBdSl/TmVVHXVGk=
+github.com/koud-fi/pkg/blob v0.0.0-20220327071929-73cdb37bce2a/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
+github.com/koud-fi/pkg/storage/storagetest v0.0.0-20220327073110-dade8df321b2 h1:9DFXYyyxbNa3rGGs4f9pXafW2uHccdu8GNM2J+ZHa98=
+github.com/koud-fi/pkg/storage/storagetest v0.0.0-20220327073110-dade8df321b2/go.mod h1:a0WnDcANyzXHuzaFTT75JsSMcLQ6dPMnwI0Z7820sqw=
