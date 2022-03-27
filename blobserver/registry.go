@@ -12,7 +12,7 @@ import (
 
 var registry = make(map[pk.Scheme]Fetcher)
 
-// Register calls are not thread-safe and should be done on startup before anything else.
+// Register calls are not thread-safe and should only be done on startup.
 func Register(s pk.Scheme, f Fetcher) {
 	registry[s] = f
 }
