@@ -2,6 +2,7 @@ package pk
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -11,6 +12,11 @@ const (
 	refKeySeparator    = "/"
 	refParamsSeparator = ":"
 )
+
+var _ interface {
+	json.Marshaler
+	json.Unmarshaler
+} = (*Ref)(nil)
 
 type Ref struct {
 	scheme Scheme
