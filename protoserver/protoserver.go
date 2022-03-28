@@ -24,6 +24,18 @@ func Register(s pk.Scheme, f Fetcher) {
 	registry[s] = f
 }
 
+type TransformFunc func(ctx context.Context, params string, ref pk.Ref) (any, error)
+
+func TransformFetcher(fn TransformFunc) Fetcher {
+	return FetchFunc(func(ctx context.Context, ref pk.Ref) (any, error) {
+		keyRef, err := pk.ParseRef(ref.Key())
+		if err != nil {
+			return nil, err
+		}
+		return fn(ctx, ref.Params(), keyRef)
+	})
+}
+
 func Fetch(ctx context.Context, ref pk.Ref) (any, error) {
 	return Lookup(ref.Scheme()).Fetch(ctx, ref)
 }
