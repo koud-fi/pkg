@@ -11,7 +11,7 @@ import (
 	"github.com/koud-fi/pkg/cache"
 )
 
-//lint:ignore ST1012 if returned from resolve; file is not written to storage.
+//lint:ignore ST1012 if returned from resolve; data is not written to storage.
 var NoCache = errors.New("no cache")
 
 type Cache struct {
