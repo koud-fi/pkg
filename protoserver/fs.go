@@ -13,7 +13,11 @@ import (
 
 func RegisterFS(s pk.Scheme, fsys fs.FS) {
 	Register(s, FetchFunc(func(_ context.Context, ref pk.Ref) (any, error) {
-		return &FSNode{fsys: fsys, scheme: ref.Scheme(), path: ref.Key()}, nil
+		path := ref.Key()
+		if path == "" {
+			path = "."
+		}
+		return &FSNode{fsys: fsys, scheme: ref.Scheme(), path: path}, nil
 	}))
 }
 
