@@ -9,6 +9,7 @@ use (
 	./pk
 	./protoserver
 	./schema
+	./serve
 	./shell
 	./storage/bolt
 	./storage/localdisk
