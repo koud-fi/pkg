@@ -3,6 +3,7 @@ go 1.18
 use (
 	./api/timecamp
 	./blob
+	./cache
 	./calendar
 	./fetch
 	./file
