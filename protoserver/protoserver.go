@@ -1,10 +1,13 @@
 package protoserver
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"io/fs"
 
+	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/pk"
 )
 
@@ -38,6 +41,27 @@ func TransformFetcher(fn TransformFunc) Fetcher {
 
 func Fetch(ctx context.Context, ref pk.Ref) (any, error) {
 	return Lookup(ref.Scheme()).Fetch(ctx, ref)
+}
+
+func FetchBlob(ctx context.Context, ref pk.Ref) blob.Blob {
+	return blob.Func(func() (io.ReadCloser, error) {
+		v, err := Fetch(ctx, ref)
+		if err != nil {
+			return nil, err
+		}
+		switch v := v.(type) {
+		case []byte:
+			return io.NopCloser(bytes.NewReader(v)), nil
+		case io.ReadCloser:
+			return v, nil
+		case io.Reader:
+			return io.NopCloser(v), nil
+		default:
+			buf := bytes.NewBuffer(nil)
+			fmt.Fprintln(buf, v)
+			return io.NopCloser(buf), nil
+		}
+	})
 }
 
 func Lookup(s pk.Scheme) Fetcher {
