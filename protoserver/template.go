@@ -3,8 +3,8 @@ package protoserver
 import (
 	"bytes"
 	"context"
-	"html/template"
 	"io/fs"
+	"text/template"
 
 	"github.com/koud-fi/pkg/pk"
 )
