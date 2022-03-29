@@ -27,7 +27,7 @@ type Cache struct {
 func New(b Backend) *Cache { return &Cache{b: b} }
 
 func (c *Cache) Resolve(key string, fn func() (int64, error)) error {
-	_, err, _ := c.g.Do(key, func() (interface{}, error) {
+	_, err, _ := c.g.Do(key, func() (any, error) {
 		if ok, err := c.b.Has(key); err != nil {
 			return nil, err
 		} else if ok {

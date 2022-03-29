@@ -85,13 +85,13 @@ func toImage(src string, p Params) (io.ReadCloser, error) {
 		return nil, errors.New("non-local blobs not supported")
 	}
 	var (
-		args   []interface{}
+		args   []any
 		w, wOk = p[""]
 		h, hOk = p["x"]
 		s      string
 	)
 	if !hOk || (w > 0 && h > 0) {
-		args = []interface{}{"--smartcrop", "attention"}
+		args = []any{"--smartcrop", "attention"}
 	}
 	if wOk && w > 0 {
 		s = strconv.Itoa(w)
@@ -115,7 +115,7 @@ func videoToImage(src string, p Params) (io.ReadCloser, error) {
 
 		return nil, errors.New("non-local blobs not supported")
 	}
-	args := []interface{}{"-v", "fatal"}
+	args := []any{"-v", "fatal"}
 	if seek, _ := p["t"]; seek > 0 {
 		var (
 			t  = time.Duration(seek) * time.Second

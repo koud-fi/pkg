@@ -30,7 +30,7 @@ type Request struct {
 
 type pair struct {
 	key    string
-	values []interface{}
+	values []any
 }
 
 func New() *Request {
@@ -70,12 +70,12 @@ func (r Request) Context(ctx context.Context) *Request {
 	return &r
 }
 
-func (r Request) Query(key string, vs ...interface{}) *Request {
+func (r Request) Query(key string, vs ...any) *Request {
 	r.query = append(r.query, pair{key: key, values: vs})
 	return &r
 }
 
-func (r Request) Header(key string, vs ...interface{}) *Request {
+func (r Request) Header(key string, vs ...any) *Request {
 	r.header = append(r.header, pair{key: http.CanonicalHeaderKey(key), values: vs})
 	return &r
 }

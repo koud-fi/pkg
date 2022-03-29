@@ -22,7 +22,7 @@ var (
 	crcTable = crc64.MakeTable(crc64.ISO)
 )
 
-func Run(ctx context.Context, cmd string, args ...interface{}) blob.Blob {
+func Run(ctx context.Context, cmd string, args ...any) blob.Blob {
 	return blob.Func(func() (io.ReadCloser, error) {
 		var (
 			ctrl    = cmdCtrl(cmd)
@@ -42,7 +42,7 @@ func Run(ctx context.Context, cmd string, args ...interface{}) blob.Blob {
 			argStrs = append(argStrs, argStr)
 		}
 		key := strconv.FormatUint(keyCrc.Sum64(), 36)
-		out, err, _ := ctrl.group.Do(key, func() (interface{}, error) {
+		out, err, _ := ctrl.group.Do(key, func() (any, error) {
 			ctrl.throttle <- struct{}{}
 			defer func() { <-ctrl.throttle }()
 
