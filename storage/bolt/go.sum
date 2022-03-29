@@ -1,5 +1,7 @@
 github.com/koud-fi/pkg/blob v0.0.0-20220327065345-4cd6588cd3f8 h1:7F8DCipXKgJ+sZCbRUXomGu/Y8F3UyESnRNoim1KVWo=
 github.com/koud-fi/pkg/blob v0.0.0-20220327065345-4cd6588cd3f8/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
+github.com/koud-fi/pkg/storage/storagetest v0.0.0-20220329034851-4b26a45a4c0e h1:+hIjGfpUHhfebxohch7za3/zjtI4s24uVpWu6qDc4A0=
+github.com/koud-fi/pkg/storage/storagetest v0.0.0-20220329034851-4b26a45a4c0e/go.mod h1:a0WnDcANyzXHuzaFTT75JsSMcLQ6dPMnwI0Z7820sqw=
 go.etcd.io/bbolt v1.3.6 h1:/ecaJf0sk1l4l6V4awd65v2C3ILy7MSj+s/x1ADCIMU=
 go.etcd.io/bbolt v1.3.6/go.mod h1:qXsaaIqmgQH0T+OPdb99Bf+PKfBBQVAdyD6TY9G8XM4=
 golang.org/x/sys v0.0.0-20200923182605-d9f96fdee20d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
