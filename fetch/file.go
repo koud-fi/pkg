@@ -58,4 +58,4 @@ func (t fileInfo) IsDir() bool {
 	return false
 }
 
-func (t fileInfo) Sys() interface{} { return nil }
+func (t fileInfo) Sys() any { return nil }

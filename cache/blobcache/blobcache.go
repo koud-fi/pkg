@@ -61,22 +61,23 @@ type backend struct {
 }
 
 func (b *backend) Has(key string) (bool, error) {
-
-	// TODO: use blob.Statter
-
-	panic("TODO")
+	var ok bool
+	return ok, b.s.Stat(context.Background(), []string{key}, func(ref string, size int64) error {
+		if ref != key {
+			panic("blobcache: ref and key do not match")
+		}
+		ok = true
+		return nil
+	})
 }
 
 func (b *backend) Delete(key string) error {
-
-	// ???
-
-	panic("TODO")
+	return b.s.Delete(context.Background(), key)
 }
 
 func (b *backend) Keys(fn func(key string, size int64)) error {
-
-	// ???
-
-	panic("TODO")
+	return b.s.Enumerate(context.Background(), "", func(ref string, size int64) error {
+		fn(ref, size)
+		return nil
+	})
 }
