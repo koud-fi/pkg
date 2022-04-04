@@ -2,7 +2,10 @@ package auth
 
 import "errors"
 
-const RootIdentity = "root"
+const (
+	RootIdentity   = "root"
+	BearerIdentity = "bearer"
+)
 
 var (
 	ErrBadCredentials = errors.New("bad credentials")
