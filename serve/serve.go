@@ -2,6 +2,7 @@ package serve
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io"
 	"io/fs"
@@ -38,6 +39,11 @@ func Header(w http.ResponseWriter, opt ...Option) (*Info, error) {
 	c := buildConfig(opt)
 	c.writeHeader(w)
 	return &c.Info, nil
+}
+
+func JSON(w http.ResponseWriter, r *http.Request, v any, opt ...Option) (*Info, error) {
+	return Blob(w, r, blob.Marshal(json.Marshal, v),
+		ContentType("application/json; charset=utf-8"))
 }
 
 func Blob(w http.ResponseWriter, r *http.Request, b blob.Blob, opt ...Option) (*Info, error) {
