@@ -4,7 +4,10 @@ import "errors"
 
 const RootIdentity = "root"
 
-var ErrBadCredentials = errors.New("bad credentials")
+var (
+	ErrBadCredentials = errors.New("bad credentials")
+	ErrUnauthorized   = errors.New("unauthorized")
+)
 
 type Authenticator interface {
 	Authenticate(identity, secret string) (string, error)
