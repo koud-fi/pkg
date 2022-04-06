@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/fs"
 	"net/http"
-	"os"
 )
 
 const maxErrLen = 1 << 12
@@ -24,7 +23,7 @@ func (r *Request) OpenFile() (fs.File, error) {
 	}, nil
 }
 
-func (r *Request) Stat() (os.FileInfo, error) {
+func (r *Request) Stat() (fs.FileInfo, error) {
 	res, req, err := r.do()
 	if err != nil {
 		return nil, err
@@ -71,11 +70,11 @@ func processErrorResponse(req *http.Request, res *http.Response) error {
 	}
 	switch res.StatusCode {
 	case http.StatusNotFound:
-		return fmt.Errorf("%w: %s", os.ErrNotExist, msg)
+		return fmt.Errorf("%w: %s", fs.ErrNotExist, msg)
 	case http.StatusForbidden:
-		return fmt.Errorf("%w: %s", os.ErrPermission, msg)
+		return fmt.Errorf("%w: %s", fs.ErrPermission, msg)
 	case http.StatusGatewayTimeout:
-		return fmt.Errorf("%w: %s", os.ErrDeadlineExceeded, msg)
+		return fmt.Errorf("%w: %s", fs.ErrDeadlineExceeded, msg)
 	default:
 		return fmt.Errorf("%s: %s", res.Status, msg)
 	}

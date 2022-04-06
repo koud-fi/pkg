@@ -6,7 +6,6 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"strconv"
 	"time"
@@ -17,7 +16,7 @@ type file struct {
 	body io.ReadCloser
 }
 
-func (f *file) Stat() (os.FileInfo, error) { return f.fileInfo, nil }
+func (f *file) Stat() (fs.FileInfo, error) { return f.fileInfo, nil }
 func (f *file) Read(p []byte) (int, error) { return f.body.Read(p) }
 func (f *file) Close() error               { return f.body.Close() }
 
@@ -53,7 +52,7 @@ func (fi fileInfo) Size() int64 {
 	return size
 }
 
-func (fi fileInfo) Mode() os.FileMode { return os.FileMode(0700) }
+func (fi fileInfo) Mode() fs.FileMode { return fs.FileMode(0700) }
 
 func (fi fileInfo) ModTime() time.Time {
 	modTime, _ := time.Parse(http.TimeFormat, fi.header.Get("Last-Modified"))
