@@ -76,8 +76,6 @@ func processErrorResponse(req *http.Request, res *http.Response) error {
 		return fmt.Errorf("%w: %s", os.ErrPermission, msg)
 	case http.StatusGatewayTimeout:
 		return fmt.Errorf("%w: %s", os.ErrDeadlineExceeded, msg)
-	case http.StatusBadGateway:
-		return fmt.Errorf("%w: %s", os.ErrInvalid, msg)
 	default:
 		return fmt.Errorf("%s: %s", res.Status, msg)
 	}

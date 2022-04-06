@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"net/url"
 	"strings"
@@ -16,16 +17,22 @@ import (
 var _ blob.Blob = (*Request)(nil)
 
 type Request struct {
-	client   *http.Client
-	ctx      context.Context
-	method   string
-	url      string
-	query    []pair
-	header   []pair
-	user     *url.Userinfo
-	limiter  *rate.Limiter
-	body     blob.Blob
-	bodyMime string
+	client    *http.Client
+	ctx       context.Context
+	method    string
+	url       string
+	query     []pair
+	header    []pair
+	user      *url.Userinfo
+	limiter   *rate.Limiter
+	body      blob.Blob
+	bodyMime  string
+	dirReader DirReader
+}
+
+type DirReader interface {
+	IsDir(h http.Header) bool
+	ReadDir(f fs.File, h http.Header, n int) ([]fs.DirEntry, error)
 }
 
 type pair struct {
@@ -105,6 +112,11 @@ func (r Request) Body(b blob.Blob, mime string) *Request {
 func (r Request) Form(data url.Values) *Request {
 	r.body = blob.FromString(data.Encode())
 	r.bodyMime = "application/x-www-form-urlencoded; charset=utf-8"
+	return &r
+}
+
+func (r Request) DirReader(dr DirReader) *Request {
+	r.dirReader = dr
 	return &r
 }
 

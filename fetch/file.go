@@ -2,6 +2,7 @@ package fetch
 
 import (
 	"io"
+	"io/fs"
 	"mime"
 	"net/http"
 	"net/url"
@@ -16,22 +17,30 @@ type file struct {
 	body io.ReadCloser
 }
 
-func (t *file) Stat() (os.FileInfo, error) { return t.fileInfo, nil }
-func (t *file) Read(p []byte) (int, error) { return t.body.Read(p) }
-func (t *file) Close() error               { return t.body.Close() }
+func (f *file) Stat() (os.FileInfo, error) { return f.fileInfo, nil }
+func (f *file) Read(p []byte) (int, error) { return f.body.Read(p) }
+func (f *file) Close() error               { return f.body.Close() }
+
+func (f *file) ReadDir(n int) ([]fs.DirEntry, error) {
+	if f.dr != nil {
+		return f.dr.ReadDir(f, f.header, n)
+	}
+	return nil, fs.ErrInvalid
+}
 
 type fileInfo struct {
 	url    *url.URL
 	header http.Header
+	dr     DirReader
 }
 
-func (t fileInfo) Name() string {
-	name := path.Base(t.url.Path)
+func (fi fileInfo) Name() string {
+	name := path.Base(fi.url.Path)
 	if name == "" || name == "/" {
 		name = "."
 	}
 	if path.Ext(name) == "" {
-		exts, _ := mime.ExtensionsByType(t.header.Get("Content-Type"))
+		exts, _ := mime.ExtensionsByType(fi.header.Get("Content-Type"))
 		if len(exts) > 0 {
 			name += exts[0]
 		}
@@ -39,22 +48,22 @@ func (t fileInfo) Name() string {
 	return name
 }
 
-func (t fileInfo) Size() int64 {
-	size, _ := strconv.ParseInt(t.header.Get("Content-Length"), 10, 64)
+func (fi fileInfo) Size() int64 {
+	size, _ := strconv.ParseInt(fi.header.Get("Content-Length"), 10, 64)
 	return size
 }
 
-func (t fileInfo) Mode() os.FileMode { return os.FileMode(0700) }
+func (fi fileInfo) Mode() os.FileMode { return os.FileMode(0700) }
 
-func (t fileInfo) ModTime() time.Time {
-	modTime, _ := time.Parse(http.TimeFormat, t.header.Get("Last-Modified"))
+func (fi fileInfo) ModTime() time.Time {
+	modTime, _ := time.Parse(http.TimeFormat, fi.header.Get("Last-Modified"))
 	return modTime
 }
 
-func (t fileInfo) IsDir() bool {
-
-	// TODO: configurable directory support
-
+func (fi fileInfo) IsDir() bool {
+	if fi.dr != nil {
+		return fi.dr.IsDir(fi.header)
+	}
 	return false
 }
 
