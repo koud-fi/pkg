@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/fs"
 	"net/http"
+	"os"
 )
 
 const maxErrLen = 1 << 12
@@ -74,7 +75,7 @@ func processErrorResponse(req *http.Request, res *http.Response) error {
 	case http.StatusForbidden:
 		return fmt.Errorf("%w: %s", fs.ErrPermission, msg)
 	case http.StatusGatewayTimeout:
-		return fmt.Errorf("%w: %s", fs.ErrDeadlineExceeded, msg)
+		return fmt.Errorf("%w: %s", os.ErrDeadlineExceeded, msg)
 	default:
 		return fmt.Errorf("%s: %s", res.Status, msg)
 	}
