@@ -2,7 +2,6 @@ package fetch
 
 import (
 	"io/fs"
-	"os"
 	"strings"
 )
 
@@ -24,7 +23,7 @@ func (t *FS) Open(name string) (fs.File, error) {
 	return Get(t.url(name)).OpenFile()
 }
 
-func (t *FS) Stat(name string) (os.FileInfo, error) {
+func (t *FS) Stat(name string) (fs.FileInfo, error) {
 	return Head(t.url(name)).Stat()
 }
 
