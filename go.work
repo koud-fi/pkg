@@ -17,4 +17,5 @@ use (
 	./storage/localdisk
 	./storage/memory
 	./storage/storagetest
+	./tagindex
 )
