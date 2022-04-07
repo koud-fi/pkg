@@ -59,6 +59,7 @@ func (s *Set[T]) clean() {
 		sort.Slice(s.data, func(i, j int) bool {
 			return s.data[i] < s.data[j]
 		})
+		s.isDirty = false
 	}
 }
 
