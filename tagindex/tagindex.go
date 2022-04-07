@@ -11,7 +11,14 @@ type QueryResult struct {
 	TotalCount int
 }
 
+type TagInfo struct {
+	Tag   string
+	Count int
+}
+
 type TagIndex interface {
-	Query(tags []string, limit int) QueryResult
-	Put(e ...Entity)
+	Query(tags []string, limit int) (QueryResult, error)
+	Put(e ...Entity) error
+	Commit() error
+	Tags(prefix string, limit int) ([]TagInfo, error)
 }
