@@ -3,7 +3,7 @@ package bloom_test
 import (
 	"testing"
 
-	"github.com/koud-fi/pkg/tagindex/bloom"
+	"github.com/koud-fi/pkg/bloom"
 )
 
 func TestFilter(t *testing.T) {

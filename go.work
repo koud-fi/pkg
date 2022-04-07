@@ -4,6 +4,7 @@ use (
 	./api/timecamp
 	./auth
 	./blob
+	./bloom
 	./cache
 	./calendar
 	./fetch
