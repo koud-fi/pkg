@@ -11,6 +11,7 @@ use (
 	./file
 	./pk
 	./protoserver
+	./ql
 	./schema
 	./serve
 	./shell
