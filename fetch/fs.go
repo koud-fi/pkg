@@ -5,20 +5,18 @@ import (
 	"net/http"
 )
 
-var _ fs.StatFS = (*FS)(nil)
-
-type FS struct {
+type fetchfs struct {
 	reqFn func(name string) *Request
 }
 
-func NewFS(reqFn func(name string) *Request) *FS {
-	return &FS{reqFn: reqFn}
+func NewFS(reqFn func(name string) *Request) fs.StatFS {
+	return &fetchfs{reqFn: reqFn}
 }
 
-func (fsys *FS) Open(name string) (fs.File, error) {
+func (fsys *fetchfs) Open(name string) (fs.File, error) {
 	return fsys.reqFn(name).Method(http.MethodGet).OpenFile()
 }
 
-func (fsys *FS) Stat(name string) (fs.FileInfo, error) {
+func (fsys *fetchfs) Stat(name string) (fs.FileInfo, error) {
 	return fsys.reqFn(name).Method(http.MethodHead).Stat()
 }
