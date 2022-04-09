@@ -2,31 +2,23 @@ package fetch
 
 import (
 	"io/fs"
-	"strings"
+	"net/http"
 )
 
 var _ fs.StatFS = (*FS)(nil)
 
 type FS struct {
-	rootURL string
+	reqFn func(name string) *Request
 }
 
-func NewFS(rootURL string) *FS {
-	return &FS{rootURL: strings.TrimRight(rootURL, "/")}
+func NewFS(reqFn func(name string) *Request) *FS {
+	return &FS{reqFn: reqFn}
 }
 
-type fetchfs struct {
-	rootURL string
+func (fsys *FS) Open(name string) (fs.File, error) {
+	return fsys.reqFn(name).Method(http.MethodGet).OpenFile()
 }
 
-func (t *FS) Open(name string) (fs.File, error) {
-	return Get(t.url(name)).OpenFile()
-}
-
-func (t *FS) Stat(name string) (fs.FileInfo, error) {
-	return Head(t.url(name)).Stat()
-}
-
-func (t *FS) url(name string) string {
-	return strings.Join([]string{t.rootURL, name}, "/")
+func (fsys *FS) Stat(name string) (fs.FileInfo, error) {
+	return fsys.reqFn(name).Method(http.MethodHead).Stat()
 }
