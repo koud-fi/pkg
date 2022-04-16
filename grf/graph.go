@@ -26,6 +26,7 @@ func New(m Mapper, s ...Store) *Graph {
 		panic("no stores")
 	}
 	return &Graph{
+		m:       m,
 		shards:  s,
 		types:   make(map[typeID]NodeType),
 		typeIDs: make(map[NodeType]typeID),
