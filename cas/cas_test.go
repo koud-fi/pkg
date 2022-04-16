@@ -1,6 +1,7 @@
 package cas_test
 
 import (
+	"crypto"
 	"encoding/json"
 	"io/fs"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/blob/localfile"
 	"github.com/koud-fi/pkg/cas"
+	"github.com/koud-fi/pkg/file"
 	"github.com/koud-fi/pkg/grf"
 	"github.com/koud-fi/pkg/grf/memgrf"
 	"github.com/koud-fi/pkg/storage/localdisk"
@@ -23,7 +25,7 @@ func Test(t *testing.T) {
 	bs, err := localdisk.NewStorage("temp/file")
 	assert(t, err)
 
-	s := cas.New(bs, grf.New(gm, gs), "file")
+	s := cas.New(bs, grf.New(gm, gs), "file", file.MediaAttrs(), file.Digests(crypto.MD5))
 	assert(t, fs.WalkDir(fsys, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
