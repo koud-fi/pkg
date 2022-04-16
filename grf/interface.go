@@ -3,19 +3,19 @@ package grf
 import "time"
 
 type NodeData struct {
-	ID        LocalID
-	Data      []byte
-	Timestamp time.Time
+	ID        LocalID   `json:"id"`
+	Data      []byte    `json:"data"`
+	Timestamp time.Time `json:"ts"`
 }
 
 type LocalID int32
 
 type EdgeData struct {
-	From     LocalID
-	Type     EdgeType
-	To       ID
-	Sequence int64
-	Data     []byte
+	From     LocalID  `json:"from"`
+	Type     EdgeType `json:"type"`
+	To       ID       `json:"to"`
+	Sequence int64    `json:"seq,omitempty"`
+	Data     []byte   `json:"data,omitempty"`
 }
 
 type Store interface {
