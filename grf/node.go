@@ -17,7 +17,7 @@ type NodeType string
 func (n Node) ID() ID         { return n.id }
 func (n Node) Type() NodeType { return n.t }
 
-func (n Node) Data(v any) error {
+func (n Node) Unmarshal(v any) error {
 	return json.Unmarshal(n.d.Data, v)
 }
 
