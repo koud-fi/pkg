@@ -11,9 +11,9 @@ type Node struct {
 	ID ID `json:"id"`
 	file.Attributes
 
-	s *Storage
+	s blob.Storage
 }
 
 func (n Node) File() blob.Blob {
-	return n.s.s.Get(context.Background(), n.ID.Hex())
+	return n.s.Get(context.Background(), n.ID.Hex())
 }
