@@ -9,9 +9,9 @@ use (
 	./calendar
 	./fetch
 	./file
+	./grf
 	./pk
 	./protoserver
-	./ql
 	./schema
 	./serve
 	./shell
