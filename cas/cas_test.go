@@ -16,7 +16,7 @@ import (
 	"github.com/koud-fi/pkg/storage/localdisk"
 )
 
-func Test(t *testing.T) {
+func TestStorage(t *testing.T) {
 	var (
 		fsys = os.DirFS("../testdata")
 		gm   = memgrf.NewMapper()
