@@ -17,6 +17,7 @@ import (
 )
 
 func TestStorage(t *testing.T) {
+	assert(t, os.RemoveAll("temp"))
 	var (
 		fsys = os.DirFS("../testdata")
 		gm   = memgrf.NewMapper()
@@ -25,7 +26,10 @@ func TestStorage(t *testing.T) {
 	bs, err := localdisk.NewStorage("temp/file")
 	assert(t, err)
 
-	s := cas.New(bs, grf.New(gm, gs), "file", file.MediaAttrs(), file.Digests(crypto.MD5))
+	g := grf.New(gm, gs)
+	g.Register("file", 1)
+
+	s := cas.New(bs, g, "file", file.MediaAttrs(), file.Digests(crypto.MD5))
 	assert(t, fs.WalkDir(fsys, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err

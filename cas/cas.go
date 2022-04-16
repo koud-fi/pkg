@@ -17,7 +17,7 @@ type Storage struct {
 }
 
 func New(s blob.Storage, g *grf.Graph, nt grf.NodeType, fileOps ...file.Option) *Storage {
-	return &Storage{s: s, g: g, nt: nt}
+	return &Storage{s: s, g: g, nt: nt, fileOpts: fileOps}
 }
 
 func (s *Storage) Lookup(id ID) (*Node, error) {
