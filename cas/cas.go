@@ -10,12 +10,13 @@ import (
 )
 
 type Storage struct {
-	s  blob.Storage
-	g  *grf.Graph
-	nt grf.NodeType
+	s        blob.Storage
+	g        *grf.Graph
+	nt       grf.NodeType
+	fileOpts []file.Option
 }
 
-func New(s blob.Storage, g *grf.Graph, nt grf.NodeType) *Storage {
+func New(s blob.Storage, g *grf.Graph, nt grf.NodeType, fileOps ...file.Option) *Storage {
 	return &Storage{s: s, g: g, nt: nt}
 }
 
@@ -53,7 +54,7 @@ func (s *Storage) Add(b blob.Blob) (*Node, error) {
 	} else if err != grf.ErrNotFound {
 		return nil, err
 	}
-	attrs, err := file.ResolveAttrs(blob.FromBytes(data), file.MediaAttrs())
+	attrs, err := file.ResolveAttrs(blob.FromBytes(data), s.fileOpts...)
 	if err != nil {
 		return nil, err
 	}
