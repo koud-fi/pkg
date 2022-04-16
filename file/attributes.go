@@ -42,9 +42,9 @@ func (a Attributes) Ext() string {
 	return ""
 }
 
-type option func(a *Attributes, b blob.Blob, contentType string) error
+type Option func(a *Attributes, b blob.Blob, contentType string) error
 
-func ResolveAttrs(b blob.Blob, opts ...option) (*Attributes, error) {
+func ResolveAttrs(b blob.Blob, opts ...Option) (*Attributes, error) {
 	var a Attributes
 
 	switch b := b.(type) {

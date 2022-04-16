@@ -36,7 +36,7 @@ func (ma MediaAttributes) Megapixels() float64 {
 	return float64(ma.Width) * float64(ma.Height) / 1_000_000
 }
 
-func MediaAttrs() option {
+func MediaAttrs() Option {
 	return func(a *Attributes, b blob.Blob, contentType string) error {
 		switch contentType {
 		case "image/jpeg", "image/png", "image/webp", "image/bmp", "image/tiff":

@@ -7,7 +7,7 @@ import (
 	"github.com/koud-fi/pkg/blob"
 )
 
-func Digests(h ...crypto.Hash) option {
+func Digests(h ...crypto.Hash) Option {
 	return func(a *Attributes, b blob.Blob, contentType string) error {
 		if a.IsDir {
 			return nil
