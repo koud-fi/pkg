@@ -65,12 +65,20 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 		return tables{}, fmt.Errorf("failed to create %s table: %w", t.edges, err)
 	}
 	if _, err := s.db.Exec(fmt.Sprintf(`
-		CREATE INDEX IF NOT EXISTS %s_seq_idx ON %s (sequence)
+		CREATE INDEX IF NOT EXISTS %s_sequence ON %s (sequence)
 	`, t.edges, t.edges)); err != nil {
 		return tables{}, fmt.Errorf("failed to create %s sequence index: %w", t.edges, err)
 	}
+	if _, err := s.db.Exec(fmt.Sprintf(`
+		CREATE TRIGGER IF NOT EXISTS %s_insert AFTER INSERT ON %s 
+		BEGIN
+			UPDATE %s SET count = count + 1
+			WHERE id = NEW.type_id;
+		END
+	`, t.edges, t.edges, t.edgeTypes)); err != nil {
+		return tables{}, fmt.Errorf("failed to create %s insert trigger: %w", t.edges, err)
+	}
 
-	// TODO: trigger for edge insertion counting
 	// TODO: trigger for edge deletion counting
 
 	return t, nil
