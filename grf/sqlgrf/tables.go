@@ -33,17 +33,42 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 	}
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
-			id   INTEGER PRIMARY KEY AUTOINCREMENT,
-			data BLOB,
+			id   INTEGER  PRIMARY KEY AUTOINCREMENT,
+			data BLOB     NULL,
 			ts   DATETIME NOT NULL
 		)
 	`, t.nodes)); err != nil {
-		return tables{}, err
+		return tables{}, fmt.Errorf("failed to create %s table: %w", t.nodes, err)
 	}
+	if _, err := s.db.Exec(fmt.Sprintf(`
+		CREATE TABLE IF NOT EXISTS %s (
+			id    INTEGER PRIMARY KEY AUTOINCREMENT,
+			type  TEXT    NOT NULL,
+			count INTEGER NOT NULL DEFAULT 0
+		)
+	`, t.edgeTypes)); err != nil {
+		return tables{}, fmt.Errorf("failed to create %s table: %w", t.edgeTypes, err)
+	}
+	if _, err := s.db.Exec(fmt.Sprintf(`
+		CREATE TABLE IF NOT EXISTS %s (
+			from_id  INTEGER NOT NULL,
+			type_id  INTEGER NOT NULL,
+			to_id    INTEGER NOT NULL,
+			sequence INTEGER NOT NULL,
+			data     BLOB NULL,
 
-	// TODO: create edgetype table
-	// TODO: create edge table
-
+			PRIMARY KEY(from_id, type_id, to_id),
+			FOREIGN KEY(from_id) REFERENCES %s(id) ON DELETE CASCADE,
+			FOREIGN KEY(type_id) REFERENCES %s(id) ON DELETE RESTRICT
+		)
+	`, t.edges, t.nodes, t.edgeTypes)); err != nil {
+		return tables{}, fmt.Errorf("failed to create %s table: %w", t.edges, err)
+	}
+	if _, err := s.db.Exec(fmt.Sprintf(`
+		CREATE INDEX IF NOT EXISTS %s_seq_idx ON %s (sequence)
+	`, t.edges, t.edges)); err != nil {
+		return tables{}, fmt.Errorf("failed to create %s sequence index: %w", t.edges, err)
+	}
 	return t, nil
 }
 
