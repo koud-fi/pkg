@@ -31,7 +31,7 @@ type Store interface {
 	UpdateNode(nt NodeType, id LocalID, data []byte) error
 	DeleteNode(nt NodeType, id ...LocalID) error
 
-	SetEdge(e ...EdgeData) error
+	SetEdge(nt NodeType, e ...EdgeData) error
 	// TODO: edge type changing method
 	DeleteEdge(nt NodeType, from LocalID, et EdgeType, to ...ID) error
 }

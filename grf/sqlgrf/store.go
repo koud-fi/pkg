@@ -148,7 +148,7 @@ func (s *store) DeleteNode(nt grf.NodeType, id ...grf.LocalID) error {
 	return err
 }
 
-func (s *store) SetEdge(e ...grf.EdgeData) error {
+func (s *store) SetEdge(nt grf.NodeType, e ...grf.EdgeData) error {
 
 	// ???
 
