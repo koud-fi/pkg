@@ -19,6 +19,7 @@ const (
 
 type Option func(*Storage)
 
+func UseBuckets(b bool) Option                  { return func(s *Storage) { s.useBuckets = b } }
 func HideFunc(fn func(name string) bool) Option { return func(s *Storage) { s.hideFunc = fn } }
 func DirPerm(m os.FileMode) Option              { return func(s *Storage) { s.dirPerm = m } }
 func FilePerm(m os.FileMode) Option             { return func(s *Storage) { s.filePerm = m } }
@@ -26,10 +27,11 @@ func FilePerm(m os.FileMode) Option             { return func(s *Storage) { s.fi
 var _ blob.Storage = (*Storage)(nil)
 
 type Storage struct {
-	root     string
-	hideFunc func(string) bool
-	dirPerm  os.FileMode
-	filePerm os.FileMode
+	root       string
+	useBuckets bool
+	hideFunc   func(string) bool
+	dirPerm    os.FileMode
+	filePerm   os.FileMode
 }
 
 func NewStorage(root string, opt ...Option) (*Storage, error) {
@@ -134,9 +136,26 @@ func (s Storage) Delete(_ context.Context, refs ...string) error {
 }
 
 func (s Storage) refPath(ref string) string {
+	if s.useBuckets {
+		prefix := ref
+		for len(prefix) < 2 {
+			prefix = strings.Repeat("_", 2-len(prefix))
+		}
+		return filepath.Join(s.root, prefix[:2], ref)
+	}
 	return filepath.Join(s.root, ref)
 }
 
 func (s Storage) pathRef(path string) (string, error) {
-	return filepath.Rel(s.root, path)
+	ref, err := filepath.Rel(s.root, path)
+	if err != nil {
+		return "", err
+	}
+	if s.useBuckets {
+
+		// TODO: path validation
+
+		ref = ref[3:]
+	}
+	return ref, nil
 }
