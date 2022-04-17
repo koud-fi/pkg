@@ -12,6 +12,13 @@ type Edge struct {
 
 type EdgeType string
 
+func NewEdge(from ID, et EdgeType, to ID, seq int64, v any) Edge {
+	return Edge{
+		from: from,
+		d:    EdgeData{Type: et, To: to, Sequence: seq, Data: marshal(v)},
+	}
+}
+
 func (e Edge) From() ID        { return e.from }
 func (e Edge) Type() EdgeType  { return e.d.Type }
 func (e Edge) To() ID          { return e.d.To }
