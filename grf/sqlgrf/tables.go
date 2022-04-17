@@ -69,6 +69,10 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 	`, t.edges, t.edges)); err != nil {
 		return tables{}, fmt.Errorf("failed to create %s sequence index: %w", t.edges, err)
 	}
+
+	// TODO: trigger for edge insertion counting
+	// TODO: trigger for edge deletion counting
+
 	return t, nil
 }
 

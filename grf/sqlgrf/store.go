@@ -154,10 +154,10 @@ func (s *store) SetEdge(nt grf.NodeType, e ...grf.EdgeData) error {
 		return err
 	}
 	for _, e := range e {
-		var typeID int64
-
-		// TODO: resolve type ID
-
+		typeID, err := s.edgeTypeID(t.edgeTypes, e.Type)
+		if err != nil {
+			return err
+		}
 		if _, err := s.db.Exec(fmt.Sprintf(`
 			INSERT INTO %s (from_id, type_id, to_id, sequence, data) VALUES (?, ?, ?, ?, ?)
 			ON CONFLICT(from_id, type_id, to_id) DO
@@ -169,9 +169,25 @@ func (s *store) SetEdge(nt grf.NodeType, e ...grf.EdgeData) error {
 	return nil
 }
 
-func (s *store) DeleteEdge(nt grf.NodeType, from grf.LocalID, et grf.EdgeType, to ...grf.ID) error {
+func (s *store) DeleteEdge(
+	nt grf.NodeType, from grf.LocalID, et grf.EdgeType, to ...grf.ID,
+) error {
 
 	// ???
 
 	panic("TODO")
+}
+
+func (s *store) edgeTypeID(table string, et grf.EdgeType) (int64, error) {
+
+	// TODO: caching
+
+	var id int64
+	if err := s.db.QueryRow(fmt.Sprintf(`
+		INSERT OR IGNORE INTO %s (type) VALUES (?)
+		RETURNING id
+	`, table), et).Scan(&id); err != nil {
+		return 0, err
+	}
+	return id, nil
 }
