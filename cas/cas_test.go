@@ -23,7 +23,7 @@ func TestStorage(t *testing.T) {
 		gm   = memgrf.NewMapper()
 		gs   = memgrf.NewStore()
 	)
-	bs, err := localdisk.NewStorage("temp/file")
+	bs, err := localdisk.NewStorage("temp/file", localdisk.UseBuckets(true))
 	assert(t, err)
 
 	g := grf.New(gm, gs)
