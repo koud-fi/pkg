@@ -45,8 +45,8 @@ func (m *mapper) SetMapping(nt grf.NodeType, key string, id grf.ID) error {
 	}
 	_, err = m.db.Exec(fmt.Sprintf(`
 		INSERT INTO %s (key, id) VALUES (?, ?)
-		ON CONFLICT(key) DO UPDATE SET id = ?
-	`, t), key, id, id)
+		ON CONFLICT(key) DO UPDATE SET id = excluded.id
+	`, t), key, id)
 	return err
 }
 
