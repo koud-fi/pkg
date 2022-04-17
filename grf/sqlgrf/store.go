@@ -149,10 +149,24 @@ func (s *store) DeleteNode(nt grf.NodeType, id ...grf.LocalID) error {
 }
 
 func (s *store) SetEdge(nt grf.NodeType, e ...grf.EdgeData) error {
+	t, err := s.tables(nt)
+	if err != nil {
+		return err
+	}
+	for _, e := range e {
+		var typeID int64
 
-	// ???
+		// TODO: resolve type ID
 
-	panic("TODO")
+		if _, err := s.db.Exec(fmt.Sprintf(`
+			INSERT INTO %s (from_id, type_id, to_id, sequence, data) VALUES (?, ?, ?, ?, ?)
+			ON CONFLICT(from_id, type_id, to_id) DO
+				UPDATE SET sequence = excluded.sequence, data = excluded.data
+		`, t.edges), e.From, typeID, e.To, e.Sequence, e.Data); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *store) DeleteEdge(nt grf.NodeType, from grf.LocalID, et grf.EdgeType, to ...grf.ID) error {
