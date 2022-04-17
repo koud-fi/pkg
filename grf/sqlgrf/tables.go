@@ -43,7 +43,7 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
 			id    INTEGER PRIMARY KEY AUTOINCREMENT,
-			type  TEXT    NOT NULL,
+			type  TEXT    NOT NULL UNIQUE,
 			count INTEGER NOT NULL DEFAULT 0
 		)
 	`, t.edgeTypes)); err != nil {
