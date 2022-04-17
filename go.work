@@ -12,7 +12,6 @@ use (
 	./file
 	./grf
 	./pk
-	./protoserver
 	./schema
 	./serve
 	./shell
