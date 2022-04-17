@@ -27,6 +27,9 @@ func Test(t *testing.T, s ...grf.Store) {
 	}
 	t.Log(g.Node(grf.ID(-1)))
 
+	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "test", ns[2].ID(), 1, nil)))
+	assert(t, g.SetEdge(grf.NewEdge(ns[2].ID(), "test", ns[1].ID(), 1, nil)))
+
 	for i, s := range s {
 		t.Logf("shard %d:", i+1)
 		for _, nt := range types {
