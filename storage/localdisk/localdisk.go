@@ -19,9 +19,9 @@ const (
 
 type Option func(*Storage)
 
-func HideFunc(fn func(name string) bool) func(*Storage) { return func(s *Storage) { s.hideFunc = fn } }
-func DirPerm(m os.FileMode) func(*Storage)              { return func(s *Storage) { s.dirPerm = m } }
-func FilePerm(m os.FileMode) func(*Storage)             { return func(s *Storage) { s.filePerm = m } }
+func HideFunc(fn func(name string) bool) Option { return func(s *Storage) { s.hideFunc = fn } }
+func DirPerm(m os.FileMode) Option              { return func(s *Storage) { s.dirPerm = m } }
+func FilePerm(m os.FileMode) Option             { return func(s *Storage) { s.filePerm = m } }
 
 var _ blob.Storage = (*Storage)(nil)
 
