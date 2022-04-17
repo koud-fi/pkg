@@ -15,7 +15,9 @@ type EdgeType string
 func NewEdge(from ID, et EdgeType, to ID, seq int64, v any) Edge {
 	return Edge{
 		from: from,
-		d:    EdgeData{Type: et, To: to, Sequence: seq, Data: marshal(v)},
+		d: EdgeData{
+			From: from.localID(), Type: et, To: to,
+			Sequence: seq, Data: marshal(v)},
 	}
 }
 

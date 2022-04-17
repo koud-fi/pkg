@@ -132,9 +132,20 @@ func (g *Graph) DeleteNode(id ID) error {
 		return err
 	}
 
-	// TODO: support batch delete
+	// TODO: support batching
 
 	return s.DeleteNode(nt, id.localID())
+}
+
+func (g *Graph) SetEdge(e Edge) error {
+	nt, s, err := g.parseID(e.from)
+	if err != nil {
+		return err
+	}
+
+	// TODO: support batching
+
+	return s.SetEdge(nt, e.d)
 }
 
 func (g *Graph) parseID(id ID) (NodeType, Store, error) {
