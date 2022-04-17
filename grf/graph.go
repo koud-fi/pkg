@@ -1,7 +1,6 @@
 package grf
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"sync/atomic"
@@ -147,12 +146,4 @@ func (g *Graph) parseID(id ID) (NodeType, Store, error) {
 		return "", nil, fmt.Errorf("%w: invalid shard ID", ErrNotFound)
 	}
 	return nt, g.shards[int(id.shardID())-1], nil
-}
-
-func marshal(v any) []byte {
-	data, err := json.Marshal(v)
-	if err != nil {
-		panic(err)
-	}
-	return data
 }
