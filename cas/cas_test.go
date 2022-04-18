@@ -30,7 +30,7 @@ func TestStorage(t *testing.T) {
 	g.Register(
 		grf.TypeInfo{
 			Type:     "file",
-			DataType: file.Attributes{},
+			DataType: cas.NodeData{},
 		})
 
 	s := cas.New(bs, g, "file", file.MediaAttrs(), file.Digests(crypto.MD5))

@@ -9,9 +9,13 @@ import (
 
 type Node struct {
 	ID ID `json:"id"`
-	file.Attributes
+	NodeData
 
 	s blob.Storage
+}
+
+type NodeData struct {
+	file.Attributes
 }
 
 func (n Node) File() blob.Blob {

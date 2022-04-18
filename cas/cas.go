@@ -21,11 +21,11 @@ func New(s blob.Storage, g *grf.Graph, nt grf.NodeType, fileOps ...file.Option) 
 }
 
 func (s *Storage) Lookup(id ID) (*Node, error) {
-	attrs, err := s.g.MappedNode(s.nt, id.String(), false).Data()
+	nd, err := s.g.MappedNode(s.nt, id.String(), false).Data()
 	if err != nil {
 		return nil, err
 	}
-	return &Node{ID: id, Attributes: attrs.(file.Attributes), s: s.s}, nil
+	return &Node{ID: id, NodeData: nd.(NodeData), s: s.s}, nil
 }
 
 func (s *Storage) Add(b blob.Blob) (*Node, error) {
@@ -40,7 +40,7 @@ func (s *Storage) Add(b blob.Blob) (*Node, error) {
 		id  = NewIDFromBytes(data)
 		key = id.String()
 	)
-	attrs, err := s.g.MappedNode(s.nt, key, true).Update(func(_ any) (any, error) {
+	nd, err := s.g.MappedNode(s.nt, key, true).Update(func(_ any) (any, error) {
 		if err := s.s.Set(context.Background(), id.Hex(), bytes.NewReader(data)); err != nil {
 			return nil, err
 		}
@@ -49,5 +49,5 @@ func (s *Storage) Add(b blob.Blob) (*Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Node{ID: id, Attributes: attrs.(file.Attributes), s: s.s}, nil
+	return &Node{ID: id, NodeData: nd.(NodeData), s: s.s}, nil
 }
