@@ -10,7 +10,6 @@ var (
 	ErrNotFound        = errors.New("not found")
 	ErrInvalidType     = errors.New("invalid type")
 	ErrInvalidEdgeType = errors.New("invalid edge type")
-	ErrAlreadyExists   = errors.New("already exists")
 )
 
 type Graph struct {
@@ -60,9 +59,14 @@ func (g *Graph) Node(id ID) *Node {
 func (g *Graph) MappedNode(nt NodeType, key string, add bool) *Node {
 	id, err := g.m.Map(nt, key)
 	if err != nil {
-
-		// TODO: implement "add"
-
+		if add && err == ErrNotFound {
+			n, err := g.AddNode(nt, nil)
+			if err != nil {
+				return &Node{err: err}
+			}
+			n.err = g.m.SetMapping(nt, key, n.id)
+			return n
+		}
 		return &Node{err: err}
 	}
 	return g.Node(id)
@@ -94,30 +98,6 @@ func (g *Graph) AddNode(nt NodeType, v any) (*Node, error) {
 		ti: ti,
 	}, nil
 }
-
-/*
-func (g *Graph) AddMappedNode(nt NodeType, key string, v any) (*Node, error) {
-	var n *Node
-	if id, err := g.m.Map(nt, key); err == nil {
-		if n, err = g.Node(id); err != nil {
-			return nil, err
-		}
-		if n.d.Data != nil {
-			return nil, ErrAlreadyExists
-		}
-	} else if err == ErrNotFound {
-		if n, err = g.AddNode(nt, nil); err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, err
-	}
-	if err := g.m.SetMapping(nt, key, n.id); err != nil {
-		return nil, err
-	}
-	return n, g.UpdateNode(n.ID(), v)
-}
-*/
 
 func (g *Graph) UpdateNode(id ID, v any) error {
 	ti, s, err := g.parseID(id)
