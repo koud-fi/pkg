@@ -21,15 +21,11 @@ func New(s blob.Storage, g *grf.Graph, nt grf.NodeType, fileOps ...file.Option) 
 }
 
 func (s *Storage) Lookup(id ID) (*Node, error) {
-	n, err := s.g.MappedNode(s.nt, id.String())
+	attrs, err := s.g.MappedNode(s.nt, id.String(), false).Data()
 	if err != nil {
 		return nil, err
 	}
-	var attrs file.Attributes
-	if err := n.Unmarshal(&attrs); err != nil {
-		return nil, err
-	}
-	return &Node{ID: id, Attributes: attrs, s: s.s}, nil
+	return &Node{ID: id, Attributes: attrs.(file.Attributes), s: s.s}, nil
 }
 
 func (s *Storage) Add(b blob.Blob) (*Node, error) {
@@ -44,25 +40,14 @@ func (s *Storage) Add(b blob.Blob) (*Node, error) {
 		id  = NewIDFromBytes(data)
 		key = id.String()
 	)
-	if n, err := s.g.MappedNode(s.nt, key); err == nil {
-		var attrs file.Attributes
-		if err := n.Unmarshal(&attrs); err != nil {
+	attrs, err := s.g.MappedNode(s.nt, key, true).Update(func(_ any) (any, error) {
+		if err := s.s.Set(context.Background(), id.Hex(), bytes.NewReader(data)); err != nil {
 			return nil, err
 		}
-		return &Node{ID: id, Attributes: attrs, s: s.s}, nil
-
-	} else if err != grf.ErrNotFound {
-		return nil, err
-	}
-	attrs, err := file.ResolveAttrs(blob.FromBytes(data), s.fileOpts...)
+		return file.ResolveAttrs(blob.FromBytes(data), s.fileOpts...)
+	}).Data()
 	if err != nil {
 		return nil, err
 	}
-	if err := s.s.Set(context.Background(), id.Hex(), bytes.NewReader(data)); err != nil {
-		return nil, err
-	}
-	if _, err := s.g.AddMappedNode(s.nt, key, attrs); err != nil {
-		return nil, err
-	}
-	return &Node{ID: id, Attributes: *attrs, s: s.s}, nil
+	return &Node{ID: id, Attributes: attrs.(file.Attributes), s: s.s}, nil
 }
