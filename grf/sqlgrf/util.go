@@ -27,3 +27,10 @@ func scanRows[T any](rows *sql.Rows, out []T, fn func(*sql.Rows, *T) error) ([]T
 	}
 	return out, rows.Close()
 }
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}

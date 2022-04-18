@@ -47,14 +47,14 @@ func (s *store) NodeRange(nt grf.NodeType, after grf.LocalID, limit int) ([]grf.
 	}
 	rows, err := s.db.Query(fmt.Sprintf(`
 		SELECT id, data, ts FROM %s
-		WHERE id > %d
+		WHERE id > ?
 		ORDER BY id ASC
-		LIMIT %d
-	`, t.nodes, after, limit))
+		LIMIT ?
+	`, t.nodes), after, limit)
 	if err != nil {
 		return nil, err
 	}
-	return scanNodes(rows, make([]grf.NodeData, 0, limit))
+	return scanNodes(rows, make([]grf.NodeData, 0, min(limit, 50)))
 }
 
 func scanNodes(rows *sql.Rows, out []grf.NodeData) ([]grf.NodeData, error) {
@@ -95,10 +95,20 @@ func (s *store) EdgeInfo(
 func (s *store) EdgeRange(
 	nt grf.NodeType, from grf.LocalID, et grf.EdgeTypeID, offset, limit int,
 ) ([]grf.EdgeData, error) {
-
-	// ???
-
-	panic("TODO")
+	t, err := s.tables(nt)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := s.db.Query(fmt.Sprintf(`
+		SELECT from_id, type_id, to_id, seq, data FROM %s
+		WHERE from_id = ? AND type_id = ?
+		ORDER BY seq DESC
+		LIMIT ? OFFSET ?
+	`, t.edges), from, et, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return scanEdges(rows, make([]grf.EdgeData, 0, min(limit, 50)))
 }
 
 func scanEdges(rows *sql.Rows, out []grf.EdgeData) ([]grf.EdgeData, error) {
