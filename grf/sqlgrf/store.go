@@ -3,8 +3,6 @@ package sqlgrf
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -31,13 +29,6 @@ func (s *store) Node(nt grf.NodeType, id ...grf.LocalID) ([]grf.NodeData, error)
 	}
 	if len(id) == 0 {
 		return []grf.NodeData{}, nil
-	}
-	var ids strings.Builder
-	for i, id := range id {
-		if i > 0 {
-			ids.WriteByte(',')
-		}
-		ids.WriteString(strconv.FormatInt(int64(id), 10))
 	}
 	rows, err := s.db.Query(fmt.Sprintf(`
 		SELECT id, data, ts FROM %s
@@ -75,10 +66,21 @@ func scanNodes(rows *sql.Rows, out []grf.NodeData) ([]grf.NodeData, error) {
 func (s *store) Edge(
 	nt grf.NodeType, from grf.LocalID, et grf.EdgeTypeID, to ...grf.ID,
 ) ([]grf.EdgeData, error) {
-
-	// ???
-
-	panic("TODO")
+	t, err := s.tables(nt)
+	if err != nil {
+		return nil, err
+	}
+	if len(to) == 0 {
+		return []grf.EdgeData{}, nil
+	}
+	rows, err := s.db.Query(fmt.Sprintf(`
+		SELECT from_id, type_id, to_id, seq, data FROM %s
+		WHERE from_id = ? AND type_id = ? AND to_id IN (%s)
+	`, t.edges, idStr(to)), from, et)
+	if err != nil {
+		return nil, err
+	}
+	return scanEdges(rows, make([]grf.EdgeData, 0, len(to)))
 }
 
 func (s *store) EdgeInfo(
@@ -97,6 +99,12 @@ func (s *store) EdgeRange(
 	// ???
 
 	panic("TODO")
+}
+
+func scanEdges(rows *sql.Rows, out []grf.EdgeData) ([]grf.EdgeData, error) {
+	return scanRows(rows, out, func(rows *sql.Rows, ed *grf.EdgeData) error {
+		return rows.Scan(&ed.From, &ed.TypeID, &ed.To, &ed.Sequence, &ed.Data)
+	})
 }
 
 func (s *store) AddNode(nt grf.NodeType, data []byte) (grf.LocalID, time.Time, error) {
