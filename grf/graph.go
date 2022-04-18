@@ -7,9 +7,10 @@ import (
 )
 
 var (
-	ErrNotFound      = errors.New("not found")
-	ErrInvalidType   = errors.New("invalid type")
-	ErrAlreadyExists = errors.New("already exists")
+	ErrNotFound        = errors.New("not found")
+	ErrInvalidType     = errors.New("invalid type")
+	ErrInvalidEdgeType = errors.New("invalid edge type")
+	ErrAlreadyExists   = errors.New("already exists")
 )
 
 type Graph struct {
@@ -37,11 +38,11 @@ func (g *Graph) Register(ti ...TypeInfo) {
 }
 
 func (g *Graph) Node(id ID) (*Node, error) {
-	nt, s, err := g.parseID(id)
+	ti, s, err := g.parseID(id)
 	if err != nil {
 		return nil, err
 	}
-	ns, err := s.Node(nt, id.localID())
+	ns, err := s.Node(ti.Type, id.localID())
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +51,7 @@ func (g *Graph) Node(id ID) (*Node, error) {
 	}
 	return &Node{
 		id: id,
-		t:  nt,
+		t:  ti.Type,
 		d:  ns[0],
 	}, nil
 }
@@ -112,42 +113,47 @@ func (g *Graph) AddMappedNode(nt NodeType, key string, v any) (*Node, error) {
 }
 
 func (g *Graph) UpdateNode(id ID, v any) error {
-	nt, s, err := g.parseID(id)
+	ti, s, err := g.parseID(id)
 	if err != nil {
 		return err
 	}
-	return s.UpdateNode(nt, id.localID(), marshal(v))
+	return s.UpdateNode(ti.Type, id.localID(), marshal(v))
 }
 
 func (g *Graph) DeleteNode(id ID) error {
-	nt, s, err := g.parseID(id)
+	ti, s, err := g.parseID(id)
 	if err != nil {
 		return err
 	}
 
 	// TODO: support batching
 
-	return s.DeleteNode(nt, id.localID())
+	return s.DeleteNode(ti.Type, id.localID())
 }
 
 func (g *Graph) SetEdge(e Edge) error {
-	nt, s, err := g.parseID(e.from)
+	ti, s, err := g.parseID(e.from)
 	if err != nil {
 		return err
+	}
+	if etID, ok := ti.edgeTypeMap[e.t]; ok {
+		e.d.TypeID = etID
+	} else {
+		return ErrInvalidEdgeType
 	}
 
 	// TODO: support batching
 
-	return s.SetEdge(nt, e.d)
+	return s.SetEdge(ti.Type, e.d)
 }
 
-func (g *Graph) parseID(id ID) (NodeType, Store, error) {
+func (g *Graph) parseID(id ID) (TypeInfo, Store, error) {
 	ti, ok := g.typeInfo(id.typeID())
 	if !ok {
-		return "", nil, ErrInvalidType
+		return TypeInfo{}, nil, ErrInvalidType
 	}
 	if id < 1 || int(id.shardID()) > len(g.shards) {
-		return "", nil, fmt.Errorf("%w: invalid shard ID", ErrNotFound)
+		return TypeInfo{}, nil, fmt.Errorf("%w: invalid shard ID", ErrNotFound)
 	}
-	return ti.Type, g.shards[int(id.shardID())-1], nil
+	return ti, g.shards[int(id.shardID())-1], nil
 }
