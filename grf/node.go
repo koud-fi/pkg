@@ -20,15 +20,20 @@ type NodeType string
 func (n Node) ID() ID         { return n.id }
 func (n Node) Type() NodeType { return n.ti.Type }
 
-func (n Node) Data() (any, error) {
+func (n Node) Data() (v any, err error) {
 	if n.err != nil {
 		return nil, n.err
 	}
-	var v any
 	if n.ti.dataType != nil {
-		v = reflect.New(n.ti.dataType).Elem().Interface()
+		p := reflect.New(n.ti.dataType)
+		if n.d.Data != nil {
+			err = json.Unmarshal(n.d.Data, p.Interface())
+		}
+		v = p.Elem().Interface()
+	} else if n.d.Data != nil {
+		err = json.Unmarshal(n.d.Data, &v)
 	}
-	return v, json.Unmarshal(n.d.Data, &v)
+	return
 }
 
 func (n Node) Timestamp() time.Time { return n.d.Timestamp }
