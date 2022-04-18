@@ -11,8 +11,20 @@ var types = []grf.NodeType{"type1", "type2"}
 
 func Test(t *testing.T, s ...grf.Store) {
 	g := grf.New(nil, s...)
-	g.Register(types[0], 1)
-	g.Register(types[1], 2)
+	g.Register(
+		grf.TypeInfo{
+			Type: types[0],
+			Edges: []grf.EdgeTypeInfo{
+				{Type: "type1"},
+				{Type: "type2"},
+			},
+		},
+		grf.TypeInfo{
+			Type: types[1],
+			Edges: []grf.EdgeTypeInfo{
+				{Type: "type1"},
+			},
+		})
 
 	ns := []*grf.Node{
 		assert1[*grf.Node](t)(g.AddNode(types[0], "Hello,")),

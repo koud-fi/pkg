@@ -16,8 +16,7 @@ type Graph struct {
 	m       Mapper
 	shards  []Store
 	counter int64
-	types   map[typeID]NodeType
-	typeIDs map[NodeType]typeID
+	schema
 }
 
 func New(m Mapper, s ...Store) *Graph {
@@ -25,22 +24,16 @@ func New(m Mapper, s ...Store) *Graph {
 		panic("no stores")
 	}
 	return &Graph{
-		m:       m,
-		shards:  s,
-		types:   make(map[typeID]NodeType),
-		typeIDs: make(map[NodeType]typeID),
+		m:      m,
+		shards: s,
+		schema: schema{typeMap: make(map[NodeType]typeID)},
 	}
 }
 
-func (g *Graph) Register(nt NodeType, id typeID) {
-	if nt == "" || id < 1 {
-		panic("invalid type/ID") // TODO: better type validation
+func (g *Graph) Register(ti ...TypeInfo) {
+	for _, ti := range ti {
+		g.register(ti)
 	}
-
-	// TODO: prevent duplicate types/ids
-
-	g.types[id] = nt
-	g.typeIDs[nt] = id
 }
 
 func (g *Graph) Node(id ID) (*Node, error) {
@@ -71,8 +64,8 @@ func (g *Graph) MappedNode(nt NodeType, key string) (*Node, error) {
 }
 
 func (g *Graph) AddNode(nt NodeType, v any) (*Node, error) {
-	typeID, ok := g.typeIDs[nt]
-	if !ok {
+	typeID := g.typeMap[nt]
+	if _, ok := g.typeInfo(typeID); !ok {
 		return nil, ErrInvalidType
 	}
 	var (
@@ -149,12 +142,12 @@ func (g *Graph) SetEdge(e Edge) error {
 }
 
 func (g *Graph) parseID(id ID) (NodeType, Store, error) {
-	nt, ok := g.types[id.typeID()]
+	ti, ok := g.typeInfo(id.typeID())
 	if !ok {
 		return "", nil, ErrInvalidType
 	}
 	if id < 1 || int(id.shardID()) > len(g.shards) {
 		return "", nil, fmt.Errorf("%w: invalid shard ID", ErrNotFound)
 	}
-	return nt, g.shards[int(id.shardID())-1], nil
+	return ti.Type, g.shards[int(id.shardID())-1], nil
 }
