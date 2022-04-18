@@ -119,8 +119,8 @@ func (s *store) UpdateNode(nt grf.NodeType, id grf.LocalID, data []byte) error {
 		return err
 	}
 	res, err := s.db.Exec(fmt.Sprintf(`
-		UPDATE %s SET data = ?
-	`, t.nodes), data)
+		UPDATE %s SET data = ? WHERE id = ?
+	`, t.nodes), data, id)
 	if err != nil {
 		return err
 	}
