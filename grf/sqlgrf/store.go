@@ -14,12 +14,14 @@ import (
 type store struct {
 	db *sql.DB
 
-	tablesMu  sync.Mutex
-	tablesMap map[grf.NodeType]tables
+	tablesMu    sync.Mutex
+	tablesMap   map[grf.NodeType]tables
+	edgeTypeMu  sync.Mutex
+	edgeTypeMap map[[2]string]int64
 }
 
 func NewStore(db *sql.DB) grf.Store {
-	return &store{db: db}
+	return &store{db: db, edgeTypeMap: make(map[[2]string]int64)}
 }
 
 func (s *store) Node(nt grf.NodeType, id ...grf.LocalID) ([]grf.NodeData, error) {
@@ -179,15 +181,29 @@ func (s *store) DeleteEdge(
 }
 
 func (s *store) edgeTypeID(table string, et grf.EdgeType) (int64, error) {
+	s.edgeTypeMu.Lock()
+	defer s.edgeTypeMu.Unlock()
 
-	// TODO: caching
-
+	key := [2]string{table, string(et)}
+	if id, ok := s.edgeTypeMap[key]; ok {
+		return id, nil
+	}
 	var id int64
 	if err := s.db.QueryRow(fmt.Sprintf(`
-		INSERT OR IGNORE INTO %s (type) VALUES (?)
-		RETURNING id
+		SELECT id FROM %s WHERE type = ?
 	`, table), et).Scan(&id); err != nil {
-		return 0, err
+		if err != sql.ErrNoRows {
+			return 0, err
+		}
+		res, err := s.db.Exec(fmt.Sprintf(`INSERT INTO %s (type) VALUES (?)`, table), et)
+		if err != nil {
+			return 0, err
+		}
+		if id, err = res.LastInsertId(); err != nil {
+			return 0, err
+		}
 	}
+	s.edgeTypeMap[key] = id
 	return id, nil
+
 }

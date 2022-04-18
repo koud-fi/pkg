@@ -32,10 +32,11 @@ func Test(t *testing.T, s ...grf.Store) {
 
 	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[2].ID(), 1, nil)))
 	assert(t, g.SetEdge(grf.NewEdge(ns[2].ID(), "type1", ns[1].ID(), 1, nil)))
-	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[2].ID(), 1, nil)))
-	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[3].ID(), 1, nil)))
-	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[4].ID(), 1, nil)))
-	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[5].ID(), 1, nil)))
+	assert(t, g.SetEdge(grf.NewEdge(ns[5].ID(), "type1", ns[1].ID(), 1, nil)))
+	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[2].ID(), 2, nil)))
+	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[3].ID(), 3, nil)))
+	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[4].ID(), 4, nil)))
+	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[5].ID(), 5, nil)))
 	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type2", ns[5].ID(), 1, nil)))
 
 	for i, s := range s {
