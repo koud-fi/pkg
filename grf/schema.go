@@ -10,6 +10,8 @@ type schema struct {
 type TypeInfo struct {
 	Type  NodeType
 	Edges []EdgeTypeInfo
+
+	edgeTypeMap map[EdgeType]EdgeTypeID
 }
 
 type EdgeTypeInfo struct {
@@ -20,11 +22,15 @@ func (s *schema) register(ti TypeInfo) {
 	if _, ok := s.typeMap[ti.Type]; ok {
 		panic(fmt.Sprintf("duplicate type: %s", ti.Type))
 	}
+	ti.edgeTypeMap = make(map[EdgeType]EdgeTypeID, len(ti.Edges))
+	for i, e := range ti.Edges {
+		if _, ok := ti.edgeTypeMap[e.Type]; ok {
+			panic(fmt.Sprintf("duplicate edge type: %s on type: %s", e.Type, ti.Type))
+		}
+		ti.edgeTypeMap[e.Type] = EdgeTypeID(i + 1)
+	}
 	s.types = append(s.types, ti)
 	s.typeMap[ti.Type] = typeID(len(s.types))
-
-	// TODO: handle edges
-
 }
 
 func (s schema) typeInfo(id typeID) (TypeInfo, bool) {
