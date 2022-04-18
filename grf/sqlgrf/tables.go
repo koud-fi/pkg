@@ -64,9 +64,9 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 			from_id     INTEGER  NOT NULL,
 			type_id     INTEGER  NOT NULL,
 			count       INTEGER  NOT NULL DEFAULT 0,
-			last_update DATETIME NOT NULL DEFAULT NOW(),
+			last_update DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-			PRIMARY KEY (from_id, type_id)
+			PRIMARY KEY(from_id, type_id),
 			FOREIGN KEY(from_id) REFERENCES %s(id) ON DELETE CASCADE
 		)
 	`, t.edgeInfos, t.nodes)); err != nil {
@@ -77,7 +77,7 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 		BEGIN
 			INSERT INTO %s (from_id, type_id, count) VALUES (NEW.from_id, NEW.type_id, 1)
 			ON CONFLICT(from_id, type_id) DO
-				UPDATE SET count = count + 1, last_update = NOW();
+				UPDATE SET count = count + 1, last_update = CURRENT_TIMESTAMP;
 		END
 	`, t.edges, t.edges, t.edgeInfos)); err != nil {
 		return tables{}, fmt.Errorf("failed to create %s insert trigger: %w", t.edges, err)
@@ -85,8 +85,8 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TRIGGER IF NOT EXISTS %s_update AFTER UPDATE ON %s 
 		BEGIN
-			UPDATE %s SET last_update = NOW();
-			WHERE from_id = NEW.from_id AND type_id = NEW.type_id
+			UPDATE %s SET last_update = CURRENT_TIMESTAMP
+			WHERE from_id = NEW.from_id AND type_id = NEW.type_id;
 		END
 	`, t.edges, t.edges, t.edgeInfos)); err != nil {
 		return tables{}, fmt.Errorf("failed to create %s update trigger: %w", t.edges, err)
@@ -94,8 +94,8 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TRIGGER IF NOT EXISTS %s_insert AFTER DELETE ON %s 
 		BEGIN
-			UPDATE %s SET count = count - 1, last_update = NOW();
-			WHERE from_id = OLD.from_id AND type_id = OLD.type_id
+			UPDATE %s SET count = count - 1, last_update = CURRENT_TIMESTAMP
+			WHERE from_id = OLD.from_id AND type_id = OLD.type_id;
 		END
 	`, t.edges, t.edges, t.edgeInfos)); err != nil {
 		return tables{}, fmt.Errorf("failed to create %s delete trigger: %w", t.edges, err)
