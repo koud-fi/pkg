@@ -7,18 +7,16 @@ import (
 )
 
 const (
-	nodeTableSuffix      = "_node"
-	edgeTypeTableSuffix  = "_edgetype"
-	edgeTableSuffix      = "_edge"
-	edgeCountTableSuffix = "_edgecount"
-	keymapTableSuffix    = "_keymap"
+	nodeTableSuffix     = "_node"
+	edgeTableSuffix     = "_edge"
+	edgeInfoTableSuffix = "_edgeinfo"
+	keymapTableSuffix   = "_keymap"
 )
 
 type tables struct {
-	nodes      string
-	edgeTypes  string
-	edges      string
-	edgeCounts string
+	nodes     string
+	edges     string
+	edgeInfos string
 }
 
 func (s *store) tables(nt grf.NodeType) (tables, error) {
@@ -29,10 +27,9 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 		return t, nil
 	}
 	t := tables{
-		nodes:      string(nt) + nodeTableSuffix,
-		edgeTypes:  string(nt) + edgeTypeTableSuffix,
-		edges:      string(nt) + edgeTableSuffix,
-		edgeCounts: string(nt) + edgeCountTableSuffix,
+		nodes:     string(nt) + nodeTableSuffix,
+		edges:     string(nt) + edgeTableSuffix,
+		edgeInfos: string(nt) + edgeInfoTableSuffix,
 	}
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
@@ -45,25 +42,16 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 	}
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
-			id    INTEGER PRIMARY KEY AUTOINCREMENT,
-			type  TEXT    NOT NULL UNIQUE
-		)
-	`, t.edgeTypes)); err != nil {
-		return tables{}, fmt.Errorf("failed to create %s table: %w", t.edgeTypes, err)
-	}
-	if _, err := s.db.Exec(fmt.Sprintf(`
-		CREATE TABLE IF NOT EXISTS %s (
 			from_id  INTEGER NOT NULL,
 			type_id  INTEGER NOT NULL,
 			to_id    INTEGER NOT NULL,
 			sequence INTEGER NOT NULL,
-			data     BLOB NULL,
+			data     BLOB    NULL,
 
 			PRIMARY KEY(from_id, type_id, to_id),
-			FOREIGN KEY(from_id) REFERENCES %s(id) ON DELETE CASCADE,
-			FOREIGN KEY(type_id) REFERENCES %s(id) ON DELETE RESTRICT
+			FOREIGN KEY(from_id) REFERENCES %s(id) ON DELETE CASCADE
 		)
-	`, t.edges, t.nodes, t.edgeTypes)); err != nil {
+	`, t.edges, t.nodes)); err != nil {
 		return tables{}, fmt.Errorf("failed to create %s table: %w", t.edges, err)
 	}
 	if _, err := s.db.Exec(fmt.Sprintf(`
@@ -73,34 +61,43 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 	}
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
-			from_id INTEGER NOT NULL,
-			type_id INTEGER NOT NULL,
-			count INTEGER NOT NULL DEFAULT 0,
+			from_id     INTEGER  NOT NULL,
+			type_id     INTEGER  NOT NULL,
+			count       INTEGER  NOT NULL DEFAULT 0,
+			last_update DATETIME NOT NULL DEFAULT NOW(),
 
 			PRIMARY KEY (from_id, type_id)
-			FOREIGN KEY(from_id) REFERENCES %s(id) ON DELETE CASCADE,
-			FOREIGN KEY(type_id) REFERENCES %s(id) ON DELETE RESTRICT
+			FOREIGN KEY(from_id) REFERENCES %s(id) ON DELETE CASCADE
 		)
-	`, t.edgeCounts, t.nodes, t.edgeTypes)); err != nil {
-		return tables{}, fmt.Errorf("failed to create %s table: %w", t.edgeCounts, err)
+	`, t.edgeInfos, t.nodes)); err != nil {
+		return tables{}, fmt.Errorf("failed to create %s table: %w", t.edgeInfos, err)
 	}
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TRIGGER IF NOT EXISTS %s_insert AFTER INSERT ON %s 
 		BEGIN
 			INSERT INTO %s (from_id, type_id, count) VALUES (NEW.from_id, NEW.type_id, 1)
 			ON CONFLICT(from_id, type_id) DO
-				UPDATE SET count = count + 1;
+				UPDATE SET count = count + 1, last_update = NOW();
 		END
-	`, t.edges, t.edges, t.edgeCounts)); err != nil {
+	`, t.edges, t.edges, t.edgeInfos)); err != nil {
 		return tables{}, fmt.Errorf("failed to create %s insert trigger: %w", t.edges, err)
+	}
+	if _, err := s.db.Exec(fmt.Sprintf(`
+		CREATE TRIGGER IF NOT EXISTS %s_update AFTER UPDATE ON %s 
+		BEGIN
+			UPDATE %s SET last_update = NOW();
+			WHERE from_id = NEW.from_id AND type_id = NEW.type_id
+		END
+	`, t.edges, t.edges, t.edgeInfos)); err != nil {
+		return tables{}, fmt.Errorf("failed to create %s update trigger: %w", t.edges, err)
 	}
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TRIGGER IF NOT EXISTS %s_insert AFTER DELETE ON %s 
 		BEGIN
-			UPDATE %s SET count = count - 1;
+			UPDATE %s SET count = count - 1, last_update = NOW();
 			WHERE from_id = OLD.from_id AND type_id = OLD.type_id
 		END
-	`, t.edges, t.edges, t.edgeCounts)); err != nil {
+	`, t.edges, t.edges, t.edgeInfos)); err != nil {
 		return tables{}, fmt.Errorf("failed to create %s delete trigger: %w", t.edges, err)
 	}
 	return t, nil

@@ -81,9 +81,9 @@ func (s *store) Edge(
 	panic("TODO")
 }
 
-func (s *store) EdgeCount(
+func (s *store) EdgeInfo(
 	nt grf.NodeType, from grf.LocalID, et ...grf.EdgeType,
-) (map[grf.EdgeType]int, error) {
+) (map[grf.EdgeType]grf.EdgeInfo, error) {
 
 	// ???
 
@@ -156,15 +156,11 @@ func (s *store) SetEdge(nt grf.NodeType, e ...grf.EdgeData) error {
 		return err
 	}
 	for _, e := range e {
-		typeID, err := s.edgeTypeID(t.edgeTypes, e.Type)
-		if err != nil {
-			return err
-		}
 		if _, err := s.db.Exec(fmt.Sprintf(`
 			INSERT INTO %s (from_id, type_id, to_id, sequence, data) VALUES (?, ?, ?, ?, ?)
 			ON CONFLICT(from_id, type_id, to_id) DO
 				UPDATE SET sequence = excluded.sequence, data = excluded.data
-		`, t.edges), e.From, typeID, e.To, e.Sequence, e.Data); err != nil {
+		`, t.edges), e.From, e.TypeID, e.To, e.Sequence, e.Data); err != nil {
 			return err
 		}
 	}
@@ -178,32 +174,4 @@ func (s *store) DeleteEdge(
 	// ???
 
 	panic("TODO")
-}
-
-func (s *store) edgeTypeID(table string, et grf.EdgeType) (int64, error) {
-	s.edgeTypeMu.Lock()
-	defer s.edgeTypeMu.Unlock()
-
-	key := [2]string{table, string(et)}
-	if id, ok := s.edgeTypeMap[key]; ok {
-		return id, nil
-	}
-	var id int64
-	if err := s.db.QueryRow(fmt.Sprintf(`
-		SELECT id FROM %s WHERE type = ?
-	`, table), et).Scan(&id); err != nil {
-		if err != sql.ErrNoRows {
-			return 0, err
-		}
-		res, err := s.db.Exec(fmt.Sprintf(`INSERT INTO %s (type) VALUES (?)`, table), et)
-		if err != nil {
-			return 0, err
-		}
-		if id, err = res.LastInsertId(); err != nil {
-			return 0, err
-		}
-	}
-	s.edgeTypeMap[key] = id
-	return id, nil
-
 }

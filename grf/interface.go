@@ -11,11 +11,18 @@ type NodeData struct {
 type LocalID int32
 
 type EdgeData struct {
-	From     LocalID  `json:"from"`
-	Type     EdgeType `json:"type"`
-	To       ID       `json:"to"`
-	Sequence int64    `json:"seq,omitempty"`
-	Data     []byte   `json:"data,omitempty"`
+	From     LocalID    `json:"from"`
+	TypeID   EdgeTypeID `json:"typeId"`
+	To       ID         `json:"to"`
+	Sequence int64      `json:"seq,omitempty"`
+	Data     []byte     `json:"data,omitempty"`
+}
+
+type EdgeTypeID int32
+
+type EdgeInfo struct {
+	Count      int       `json:"count"`
+	LastUpdate time.Time `json:"lastUpdate"`
 }
 
 type Store interface {
@@ -23,7 +30,7 @@ type Store interface {
 	NodeRange(nt NodeType, after LocalID, limit int) ([]NodeData, error)
 
 	Edge(nt NodeType, from LocalID, et EdgeType, to ...ID) ([]EdgeData, error)
-	EdgeCount(nt NodeType, from LocalID, et ...EdgeType) (map[EdgeType]int, error)
+	EdgeInfo(nt NodeType, from LocalID, et ...EdgeType) (map[EdgeType]EdgeInfo, error)
 	EdgeRange(nt NodeType, from LocalID, et EdgeType, offset, limit int) ([]EdgeData, error)
 	// TODO: sequence based edge range method
 

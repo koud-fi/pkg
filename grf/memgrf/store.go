@@ -78,9 +78,9 @@ func (s *store) Edge(
 	panic("TODO")
 }
 
-func (s *store) EdgeCount(
+func (s *store) EdgeInfo(
 	nt grf.NodeType, from grf.LocalID, et ...grf.EdgeType,
-) (map[grf.EdgeType]int, error) {
+) (map[grf.EdgeType]grf.EdgeInfo, error) {
 	defer s.rlock()()
 
 	// ???
