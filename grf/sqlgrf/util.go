@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func idStr[T ~int32](id []T) string {
+func idStr[T ~int32 | ~int64](id []T) string {
 	var ids strings.Builder
 	for i, id := range id {
 		if i > 0 {

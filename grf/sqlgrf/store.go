@@ -170,8 +170,16 @@ func (s *store) SetEdge(nt grf.NodeType, e ...grf.EdgeData) error {
 func (s *store) DeleteEdge(
 	nt grf.NodeType, from grf.LocalID, et grf.EdgeTypeID, to ...grf.ID,
 ) error {
-
-	// ???
-
-	panic("TODO")
+	t, err := s.tables(nt)
+	if err != nil {
+		return err
+	}
+	if len(to) == 0 {
+		return nil
+	}
+	_, err = s.db.Exec(fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE from_id = ? AND type_id = ? AND to_id IN (%s)
+	`, t.edges, idStr(to)), from, et)
+	return err
 }
