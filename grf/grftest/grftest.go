@@ -37,7 +37,7 @@ func Test(t *testing.T, s ...grf.Store) {
 		assert1[*grf.Node](t)(g.AddNode(types[1], []int{42, 69})),
 	}
 	assert(t, g.DeleteNode(ns[0].ID()))
-	assert(t, g.UpdateNode(ns[1].ID(), "World?"))
+	assert(t, g.Node(ns[1].ID()).Update(func(_ any) (any, error) { return "World?", nil }))
 
 	for _, n := range ns {
 		t.Log(g.Node(n.ID()).Data())

@@ -8,6 +8,7 @@ import (
 )
 
 type Node struct {
+	s   Store
 	id  ID
 	d   NodeData
 	ti  TypeInfo
@@ -35,4 +36,19 @@ func (n Node) Timestamp() time.Time { return n.d.Timestamp }
 func (n Node) String() string {
 	ts := n.d.Timestamp.UTC().Format(time.RFC3339Nano)
 	return fmt.Sprintf("%d(%s)(%v) %s", n.id, n.ti.Type, ts, string(n.d.Data))
+}
+
+func (n *Node) Update(fn func(v any) (any, error)) error {
+	if n.err != nil {
+		return n.err
+	}
+	v, err := n.Data()
+	if err != nil {
+		return err
+	}
+	if v, err = fn(v); err != nil {
+		return err
+	}
+	n.d.Data = marshal(v)
+	return n.s.UpdateNode(n.ti.Type, n.d.ID, n.d.Data)
 }

@@ -37,15 +37,12 @@ func (g *Graph) Register(ti ...TypeInfo) {
 }
 
 func (g *Graph) Node(id ID) *Node {
-	var (
-		n = Node{id: id}
-		s Store
-	)
-	if n.ti, s, n.err = g.parseID(id); n.err != nil {
+	n := Node{id: id}
+	if n.ti, n.s, n.err = g.parseID(id); n.err != nil {
 		return &n
 	}
 	var ns []NodeData
-	if ns, n.err = s.Node(n.ti.Type, id.localID()); n.err != nil {
+	if ns, n.err = n.s.Node(n.ti.Type, id.localID()); n.err != nil {
 		return &n
 	}
 	if len(ns) == 0 {
@@ -78,9 +75,6 @@ func (g *Graph) AddNode(nt NodeType, v any) (*Node, error) {
 	if !ok {
 		return nil, ErrInvalidType
 	}
-
-	// TODO: validate v against typeInfo.dataType
-
 	var (
 		data     = marshal(v)
 		shardNum = int(atomic.AddInt64(&g.counter, 1) % int64(len(g.shards)))
@@ -92,6 +86,7 @@ func (g *Graph) AddNode(nt NodeType, v any) (*Node, error) {
 		return nil, err
 	}
 	return &Node{
+		s:  shard,
 		id: newID(shardID, typeID, localID),
 		d: NodeData{
 			ID:        localID,
@@ -100,14 +95,6 @@ func (g *Graph) AddNode(nt NodeType, v any) (*Node, error) {
 		},
 		ti: ti,
 	}, nil
-}
-
-func (g *Graph) UpdateNode(id ID, v any) error {
-	ti, s, err := g.parseID(id)
-	if err != nil {
-		return err
-	}
-	return s.UpdateNode(ti.Type, id.localID(), marshal(v))
 }
 
 func (g *Graph) DeleteNode(id ID) error {
