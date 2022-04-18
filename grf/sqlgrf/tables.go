@@ -94,15 +94,15 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 	`, t.edges, t.edges, t.edgeCounts)); err != nil {
 		return tables{}, fmt.Errorf("failed to create %s insert trigger: %w", t.edges, err)
 	}
-
-	/*
-		INSERT INTO %s (from_id, type_id, to_id, sequence, data) VALUES (?, ?, ?, ?, ?)
-		ON CONFLICT(from_id, type_id, to_id) DO
-			UPDATE SET sequence = excluded.sequence, data = excluded.data
-	*/
-
-	// TODO: trigger for edge deletion counting
-
+	if _, err := s.db.Exec(fmt.Sprintf(`
+		CREATE TRIGGER IF NOT EXISTS %s_insert AFTER DELETE ON %s 
+		BEGIN
+			UPDATE %s SET count = count - 1;
+			WHERE from_id = OLD.from_id AND type_id = OLD.type_id
+		END
+	`, t.edges, t.edges, t.edgeCounts)); err != nil {
+		return tables{}, fmt.Errorf("failed to create %s delete trigger: %w", t.edges, err)
+	}
 	return t, nil
 }
 
