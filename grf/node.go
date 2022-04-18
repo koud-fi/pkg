@@ -38,17 +38,17 @@ func (n Node) String() string {
 	return fmt.Sprintf("%d(%s)(%v) %s", n.id, n.ti.Type, ts, string(n.d.Data))
 }
 
-func (n *Node) Update(fn func(v any) (any, error)) error {
+func (n *Node) Update(fn func(v any) (any, error)) (*Node, error) {
 	if n.err != nil {
-		return n.err
+		return nil, n.err
 	}
 	v, err := n.Data()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if v, err = fn(v); err != nil {
-		return err
+		return nil, err
 	}
 	n.d.Data = marshal(v)
-	return n.s.UpdateNode(n.ti.Type, n.d.ID, n.d.Data)
+	return n, n.s.UpdateNode(n.ti.Type, n.d.ID, n.d.Data)
 }
