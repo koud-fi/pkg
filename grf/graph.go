@@ -78,6 +78,9 @@ func (g *Graph) AddNode(nt NodeType, v any) (*Node, error) {
 	if !ok {
 		return nil, ErrInvalidType
 	}
+
+	// TODO: validate v against typeInfo.dataType
+
 	var (
 		data     = marshal(v)
 		shardNum = int(atomic.AddInt64(&g.counter, 1) % int64(len(g.shards)))
