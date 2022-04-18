@@ -29,9 +29,9 @@ type Store interface {
 	Node(nt NodeType, id ...LocalID) ([]NodeData, error)
 	NodeRange(nt NodeType, after LocalID, limit int) ([]NodeData, error)
 
-	Edge(nt NodeType, from LocalID, et EdgeType, to ...ID) ([]EdgeData, error)
-	EdgeInfo(nt NodeType, from LocalID, et ...EdgeType) (map[EdgeType]EdgeInfo, error)
-	EdgeRange(nt NodeType, from LocalID, et EdgeType, offset, limit int) ([]EdgeData, error)
+	Edge(nt NodeType, from LocalID, et EdgeTypeID, to ...ID) ([]EdgeData, error)
+	EdgeInfo(nt NodeType, from LocalID, et ...EdgeTypeID) (map[EdgeTypeID]EdgeInfo, error)
+	EdgeRange(nt NodeType, from LocalID, et EdgeTypeID, offset, limit int) ([]EdgeData, error)
 	// TODO: sequence based edge range method
 
 	AddNode(nt NodeType, data []byte) (LocalID, time.Time, error)
@@ -40,7 +40,7 @@ type Store interface {
 
 	SetEdge(nt NodeType, e ...EdgeData) error
 	// TODO: edge type changing method
-	DeleteEdge(nt NodeType, from LocalID, et EdgeType, to ...ID) error
+	DeleteEdge(nt NodeType, from LocalID, et EdgeTypeID, to ...ID) error
 }
 
 type Mapper interface {

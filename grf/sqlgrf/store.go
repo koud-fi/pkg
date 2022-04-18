@@ -73,7 +73,7 @@ func scanNodes(rows *sql.Rows, out []grf.NodeData) ([]grf.NodeData, error) {
 }
 
 func (s *store) Edge(
-	nt grf.NodeType, from grf.LocalID, et grf.EdgeType, to ...grf.ID,
+	nt grf.NodeType, from grf.LocalID, et grf.EdgeTypeID, to ...grf.ID,
 ) ([]grf.EdgeData, error) {
 
 	// ???
@@ -82,8 +82,8 @@ func (s *store) Edge(
 }
 
 func (s *store) EdgeInfo(
-	nt grf.NodeType, from grf.LocalID, et ...grf.EdgeType,
-) (map[grf.EdgeType]grf.EdgeInfo, error) {
+	nt grf.NodeType, from grf.LocalID, et ...grf.EdgeTypeID,
+) (map[grf.EdgeTypeID]grf.EdgeInfo, error) {
 
 	// ???
 
@@ -91,7 +91,7 @@ func (s *store) EdgeInfo(
 }
 
 func (s *store) EdgeRange(
-	nt grf.NodeType, from grf.LocalID, et grf.EdgeType, offset, limit int,
+	nt grf.NodeType, from grf.LocalID, et grf.EdgeTypeID, offset, limit int,
 ) ([]grf.EdgeData, error) {
 
 	// ???
@@ -168,7 +168,7 @@ func (s *store) SetEdge(nt grf.NodeType, e ...grf.EdgeData) error {
 }
 
 func (s *store) DeleteEdge(
-	nt grf.NodeType, from grf.LocalID, et grf.EdgeType, to ...grf.ID,
+	nt grf.NodeType, from grf.LocalID, et grf.EdgeTypeID, to ...grf.ID,
 ) error {
 
 	// ???
