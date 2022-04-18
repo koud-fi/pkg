@@ -1,6 +1,9 @@
 package grf
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 type schema struct {
 	types   []TypeInfo
@@ -8,19 +11,25 @@ type schema struct {
 }
 
 type TypeInfo struct {
-	Type  NodeType
-	Edges []EdgeTypeInfo
+	Type     NodeType
+	DataType any
+	Edges    []EdgeTypeInfo
 
+	dataType    reflect.Type
 	edgeTypeMap map[EdgeType]EdgeTypeID
 }
 
 type EdgeTypeInfo struct {
 	Type EdgeType
+	// TODO: data type
 }
 
 func (s *schema) register(ti TypeInfo) {
 	if _, ok := s.typeMap[ti.Type]; ok {
 		panic(fmt.Sprintf("duplicate type: %s", ti.Type))
+	}
+	if ti.DataType != nil {
+		ti.dataType = reflect.TypeOf(ti.DataType)
 	}
 	ti.edgeTypeMap = make(map[EdgeType]EdgeTypeID, len(ti.Edges))
 	for i, e := range ti.Edges {

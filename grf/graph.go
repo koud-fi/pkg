@@ -37,36 +37,41 @@ func (g *Graph) Register(ti ...TypeInfo) {
 	}
 }
 
-func (g *Graph) Node(id ID) (*Node, error) {
-	ti, s, err := g.parseID(id)
-	if err != nil {
-		return nil, err
+func (g *Graph) Node(id ID) *Node {
+	var (
+		n = Node{id: id}
+		s Store
+	)
+	if n.ti, s, n.err = g.parseID(id); n.err != nil {
+		return &n
 	}
-	ns, err := s.Node(ti.Type, id.localID())
-	if err != nil {
-		return nil, err
+	var ns []NodeData
+	if ns, n.err = s.Node(n.ti.Type, id.localID()); n.err != nil {
+		return &n
 	}
 	if len(ns) == 0 {
-		return nil, fmt.Errorf("%w: %d", ErrNotFound, id)
+		n.err = fmt.Errorf("%w: %d", ErrNotFound, id)
+		return &n
 	}
-	return &Node{
-		id: id,
-		t:  ti.Type,
-		d:  ns[0],
-	}, nil
+	n.d = ns[0]
+	return &n
 }
 
-func (g *Graph) MappedNode(nt NodeType, key string) (*Node, error) {
+func (g *Graph) MappedNode(nt NodeType, key string, add bool) *Node {
 	id, err := g.m.Map(nt, key)
 	if err != nil {
-		return nil, err
+
+		// TODO: implement "add"
+
+		return &Node{err: err}
 	}
 	return g.Node(id)
 }
 
 func (g *Graph) AddNode(nt NodeType, v any) (*Node, error) {
 	typeID := g.typeMap[nt]
-	if _, ok := g.typeInfo(typeID); !ok {
+	ti, ok := g.typeInfo(typeID)
+	if !ok {
 		return nil, ErrInvalidType
 	}
 	var (
@@ -81,15 +86,16 @@ func (g *Graph) AddNode(nt NodeType, v any) (*Node, error) {
 	}
 	return &Node{
 		id: newID(shardID, typeID, localID),
-		t:  nt,
 		d: NodeData{
 			ID:        localID,
 			Data:      data,
 			Timestamp: ts,
 		},
+		ti: ti,
 	}, nil
 }
 
+/*
 func (g *Graph) AddMappedNode(nt NodeType, key string, v any) (*Node, error) {
 	var n *Node
 	if id, err := g.m.Map(nt, key); err == nil {
@@ -111,6 +117,7 @@ func (g *Graph) AddMappedNode(nt NodeType, key string, v any) (*Node, error) {
 	}
 	return n, g.UpdateNode(n.ID(), v)
 }
+*/
 
 func (g *Graph) UpdateNode(id ID, v any) error {
 	ti, s, err := g.parseID(id)

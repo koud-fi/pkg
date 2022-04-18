@@ -30,6 +30,5 @@ func (e Edge) Unmarshal(v any) error {
 }
 
 func (e Edge) String() string {
-	return fmt.Sprintf("%d>%s>%d(%d) %s",
-		e.from, e.t, e.d.To, e.d.Sequence, string(e.d.Data))
+	return fmt.Sprintf("%d>%s>%d(%d) %s", e.from, e.t, e.d.To, e.d.Sequence, string(e.d.Data))
 }
