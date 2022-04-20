@@ -9,6 +9,18 @@ import (
 
 var types = []grf.NodeType{"type1", "type2"}
 
+type appender interface {
+	append(int)
+}
+
+type intSlice struct {
+	Data []int `json:"data"`
+}
+
+func (s *intSlice) append(n int) {
+	s.Data = append(s.Data, n)
+}
+
 func Test(t *testing.T, s ...grf.Store) {
 	g := grf.New(nil, s...)
 	g.Register(
@@ -22,7 +34,7 @@ func Test(t *testing.T, s ...grf.Store) {
 		},
 		grf.TypeInfo{
 			Type:     types[1],
-			DataType: []int{},
+			DataType: intSlice{},
 			Edges: []grf.EdgeTypeInfo{
 				{Type: "type1"},
 			},
@@ -34,24 +46,29 @@ func Test(t *testing.T, s ...grf.Store) {
 		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[0], "A")),
 		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[0], "B")),
 		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[0], "C")),
-		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[1], []int{42, 69})),
+		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[1], intSlice{Data: []int{42, 69}})),
 	}
 	assert(t, grf.Delete(g, ns[0].ID))
 	assert1[*grf.Node[string]](t)(grf.Update(g, ns[1].ID, func(_ string) (string, error) {
 		return "World?", nil
 	}))
-	assert1[*grf.Node[any]](t)(grf.Update(g, ns[2].ID, func(v any) (any, error) {
-		switch v := v.(type) {
-		case string:
-			return v + "!", nil
-		default:
-			return v, nil
-		}
-	}))
+
 	for _, n := range ns {
+		grf.Update(g, n.ID, func(v any) (any, error) {
+			if a, ok := v.(appender); ok {
+				a.append(420)
+			}
+			switch v := v.(type) {
+			case string:
+				v = v + "!"
+			case intSlice:
+				v.append(13)
+			}
+			return v, nil
+		})
 		t.Log(grf.Lookup[any](g, n.ID))
 		t.Log(grf.Lookup[string](g, n.ID))
-		t.Log(grf.Lookup[[]int](g, n.ID))
+		t.Log(grf.Lookup[intSlice](g, n.ID))
 	}
 	t.Log(grf.Lookup[any](g, -1))
 
