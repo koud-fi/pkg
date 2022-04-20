@@ -37,6 +37,21 @@ func (g *Graph) Register(ti ...TypeInfo) {
 }
 
 /*
+func (g *Graph) SetEdge(e Edge) error {
+	ti, s, err := g.parseID(e.from)
+	if err != nil {
+		return err
+	}
+	if etID, ok := ti.edgeTypeMap[e.t]; ok {
+		e.d.TypeID = etID
+	} else {
+		return ErrInvalidEdgeType
+	}
+	return s.SetEdge(ti.Type, e.d)
+}
+*/
+
+/*
 func (g *Graph) MappedNode(nt NodeType, key string, add bool) *Node {
 	id, err := g.m.Map(nt, key)
 	if err != nil {
@@ -51,49 +66,6 @@ func (g *Graph) MappedNode(nt NodeType, key string, add bool) *Node {
 		return &Node{err: err}
 	}
 	return g.Node(id)
-}
-
-func (g *Graph) AddNode(nt NodeType, v any) (*Node, error) {
-	typeID, ti, shardID, s, err := g.resolveAddParams(nt)
-	if err != nil {
-		return nil, err
-	}
-	data := marshal(v)
-	localID, ts, err := s.AddNode(nt, data)
-	if err != nil {
-		return nil, err
-	}
-	return &Node{
-		s:  s,
-		id: newID(shardID, typeID, localID),
-		d: NodeData{
-			ID:        localID,
-			Data:      data,
-			Timestamp: ts,
-		},
-		ti: ti,
-	}, nil
-}
-
-func (g *Graph) DeleteNode(id ID) error {
-	ti, s, err := g.parseID(id)
-	if err != nil {
-		return err
-	}
-	return s.DeleteNode(ti.Type, id.localID())
-}
-
-func (g *Graph) SetEdge(e Edge) error {
-	ti, s, err := g.parseID(e.from)
-	if err != nil {
-		return err
-	}
-	if etID, ok := ti.edgeTypeMap[e.t]; ok {
-		e.d.TypeID = etID
-	} else {
-		return ErrInvalidEdgeType
-	}
-	return s.SetEdge(ti.Type, e.d)
 }
 */
 

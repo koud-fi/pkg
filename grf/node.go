@@ -38,17 +38,44 @@ func lookup[T any](
 		return nil, fmt.Errorf("%w: %d", ErrNotFound, id)
 	}
 	nd := ns[0]
-	data, err := unmarshal(ti.dataType, nd.Data)
+	v, err := unmarshal(ti.dataType, nd.Data)
 	if err != nil {
 		return nil, fmt.Errorf("data decoding failed: %w", err)
 	}
 	return &Node[T]{
 		ID:        id,
 		Type:      ti.Type,
-		Data:      data,
+		Data:      v,
 		Timestamp: nd.Timestamp,
 	}, nil
 }
+
+func Add[T any](g *Graph, nt NodeType, v T) (*Node[T], error) {
+	typeID, ti, shardID, s, err := g.resolveAddParams(nt)
+	if err != nil {
+		return nil, err
+	}
+	localID, ts, err := s.AddNode(nt, marshal(v))
+	if err != nil {
+		return nil, err
+	}
+	return &Node[T]{
+		ID:        newID(shardID, typeID, localID),
+		Type:      ti.Type,
+		Data:      v,
+		Timestamp: ts,
+	}, nil
+}
+
+/*
+func (g *Graph) DeleteNode(id ID) error {
+	ti, s, err := g.parseID(id)
+	if err != nil {
+		return err
+	}
+	return s.DeleteNode(ti.Type, id.localID())
+}
+*/
 
 func (n Node[T]) String() string {
 	ts := n.Timestamp.UTC().Format(time.RFC3339Nano)
