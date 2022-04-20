@@ -36,23 +36,7 @@ func (g *Graph) Register(ti ...TypeInfo) {
 	}
 }
 
-func (g *Graph) Node(id ID) *Node {
-	n := Node{id: id}
-	if n.ti, n.s, n.err = g.parseID(id); n.err != nil {
-		return &n
-	}
-	var ns []NodeData
-	if ns, n.err = n.s.Node(n.ti.Type, id.localID()); n.err != nil {
-		return &n
-	}
-	if len(ns) == 0 {
-		n.err = fmt.Errorf("%w: %d", ErrNotFound, id)
-		return &n
-	}
-	n.d = ns[0]
-	return &n
-}
-
+/*
 func (g *Graph) MappedNode(nt NodeType, key string, add bool) *Node {
 	id, err := g.m.Map(nt, key)
 	if err != nil {
@@ -111,6 +95,7 @@ func (g *Graph) SetEdge(e Edge) error {
 	}
 	return s.SetEdge(ti.Type, e.d)
 }
+*/
 
 func (g *Graph) resolveAddParams(nt NodeType) (typeID, TypeInfo, shardID, Store, error) {
 	typeID := g.typeMap[nt]
