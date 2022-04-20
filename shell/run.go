@@ -81,7 +81,11 @@ func Run(ctx context.Context, cmd string, args ...any) blob.Blob {
 
 		// TODO: avoid copying the full output to memory
 
-		return io.NopCloser(bytes.NewReader(out.([]byte))), err
+		var r io.Reader
+		if b, ok := out.([]byte); ok {
+			r = bytes.NewReader(b)
+		}
+		return io.NopCloser(r), err
 	})
 }
 
