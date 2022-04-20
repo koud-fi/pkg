@@ -28,30 +28,33 @@ func Test(t *testing.T, s ...grf.Store) {
 			},
 		})
 
-	ns := []*grf.Node{
-		assert1[*grf.Node](t)(g.AddNode(types[0], "Hello,")),
-		assert1[*grf.Node](t)(g.AddNode(types[0], "World!")),
-		assert1[*grf.Node](t)(g.AddNode(types[0], "A")),
-		assert1[*grf.Node](t)(g.AddNode(types[0], "B")),
-		assert1[*grf.Node](t)(g.AddNode(types[0], "C")),
-		assert1[*grf.Node](t)(g.AddNode(types[1], []int{42, 69})),
+	ns := []*grf.Node[any]{
+		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[0], "Hello,")),
+		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[0], "World!")),
+		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[0], "A")),
+		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[0], "B")),
+		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[0], "C")),
+		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[1], []int{42, 69})),
 	}
-	assert(t, g.DeleteNode(ns[0].ID()))
-	assert(t, g.Node(ns[1].ID()).Update(func(_ any) (any, error) { return "World?", nil }).Err())
-
+	//assert(t, g.DeleteNode(ns[0].ID()))
+	//assert(t, g.Node(ns[1].ID()).Update(func(_ any) (any, error) { return "World?", nil }).Err())
 	for _, n := range ns {
-		t.Log(g.Node(n.ID()).Data())
+		t.Log(grf.Lookup[any](g, n.ID))
+		t.Log(grf.Lookup[string](g, n.ID))
+		t.Log(grf.Lookup[[]int](g, n.ID))
 	}
-	t.Log(g.Node(grf.ID(-1)).Data())
+	t.Log(grf.Lookup[any](g, -1))
 
-	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[2].ID(), 1, nil)))
-	assert(t, g.SetEdge(grf.NewEdge(ns[2].ID(), "type1", ns[1].ID(), 1, nil)))
-	assert(t, g.SetEdge(grf.NewEdge(ns[5].ID(), "type1", ns[1].ID(), 1, nil)))
-	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[2].ID(), 2, nil)))
-	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[3].ID(), 3, nil)))
-	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[4].ID(), 4, nil)))
-	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[5].ID(), 5, nil)))
-	assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type2", ns[5].ID(), 1, nil)))
+	/*
+		assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[2].ID(), 1, nil)))
+		assert(t, g.SetEdge(grf.NewEdge(ns[2].ID(), "type1", ns[1].ID(), 1, nil)))
+		assert(t, g.SetEdge(grf.NewEdge(ns[5].ID(), "type1", ns[1].ID(), 1, nil)))
+		assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[2].ID(), 2, nil)))
+		assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[3].ID(), 3, nil)))
+		assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[4].ID(), 4, nil)))
+		assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[5].ID(), 5, nil)))
+		assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type2", ns[5].ID(), 1, nil)))
+	*/
 
 	for i, s := range s {
 		t.Logf("shard %d:", i+1)

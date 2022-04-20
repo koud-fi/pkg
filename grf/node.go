@@ -2,7 +2,6 @@ package grf
 
 import (
 	"fmt"
-	"reflect"
 	"time"
 )
 
@@ -15,17 +14,7 @@ type Node[T any] struct {
 
 type NodeType string
 
-func LookupAny(g *Graph, id ID) (*Node[any], error) {
-	return lookup(g, id, unmarshalAny)
-}
-
 func Lookup[T any](g *Graph, id ID) (*Node[T], error) {
-	return lookup(g, id, unmarshal[T])
-}
-
-func lookup[T any](
-	g *Graph, id ID, unmarshal func(reflect.Type, []byte) (T, error),
-) (*Node[T], error) {
 	ti, s, err := g.parseID(id)
 	if err != nil {
 		return nil, fmt.Errorf("id parsing failed: %w", err)
@@ -38,7 +27,7 @@ func lookup[T any](
 		return nil, fmt.Errorf("%w: %d", ErrNotFound, id)
 	}
 	nd := ns[0]
-	v, err := unmarshal(ti.dataType, nd.Data)
+	v, err := unmarshal[T](ti.dataType, nd.Data)
 	if err != nil {
 		return nil, fmt.Errorf("data decoding failed: %w", err)
 	}
@@ -65,6 +54,18 @@ func Add[T any](g *Graph, nt NodeType, v T) (*Node[T], error) {
 		Data:      v,
 		Timestamp: ts,
 	}, nil
+}
+
+func Update[T any](g *Graph, id ID, fn func(T) (T, error)) (*Node[T], error) {
+	n, err := Lookup[T](g, id)
+	if err != nil {
+		return nil, err
+	}
+	if n.Data, err = fn(n.Data); err != nil {
+		return nil, err
+	}
+	return n, g.shardForID(id.shardID()).
+		UpdateNode(n.Type, id.localID(), marshal(n.Data))
 }
 
 /*

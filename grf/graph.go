@@ -91,5 +91,9 @@ func (g *Graph) parseID(id ID) (TypeInfo, Store, error) {
 	if id < 1 || int(id.shardID()) > len(g.shards) {
 		return TypeInfo{}, nil, fmt.Errorf("%w: invalid shard ID", ErrNotFound)
 	}
-	return ti, g.shards[int(id.shardID())-1], nil
+	return ti, g.shardForID(id.shardID()), nil
+}
+
+func (g *Graph) shardForID(id shardID) Store {
+	return g.shards[int(id)-1]
 }
