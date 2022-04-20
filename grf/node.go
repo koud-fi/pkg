@@ -68,35 +68,15 @@ func Update[T any](g *Graph, id ID, fn func(T) (T, error)) (*Node[T], error) {
 		UpdateNode(n.Type, id.localID(), marshal(n.Data))
 }
 
-/*
-func (g *Graph) DeleteNode(id ID) error {
+func Delete(g *Graph, id ID) error {
 	ti, s, err := g.parseID(id)
 	if err != nil {
 		return err
 	}
 	return s.DeleteNode(ti.Type, id.localID())
 }
-*/
 
 func (n Node[T]) String() string {
 	ts := n.Timestamp.UTC().Format(time.RFC3339Nano)
 	return fmt.Sprintf("%d(%s)(%v) %v", n.ID, n.Type, ts, n.Data)
 }
-
-/*
-func (n *Node) Update(fn func(v any) (any, error)) *Node {
-	if n.err != nil {
-		return n
-	}
-	var v any
-	if v, n.err = n.Data(); n.err != nil {
-		return n
-	}
-	if v, n.err = fn(v); n.err != nil {
-		return n
-	}
-	n.d.Data = marshal(v)
-	n.err = n.s.UpdateNode(n.ti.Type, n.d.ID, n.d.Data)
-	return n
-}
-*/
