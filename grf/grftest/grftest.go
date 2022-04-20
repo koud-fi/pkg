@@ -36,8 +36,18 @@ func Test(t *testing.T, s ...grf.Store) {
 		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[0], "C")),
 		assert1[*grf.Node[any]](t)(grf.Add[any](g, types[1], []int{42, 69})),
 	}
-	//assert(t, g.DeleteNode(ns[0].ID()))
-	//assert(t, g.Node(ns[1].ID()).Update(func(_ any) (any, error) { return "World?", nil }).Err())
+	assert(t, grf.Delete(g, ns[0].ID))
+	assert1[*grf.Node[string]](t)(grf.Update(g, ns[1].ID, func(_ string) (string, error) {
+		return "World?", nil
+	}))
+	assert1[*grf.Node[any]](t)(grf.Update(g, ns[2].ID, func(v any) (any, error) {
+		switch v := v.(type) {
+		case string:
+			return v + "!", nil
+		default:
+			return v, nil
+		}
+	}))
 	for _, n := range ns {
 		t.Log(grf.Lookup[any](g, n.ID))
 		t.Log(grf.Lookup[string](g, n.ID))
