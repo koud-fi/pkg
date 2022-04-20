@@ -32,3 +32,18 @@ func (e Edge) Unmarshal(v any) error {
 func (e Edge) String() string {
 	return fmt.Sprintf("%d>%s>%d(%d) %s", e.from, e.t, e.d.To, e.d.Sequence, string(e.d.Data))
 }
+
+/*
+func (g *Graph) SetEdge(e Edge) error {
+	ti, s, err := g.parseID(e.from)
+	if err != nil {
+		return err
+	}
+	if etID, ok := ti.edgeTypeMap[e.t]; ok {
+		e.d.TypeID = etID
+	} else {
+		return ErrInvalidEdgeType
+	}
+	return s.SetEdge(ti.Type, e.d)
+}
+*/
