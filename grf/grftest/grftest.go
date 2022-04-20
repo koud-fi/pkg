@@ -9,16 +9,16 @@ import (
 
 var types = []grf.NodeType{"type1", "type2"}
 
-type appender interface {
-	append(int)
+type setter interface {
+	set(int, int)
 }
 
 type intSlice struct {
 	Data []int `json:"data"`
 }
 
-func (s *intSlice) append(n int) {
-	s.Data = append(s.Data, n)
+func (s intSlice) set(i, n int) {
+	s.Data[i] = n
 }
 
 func Test(t *testing.T, s ...grf.Store) {
@@ -55,14 +55,11 @@ func Test(t *testing.T, s ...grf.Store) {
 
 	for _, n := range ns {
 		grf.Update(g, n.ID, func(v any) (any, error) {
-			if a, ok := v.(appender); ok {
-				a.append(420)
-			}
 			switch v := v.(type) {
 			case string:
 				v = v + "!"
-			case intSlice:
-				v.append(13)
+			case setter:
+				v.set(0, 13)
 			}
 			return v, nil
 		})
