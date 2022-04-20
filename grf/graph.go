@@ -70,23 +70,17 @@ func (g *Graph) MappedNode(nt NodeType, key string, add bool) *Node {
 }
 
 func (g *Graph) AddNode(nt NodeType, v any) (*Node, error) {
-	typeID := g.typeMap[nt]
-	ti, ok := g.typeInfo(typeID)
-	if !ok {
-		return nil, ErrInvalidType
+	typeID, ti, shardID, s, err := g.resolveAddParams(nt)
+	if err != nil {
+		return nil, err
 	}
-	var (
-		data     = marshal(v)
-		shardNum = int(atomic.AddInt64(&g.counter, 1) % int64(len(g.shards)))
-		shard    = g.shards[shardNum]
-		shardID  = shardID(shardNum + 1)
-	)
-	localID, ts, err := shard.AddNode(nt, data)
+	data := marshal(v)
+	localID, ts, err := s.AddNode(nt, data)
 	if err != nil {
 		return nil, err
 	}
 	return &Node{
-		s:  shard,
+		s:  s,
 		id: newID(shardID, typeID, localID),
 		d: NodeData{
 			ID:        localID,
@@ -102,9 +96,6 @@ func (g *Graph) DeleteNode(id ID) error {
 	if err != nil {
 		return err
 	}
-
-	// TODO: support batching
-
 	return s.DeleteNode(ti.Type, id.localID())
 }
 
@@ -118,10 +109,21 @@ func (g *Graph) SetEdge(e Edge) error {
 	} else {
 		return ErrInvalidEdgeType
 	}
-
-	// TODO: support batching
-
 	return s.SetEdge(ti.Type, e.d)
+}
+
+func (g *Graph) resolveAddParams(nt NodeType) (typeID, TypeInfo, shardID, Store, error) {
+	typeID := g.typeMap[nt]
+	ti, ok := g.typeInfo(typeID)
+	if !ok {
+		return 0, TypeInfo{}, 0, nil, ErrInvalidType
+	}
+	var (
+		shardNum = int(atomic.AddInt64(&g.counter, 1) % int64(len(g.shards)))
+		s        = g.shards[shardNum]
+		shardID  = shardID(shardNum + 1)
+	)
+	return typeID, ti, shardID, s, nil
 }
 
 func (g *Graph) parseID(id ID) (TypeInfo, Store, error) {
