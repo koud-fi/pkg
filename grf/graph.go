@@ -65,3 +65,15 @@ func (g *Graph) parseID(id ID) (TypeInfo, Store, error) {
 func (g *Graph) shardForID(id shardID) Store {
 	return g.shards[int(id)-1]
 }
+
+func (g *Graph) parseEdgeParams(from ID, et EdgeType) (TypeInfo, EdgeTypeID, Store, error) {
+	ti, s, err := g.parseID(from)
+	if err != nil {
+		return TypeInfo{}, 0, nil, err
+	}
+	etID, ok := ti.edgeTypeMap[et]
+	if !ok {
+		return TypeInfo{}, 0, nil, ErrInvalidEdgeType
+	}
+	return ti, etID, s, err
+}
