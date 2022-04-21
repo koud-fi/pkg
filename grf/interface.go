@@ -1,11 +1,9 @@
 package grf
 
-import "time"
-
 type NodeData struct {
-	ID        LocalID   `json:"id"`
-	Data      []byte    `json:"data"`
-	Timestamp time.Time `json:"ts"`
+	ID      LocalID `json:"id"`
+	Data    []byte  `json:"data"`
+	Version int64   `json:"version"`
 }
 
 type LocalID int32
@@ -21,8 +19,8 @@ type EdgeData struct {
 type EdgeTypeID int32
 
 type EdgeInfo struct {
-	Count      int       `json:"count"`
-	LastUpdate time.Time `json:"lastUpdate"`
+	Count   int   `json:"count"`
+	Version int64 `json:"version"`
 }
 
 type Store interface {
@@ -34,8 +32,8 @@ type Store interface {
 	EdgeRange(nt NodeType, from LocalID, et EdgeTypeID, offset, limit int) ([]EdgeData, error)
 	// TODO: sequence based edge range method
 
-	AddNode(nt NodeType, data []byte) (LocalID, time.Time, error)
-	UpdateNode(nt NodeType, id LocalID, data []byte) error
+	AddNode(nt NodeType, data []byte) (LocalID, int64, error)
+	UpdateNode(nt NodeType, id LocalID, data []byte, currentVersion int64) error
 	DeleteNode(nt NodeType, id ...LocalID) error
 
 	SetEdge(nt NodeType, e ...EdgeData) error

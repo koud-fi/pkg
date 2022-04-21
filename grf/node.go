@@ -1,15 +1,12 @@
 package grf
 
-import (
-	"fmt"
-	"time"
-)
+import "fmt"
 
 type Node[T any] struct {
-	ID        ID
-	Type      NodeType
-	Data      T
-	Timestamp time.Time
+	ID      ID
+	Type    NodeType
+	Data    T
+	Version int64
 }
 
 type NodeType string
@@ -32,10 +29,10 @@ func Lookup[T any](g *Graph, id ID) (*Node[T], error) {
 		return nil, fmt.Errorf("data decoding failed: %w", err)
 	}
 	return &Node[T]{
-		ID:        id,
-		Type:      ti.Type,
-		Data:      v,
-		Timestamp: nd.Timestamp,
+		ID:      id,
+		Type:    ti.Type,
+		Data:    v,
+		Version: nd.Version,
 	}, nil
 }
 
@@ -44,15 +41,15 @@ func Add[T any](g *Graph, nt NodeType, v T) (*Node[T], error) {
 	if err != nil {
 		return nil, err
 	}
-	localID, ts, err := s.AddNode(nt, marshal(v))
+	localID, ver, err := s.AddNode(nt, marshal(v))
 	if err != nil {
 		return nil, err
 	}
 	return &Node[T]{
-		ID:        newID(shardID, typeID, localID),
-		Type:      ti.Type,
-		Data:      v,
-		Timestamp: ts,
+		ID:      newID(shardID, typeID, localID),
+		Type:    ti.Type,
+		Data:    v,
+		Version: ver,
 	}, nil
 }
 
@@ -65,7 +62,7 @@ func Update[T any](g *Graph, id ID, fn func(T) (T, error)) (*Node[T], error) {
 		return nil, err
 	}
 	return n, g.shardForID(id.shardID()).
-		UpdateNode(n.Type, id.localID(), marshal(n.Data))
+		UpdateNode(n.Type, id.localID(), marshal(n.Data), n.Version)
 }
 
 func Delete(g *Graph, id ID) error {
@@ -77,6 +74,5 @@ func Delete(g *Graph, id ID) error {
 }
 
 func (n Node[T]) String() string {
-	ts := n.Timestamp.UTC().Format(time.RFC3339Nano)
-	return fmt.Sprintf("%d(%s)(%v) %v", n.ID, n.Type, ts, n.Data)
+	return fmt.Sprintf("%d(%s)(%v) %v", n.ID, n.Type, n.Version, n.Data)
 }
