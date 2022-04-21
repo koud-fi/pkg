@@ -2,7 +2,6 @@ package memgrf
 
 import (
 	"sort"
-	"time"
 
 	"github.com/koud-fi/pkg/grf"
 )
@@ -98,24 +97,26 @@ func (s *store) EdgeRange(
 	panic("TODO")
 }
 
-func (s *store) AddNode(nt grf.NodeType, data []byte) (grf.LocalID, time.Time, error) {
+func (s *store) AddNode(nt grf.NodeType, data []byte) (grf.LocalID, int64, error) {
 	defer s.lock()()
 	nl := s.Data[nt]
 	nl.LastInsertID++
-	ts := time.Now()
+	ver := int64(1)
 	nl.Nodes = append(nl.Nodes, node{
 		NodeData: grf.NodeData{
-			ID:        nl.LastInsertID,
-			Data:      data,
-			Timestamp: ts,
+			ID:      nl.LastInsertID,
+			Data:    data,
+			Version: ver,
 		},
 		Edges: make(map[grf.EdgeType][]grf.Edge),
 	})
 	s.Data[nt] = nl
-	return nl.LastInsertID, ts, nil
+	return nl.LastInsertID, ver, nil
 }
 
-func (s *store) UpdateNode(nt grf.NodeType, id grf.LocalID, data []byte) error {
+func (s *store) UpdateNode(
+	nt grf.NodeType, id grf.LocalID, data []byte, currentVersion int64,
+) error {
 	defer s.lock()()
 	var (
 		nl    = s.Data[nt]
@@ -124,7 +125,11 @@ func (s *store) UpdateNode(nt grf.NodeType, id grf.LocalID, data []byte) error {
 	if !ok || nl.Nodes[i].IsDeleted {
 		return grf.ErrNotFound
 	}
+	if nl.Nodes[i].Version != currentVersion {
+		return grf.ErrVersionMismatch
+	}
 	nl.Nodes[i].Data = data
+	nl.Nodes[i].Version++
 	return nil
 }
 
