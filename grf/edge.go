@@ -27,16 +27,20 @@ func (e Edge[T]) String() string {
 func LookupEdge[T any](g *Graph, from ID, et EdgeType, to ID) (*Edge[T], error) {
 	ti, etID, s, err := g.parseEdgeArgs(from, et)
 	if err != nil {
-		return nil, fmt.Errorf("argument parsing failed: %w", err)
+		return nil, err
 	}
 	eds, err := s.Edge(ti.Type, from.localID(), etID, to)
 	if err != nil {
-		return nil, fmt.Errorf("store lookup failed: %w", err)
+		return nil, err
 	}
 	if len(eds) == 0 {
-		return nil, ErrNotFound // TODO: better error message
+		return nil, ErrNotFound
 	}
-	return &convertEdges[T](from, et, eds)[0], nil
+	es, err := convertEdges[T](from, et, eds)
+	if err != nil {
+		return nil, err
+	}
+	return &es[0], nil
 }
 
 func LookupEdgeInfo(g *Graph, from ID, et ...EdgeType) (map[EdgeType]EdgeInfo, error) {
@@ -69,24 +73,31 @@ func LookupEdgeInfo(g *Graph, from ID, et ...EdgeType) (map[EdgeType]EdgeInfo, e
 func EdgeRange[T any](g *Graph, from ID, et EdgeType, offset, limit int) ([]Edge[T], error) {
 	ti, etID, s, err := g.parseEdgeArgs(from, et)
 	if err != nil {
-		return nil, fmt.Errorf("argument parsing failed: %w", err)
+		return nil, err
 	}
 	eds, err := s.EdgeRange(ti.Type, from.localID(), etID, offset, limit)
-	return convertEdges[T](from, et, eds), err
+	if err != nil {
+		return nil, err
+	}
+	return convertEdges[T](from, et, eds)
 }
 
-func convertEdges[T any](from ID, et EdgeType, eds []EdgeData) []Edge[T] {
+func convertEdges[T any](from ID, et EdgeType, eds []EdgeData) ([]Edge[T], error) {
 	es := make([]Edge[T], 0, len(eds))
 	for _, ed := range eds {
+		v, err := unmarshal[T](nil, ed.Data)
+		if err != nil {
+			return nil, fmt.Errorf("invalid edge data: %w", err)
+		}
 		es = append(es, Edge[T]{
 			From:     from,
 			Type:     et,
 			To:       ed.To,
 			Sequence: ed.Sequence,
-			Data:     unmarshal[T](nil, ed.Data),
+			Data:     v,
 		})
 	}
-	return es
+	return es, nil
 }
 
 func SetEdge(g *Graph, e ...Edge[any]) error {
@@ -132,7 +143,7 @@ func SetEdge(g *Graph, e ...Edge[any]) error {
 func DeleteEdge(g *Graph, from ID, et EdgeType, to ...ID) error {
 	ti, etID, s, err := g.parseEdgeArgs(from, et)
 	if err != nil {
-		return fmt.Errorf("argument parsing failed: %w", err)
+		return err
 	}
 	return s.DeleteEdge(ti.Type, from.localID(), etID, to...)
 }

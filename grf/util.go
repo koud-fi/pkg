@@ -16,11 +16,10 @@ func marshal(v any) []byte {
 	return data
 }
 
-func unmarshal[T any](typ reflect.Type, data []byte) (v T) {
+func unmarshal[T any](typ reflect.Type, data []byte) (v T, err error) {
 	if data == nil {
 		return
 	}
-	var err error
 	if reflect.TypeOf(v) == nil {
 		if typ != nil {
 			p := reflect.New(typ)
@@ -33,9 +32,6 @@ func unmarshal[T any](typ reflect.Type, data []byte) (v T) {
 		}
 	} else {
 		err = json.Unmarshal(data, &v)
-	}
-	if err != nil {
-		panic(err)
 	}
 	return
 }

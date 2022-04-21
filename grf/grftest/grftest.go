@@ -78,6 +78,8 @@ func Test(t *testing.T, s ...grf.Store) {
 		grf.Edge[any]{From: ns[1].ID, Type: "type1", To: ns[5].ID},
 		grf.Edge[any]{From: ns[1].ID, Type: "type2", To: ns[5].ID}))
 
+	assert(t, grf.DeleteEdge(g, ns[1].ID, "type1", ns[3].ID, ns[4].ID))
+
 	for i, s := range s {
 		t.Logf("shard %d:", i+1)
 		for _, nt := range types {

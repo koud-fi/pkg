@@ -14,19 +14,23 @@ type NodeType string
 func Lookup[T any](g *Graph, id ID) (*Node[T], error) {
 	ti, s, err := g.parseID(id)
 	if err != nil {
-		return nil, fmt.Errorf("id parsing failed: %w", err)
+		return nil, err
 	}
 	ns, err := s.Node(ti.Type, id.localID())
 	if err != nil {
-		return nil, fmt.Errorf("store lookup failed: %w", err)
+		return nil, err
 	}
 	if len(ns) == 0 {
 		return nil, fmt.Errorf("%w: %d", ErrNotFound, id)
 	}
+	v, err := unmarshal[T](ti.dataType, ns[0].Data)
+	if err != nil {
+		return nil, fmt.Errorf("invalid node data: %w", err)
+	}
 	return &Node[T]{
 		ID:      id,
 		Type:    ti.Type,
-		Data:    unmarshal[T](ti.dataType, ns[0].Data),
+		Data:    v,
 		Version: ns[0].Version,
 	}, nil
 }
