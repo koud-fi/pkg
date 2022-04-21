@@ -68,7 +68,7 @@ func Test(t *testing.T, s ...grf.Store) {
 	}
 	t.Log(grf.Lookup[any](g, -1))
 
-	assert(t, g.SetEdge(
+	assert(t, grf.SetEdge(g,
 		grf.Edge[any]{From: ns[1].ID, Type: "type1", To: ns[2].ID},
 		grf.Edge[any]{From: ns[2].ID, Type: "type1", To: ns[1].ID},
 		grf.Edge[any]{From: ns[5].ID, Type: "type1", To: ns[1].ID},

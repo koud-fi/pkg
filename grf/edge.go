@@ -21,7 +21,7 @@ func (e Edge[T]) String() string {
 
 // TODO: edge lookup / listing
 
-func (g *Graph) SetEdge(e ...Edge[any]) error {
+func SetEdge(g *Graph, e ...Edge[any]) error {
 	var (
 		ed = make([]struct {
 			EdgeData
@@ -60,5 +60,3 @@ func (g *Graph) SetEdge(e ...Edge[any]) error {
 	}
 	return nil
 }
-
-// TODO: edge deletion
