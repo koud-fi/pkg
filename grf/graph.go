@@ -8,6 +8,7 @@ import (
 
 var (
 	ErrNotFound        = errors.New("not found")
+	ErrVersionMismatch = errors.New("version mismatch")
 	ErrInvalidType     = errors.New("invalid type")
 	ErrInvalidEdgeType = errors.New("invalid edge type")
 )
