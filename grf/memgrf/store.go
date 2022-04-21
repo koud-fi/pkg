@@ -79,7 +79,7 @@ func (s *store) Edge(
 
 func (s *store) EdgeInfo(
 	nt grf.NodeType, from grf.LocalID, et ...grf.EdgeTypeID,
-) (map[grf.EdgeTypeID]grf.EdgeInfo, error) {
+) ([]grf.EdgeInfoData, error) {
 	defer s.rlock()()
 
 	// ???

@@ -18,9 +18,9 @@ type EdgeData struct {
 
 type EdgeTypeID int32
 
-type EdgeInfo struct {
-	Count   int   `json:"count"`
-	Version int64 `json:"version"`
+type EdgeInfoData struct {
+	TypeID EdgeTypeID
+	EdgeInfo
 }
 
 type Store interface {
@@ -28,7 +28,7 @@ type Store interface {
 	NodeRange(nt NodeType, after LocalID, limit int) ([]NodeData, error)
 
 	Edge(nt NodeType, from LocalID, et EdgeTypeID, to ...ID) ([]EdgeData, error)
-	EdgeInfo(nt NodeType, from LocalID, et ...EdgeTypeID) (map[EdgeTypeID]EdgeInfo, error)
+	EdgeInfo(nt NodeType, from LocalID, et ...EdgeTypeID) ([]EdgeInfoData, error)
 	EdgeRange(nt NodeType, from LocalID, et EdgeTypeID, offset, limit int) ([]EdgeData, error)
 	// TODO: sequence based edge range method
 

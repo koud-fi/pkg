@@ -15,6 +15,11 @@ type Edge[T any] struct {
 
 type EdgeType string
 
+type EdgeInfo struct {
+	Count   int   `json:"count"`
+	Version int64 `json:"version"`
+}
+
 func (e Edge[T]) String() string {
 	return fmt.Sprintf("%d>%s>%d(%d) %v", e.From, e.Type, e.To, e.Sequence, e.Data)
 }
@@ -27,6 +32,23 @@ func LookupEdge[T any](g *Graph, from ID, et EdgeType, to ID) (*Edge[T], error) 
 }
 
 func LookupEdgeInfo(g *Graph, from ID, et ...EdgeType) (map[EdgeType]EdgeInfo, error) {
+	/*
+		ti, s, err := g.parseID(from)
+		if err != nil {
+			return nil, err
+		}
+		etIDs := make([]EdgeTypeID, len(et))
+		for i := range et {
+			var ok bool
+			if etIDs[i], ok = ti.edgeTypeMap[et[i]]; !ok {
+				return nil, ErrInvalidEdgeType
+			}
+		}
+		m, err := s.EdgeInfo(ti.Type, from.localID(), etIDs...)
+		if err != nil {
+			return nil, err
+		}
+	*/
 
 	// ???
 

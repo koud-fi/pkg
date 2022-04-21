@@ -84,13 +84,13 @@ func (s *store) Edge(
 
 func (s *store) EdgeInfo(
 	nt grf.NodeType, from grf.LocalID, et ...grf.EdgeTypeID,
-) (map[grf.EdgeTypeID]grf.EdgeInfo, error) {
+) ([]grf.EdgeInfoData, error) {
 	t, err := s.tables(nt)
 	if err != nil {
 		return nil, err
 	}
 	if len(et) == 0 {
-		return make(map[grf.EdgeTypeID]grf.EdgeInfo), nil
+		return []grf.EdgeInfoData{}, nil
 	}
 	rows, err := s.db.Query(fmt.Sprintf(`
 		SELECT type_id, count, version
@@ -99,18 +99,10 @@ func (s *store) EdgeInfo(
 	if err != nil {
 		return nil, err
 	}
-	out := make(map[grf.EdgeTypeID]grf.EdgeInfo, len(et))
-	for rows.Next() {
-		var (
-			et   grf.EdgeTypeID
-			info grf.EdgeInfo
-		)
-		if err := rows.Scan(&et, &info.Count, &info.Version); err != nil {
-			return nil, err
-		}
-		out[et] = info
-	}
-	return out, nil
+	out := make([]grf.EdgeInfoData, 0, len(et))
+	return scanRows(rows, out, func(rows *sql.Rows, eid *grf.EdgeInfoData) error {
+		return rows.Scan(&eid.TypeID, &eid.Count, &eid.Version)
+	})
 }
 
 func (s *store) EdgeRange(
