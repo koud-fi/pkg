@@ -11,15 +11,20 @@ func Mapped[T any](g *Graph, nt NodeType, key string) (*Node[T], error) {
 func SetMapped[T any](
 	g *Graph, nt NodeType, key string, fn func(T) (T, error),
 ) (*Node[T], error) {
-	if n, err := Mapped[T](g, nt, key); err == nil {
-		return update(g, n, fn)
-	} else if err != ErrNotFound {
-		return nil, err
+	n, err := Mapped[T](g, nt, key)
+	if err != nil {
+		if err != ErrNotFound {
+			return nil, err
+		}
+		var zero T
+		if n, err = Add(g, nt, zero); err != nil {
+			return nil, err
+		}
+		if err := g.m.SetMapping(nt, key, n.ID); err != nil {
+			return nil, err
+		}
 	}
-
-	// ???
-
-	panic("TODO")
+	return update(g, n, fn)
 }
 
 func DeleteMapped(g *Graph, nt NodeType, key ...string) error {
