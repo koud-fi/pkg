@@ -73,6 +73,7 @@ func Test(t *testing.T, s ...grf.Store) {
 		grf.Edge[any]{From: ns[2].ID, Type: "type1", To: ns[1].ID},
 		grf.Edge[any]{From: ns[5].ID, Type: "type1", To: ns[1].ID},
 		grf.Edge[any]{From: ns[1].ID, Type: "type1", To: ns[2].ID},
+		grf.Edge[any]{From: ns[1].ID, Type: "type1", To: ns[2].ID, Data: "Test!"},
 		grf.Edge[any]{From: ns[1].ID, Type: "type1", To: ns[3].ID},
 		grf.Edge[any]{From: ns[1].ID, Type: "type1", To: ns[4].ID},
 		grf.Edge[any]{From: ns[1].ID, Type: "type1", To: ns[5].ID},

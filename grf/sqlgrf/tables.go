@@ -92,7 +92,7 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 		return tables{}, fmt.Errorf("failed to create %s update trigger: %w", t.edges, err)
 	}
 	if _, err := s.db.Exec(fmt.Sprintf(`
-		CREATE TRIGGER IF NOT EXISTS %s_insert AFTER DELETE ON %s 
+		CREATE TRIGGER IF NOT EXISTS %s_delete AFTER DELETE ON %s 
 		BEGIN
 			UPDATE %s SET count = count - 1, version = version + 1
 			WHERE from_id = OLD.from_id AND type_id = OLD.type_id;
