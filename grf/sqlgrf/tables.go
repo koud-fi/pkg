@@ -64,7 +64,7 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 			from_id     INTEGER NOT NULL,
 			type_id     INTEGER NOT NULL,
 			count       INTEGER NOT NULL DEFAULT 0,
-			version 	INTEGER NOT NULL NOT NULL DEFAULT 0,
+			version 	INTEGER NOT NULL NOT NULL DEFAULT 1,
 
 			PRIMARY KEY(from_id, type_id),
 			FOREIGN KEY(from_id) REFERENCES %s(id) ON DELETE CASCADE
