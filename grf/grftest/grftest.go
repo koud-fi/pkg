@@ -2,7 +2,6 @@ package grftest
 
 import (
 	"testing"
-	"time"
 
 	"github.com/koud-fi/pkg/grf"
 )
@@ -85,7 +84,7 @@ func Test(t *testing.T, s ...grf.Store) {
 		for _, nt := range types {
 			t.Logf("\t%s:", nt)
 			for _, n := range assert1[[]grf.NodeData](t)(s.NodeRange(nt, 0, 10)) {
-				t.Logf("\t\t%d %s %s", n.ID, n.Timestamp.Format(time.RFC3339Nano), string(n.Data))
+				t.Logf("\t\t%d (%d) %s", n.ID, n.Version, string(n.Data))
 			}
 		}
 	}
