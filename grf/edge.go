@@ -42,7 +42,7 @@ func LookupEdge[T any](g *Graph, from ID, et EdgeType, to ID) (*Edge[T], error) 
 	}
 	return &Edge[T]{
 		From:     from,
-		Type:     ti.Edges[etID-1].Type, // TODO: make this less dodgy
+		Type:     et,
 		To:       es[0].To,
 		Sequence: es[0].Sequence,
 		Data:     v,
