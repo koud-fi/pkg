@@ -36,7 +36,7 @@ func Lookup[T any](g *Graph, id ID) (*Node[T], error) {
 }
 
 func Add[T any](g *Graph, nt NodeType, v T) (*Node[T], error) {
-	typeID, ti, shardID, s, err := g.resolveAddParams(nt)
+	typeID, ti, shardID, s, err := g.resolveAddArgs(nt)
 	if err != nil {
 		return nil, err
 	}

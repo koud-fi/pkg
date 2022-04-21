@@ -37,7 +37,7 @@ func (g *Graph) Register(ti ...TypeInfo) {
 	}
 }
 
-func (g *Graph) resolveAddParams(nt NodeType) (typeID, TypeInfo, shardID, Store, error) {
+func (g *Graph) resolveAddArgs(nt NodeType) (typeID, TypeInfo, shardID, Store, error) {
 	typeID := g.typeMap[nt]
 	ti, ok := g.typeInfo(typeID)
 	if !ok {
@@ -66,7 +66,7 @@ func (g *Graph) shardForID(id shardID) Store {
 	return g.shards[int(id)-1]
 }
 
-func (g *Graph) parseEdgeParams(from ID, et EdgeType) (TypeInfo, EdgeTypeID, Store, error) {
+func (g *Graph) parseEdgeArgs(from ID, et EdgeType) (TypeInfo, EdgeTypeID, Store, error) {
 	ti, s, err := g.parseID(from)
 	if err != nil {
 		return TypeInfo{}, 0, nil, err

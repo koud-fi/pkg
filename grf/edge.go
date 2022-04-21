@@ -25,10 +25,28 @@ func (e Edge[T]) String() string {
 }
 
 func LookupEdge[T any](g *Graph, from ID, et EdgeType, to ID) (*Edge[T], error) {
-
-	// ???
-
-	panic("TODO")
+	ti, etID, s, err := g.parseEdgeArgs(from, et)
+	if err != nil {
+		return nil, fmt.Errorf("argument parsing failed: %w", err)
+	}
+	es, err := s.Edge(ti.Type, from.localID(), etID, to)
+	if err != nil {
+		return nil, fmt.Errorf("store lookup failed: %w", err)
+	}
+	if len(es) == 0 {
+		return nil, ErrNotFound // TODO: better error message
+	}
+	v, err := unmarshal[T](nil, es[0].Data)
+	if err != nil {
+		return nil, fmt.Errorf("data decoding failed: %w", err)
+	}
+	return &Edge[T]{
+		From:     from,
+		Type:     ti.Edges[etID-1].Type, // TODO: make this less dodgy
+		To:       es[0].To,
+		Sequence: es[0].Sequence,
+		Data:     v,
+	}, nil
 }
 
 func LookupEdgeInfo(g *Graph, from ID, et ...EdgeType) (map[EdgeType]EdgeInfo, error) {
