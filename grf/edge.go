@@ -32,27 +32,30 @@ func LookupEdge[T any](g *Graph, from ID, et EdgeType, to ID) (*Edge[T], error) 
 }
 
 func LookupEdgeInfo(g *Graph, from ID, et ...EdgeType) (map[EdgeType]EdgeInfo, error) {
-	/*
-		ti, s, err := g.parseID(from)
-		if err != nil {
-			return nil, err
+	ti, s, err := g.parseID(from)
+	if err != nil {
+		return nil, err
+	}
+	var (
+		etIDs = make([]EdgeTypeID, len(et))
+		etMap = make(map[EdgeTypeID]EdgeType, len(et))
+	)
+	for i := range et {
+		var ok bool
+		if etIDs[i], ok = ti.edgeTypeMap[et[i]]; !ok {
+			return nil, ErrInvalidEdgeType
 		}
-		etIDs := make([]EdgeTypeID, len(et))
-		for i := range et {
-			var ok bool
-			if etIDs[i], ok = ti.edgeTypeMap[et[i]]; !ok {
-				return nil, ErrInvalidEdgeType
-			}
-		}
-		m, err := s.EdgeInfo(ti.Type, from.localID(), etIDs...)
-		if err != nil {
-			return nil, err
-		}
-	*/
-
-	// ???
-
-	panic("TODO")
+		etMap[etIDs[i]] = et[i]
+	}
+	eids, err := s.EdgeInfo(ti.Type, from.localID(), etIDs...)
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[EdgeType]EdgeInfo, len(eids))
+	for _, eid := range eids {
+		m[etMap[eid.TypeID]] = eid.EdgeInfo
+	}
+	return m, nil
 }
 
 func EdgeRange[T any](g *Graph, from ID, et EdgeType, offset, limit int) ([]Edge[T], error) {
