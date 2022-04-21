@@ -68,16 +68,15 @@ func Test(t *testing.T, s ...grf.Store) {
 	}
 	t.Log(grf.Lookup[any](g, -1))
 
-	/*
-		assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[2].ID(), 1, nil)))
-		assert(t, g.SetEdge(grf.NewEdge(ns[2].ID(), "type1", ns[1].ID(), 1, nil)))
-		assert(t, g.SetEdge(grf.NewEdge(ns[5].ID(), "type1", ns[1].ID(), 1, nil)))
-		assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[2].ID(), 2, nil)))
-		assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[3].ID(), 3, nil)))
-		assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[4].ID(), 4, nil)))
-		assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type1", ns[5].ID(), 5, nil)))
-		assert(t, g.SetEdge(grf.NewEdge(ns[1].ID(), "type2", ns[5].ID(), 1, nil)))
-	*/
+	assert(t, g.SetEdge(
+		grf.Edge[any]{From: ns[1].ID, Type: "type1", To: ns[2].ID},
+		grf.Edge[any]{From: ns[2].ID, Type: "type1", To: ns[1].ID},
+		grf.Edge[any]{From: ns[5].ID, Type: "type1", To: ns[1].ID},
+		grf.Edge[any]{From: ns[1].ID, Type: "type1", To: ns[2].ID},
+		grf.Edge[any]{From: ns[1].ID, Type: "type1", To: ns[3].ID},
+		grf.Edge[any]{From: ns[1].ID, Type: "type1", To: ns[4].ID},
+		grf.Edge[any]{From: ns[1].ID, Type: "type1", To: ns[5].ID},
+		grf.Edge[any]{From: ns[1].ID, Type: "type2", To: ns[5].ID}))
 
 	for i, s := range s {
 		t.Logf("shard %d:", i+1)
