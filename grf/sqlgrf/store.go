@@ -115,7 +115,7 @@ func (s *store) EdgeRange(
 	rows, err := s.db.Query(fmt.Sprintf(`
 		SELECT from_id, type_id, to_id, sequence, data FROM %s
 		WHERE from_id = ? AND type_id = ?
-		ORDER BY seq DESC
+		ORDER BY sequence DESC
 		LIMIT ? OFFSET ?
 	`, t.edges), from, et, limit, offset)
 	if err != nil {

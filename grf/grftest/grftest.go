@@ -86,8 +86,9 @@ func Test(t *testing.T, s ...grf.Store) {
 	t.Log(grf.LookupEdge[any](g, ns[1].ID, "type1", ns[2].ID))
 	t.Log(grf.LookupEdge[any](g, ns[1].ID, "type1", ns[3].ID))
 
-	// TODO: test edge range
-
+	for _, e := range assert1[[]grf.Edge[any]](t)(grf.EdgeRange[any](g, ns[1].ID, "type1", 0, 10)) {
+		t.Log(e)
+	}
 	for i, s := range s {
 		t.Logf("shard %d:", i+1)
 		for _, nt := range types {
