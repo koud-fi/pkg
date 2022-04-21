@@ -81,8 +81,13 @@ func SetEdge(g *Graph, e ...Edge[any]) error {
 }
 
 func DeleteEdge(g *Graph, from ID, et EdgeType, to ...ID) error {
-
-	// ???
-
-	panic("TODO")
+	ti, s, err := g.parseID(from)
+	if err != nil {
+		return err
+	}
+	etID, ok := ti.edgeTypeMap[et]
+	if !ok {
+		return ErrInvalidEdgeType
+	}
+	return s.DeleteEdge(ti.Type, from.localID(), etID, to...)
 }
