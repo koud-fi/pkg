@@ -1,49 +1,60 @@
 package grf
 
 import (
-	"encoding/json"
 	"fmt"
+	"time"
 )
 
-type Edge struct {
-	from ID
-	t    EdgeType
-	d    EdgeData
+type Edge[T any] struct {
+	From     ID
+	Type     EdgeType
+	To       ID
+	Sequence int64
+	Data     T
 }
 
 type EdgeType string
 
-func NewEdge(from ID, et EdgeType, to ID, seq int64, v any) Edge {
-	return Edge{
-		from: from,
-		t:    et,
-		d:    EdgeData{From: from.localID(), To: to, Sequence: seq, Data: marshal(v)}}
+func (e Edge[T]) String() string {
+	return fmt.Sprintf("%d>%s>%d(%d) %v", e.From, e.Type, e.To, e.Sequence, e.Data)
 }
 
-func (e Edge) From() ID        { return e.from }
-func (e Edge) Type() EdgeType  { return e.t }
-func (e Edge) To() ID          { return e.d.To }
-func (e Edge) Sequence() int64 { return e.d.Sequence }
+// TODO: edge lookup / listing
 
-func (e Edge) Unmarshal(v any) error {
-	return json.Unmarshal(e.d.Data, v)
-}
+func (g *Graph) SetEdge(e ...Edge[any]) error {
+	ed := make([]struct {
+		EdgeData
+		ti TypeInfo
+		s  Store
+	}, len(e))
+	for i := range e {
+		var err error
+		if ed[i].ti, ed[i].s, err = g.parseID(e[i].From); err != nil {
+			return err
+		}
+		ed[i].From = e[i].From.localID()
+		ed[i].To = e[i].To
+		ed[i].Sequence = e[i].Sequence
+		ed[i].Data = marshal(e[i].Data)
 
-func (e Edge) String() string {
-	return fmt.Sprintf("%d>%s>%d(%d) %s", e.from, e.t, e.d.To, e.d.Sequence, string(e.d.Data))
-}
-
-/*
-func (g *Graph) SetEdge(e Edge) error {
-	ti, s, err := g.parseID(e.from)
-	if err != nil {
-		return err
+		if etID, ok := ed[i].ti.edgeTypeMap[e[i].Type]; ok {
+			ed[i].TypeID = etID
+		} else {
+			return ErrInvalidEdgeType
+		}
+		if ed[i].Sequence == 0 {
+			ed[i].Sequence = time.Now().UnixNano()
+		}
 	}
-	if etID, ok := ti.edgeTypeMap[e.t]; ok {
-		e.d.TypeID = etID
-	} else {
-		return ErrInvalidEdgeType
+	for _, ed := range ed {
+
+		// TODO: batch by store/type
+
+		if err := ed.s.SetEdge(ed.ti.Type, ed.EdgeData); err != nil {
+			return err
+		}
 	}
-	return s.SetEdge(ti.Type, e.d)
+	return nil
 }
-*/
+
+// TODO: edge deletion
