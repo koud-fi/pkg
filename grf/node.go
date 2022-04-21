@@ -75,6 +75,9 @@ func Delete(g *Graph, id ID) error {
 	if err != nil {
 		return err
 	}
+
+	// TODO: batch by store/type
+
 	return s.DeleteNode(ti.Type, id.localID())
 }
 

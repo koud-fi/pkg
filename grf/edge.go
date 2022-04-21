@@ -19,7 +19,26 @@ func (e Edge[T]) String() string {
 	return fmt.Sprintf("%d>%s>%d(%d) %v", e.From, e.Type, e.To, e.Sequence, e.Data)
 }
 
-// TODO: edge lookup / listing
+func LookupEdge[T any](g *Graph, from ID, et EdgeType, to ID) (*Edge[T], error) {
+
+	// ???
+
+	panic("TODO")
+}
+
+func LookupEdgeInfo(g *Graph, from ID, et ...EdgeType) (map[EdgeType]EdgeInfo, error) {
+
+	// ???
+
+	panic("TODO")
+}
+
+func EdgeRange[T any](g *Graph, from ID, et EdgeType, offset, limit int) ([]Edge[T], error) {
+
+	// ???
+
+	panic("TODO")
+}
 
 func SetEdge(g *Graph, e ...Edge[any]) error {
 	var (
@@ -59,4 +78,11 @@ func SetEdge(g *Graph, e ...Edge[any]) error {
 		}
 	}
 	return nil
+}
+
+func DeleteEdge(g *Graph, from ID, et EdgeType, to ...ID) error {
+
+	// ???
+
+	panic("TODO")
 }

@@ -28,6 +28,9 @@ func SetMapped[T any](
 }
 
 func DeleteMapped(g *Graph, nt NodeType, key ...string) error {
+
+	// TODO: batch by store/type
+
 	for _, k := range key {
 		id, err := g.m.Map(nt, k)
 		if err == nil {
