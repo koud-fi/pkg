@@ -124,7 +124,7 @@ func SetEdge(g *Graph, e ...Edge[any]) error {
 }
 
 func DeleteEdge(g *Graph, from ID, et EdgeType, to ...ID) error {
-	ti, etID, s, err := g.parseEdgeParams(from, et)
+	ti, etID, s, err := g.parseEdgeArgs(from, et)
 	if err != nil {
 		return err
 	}
