@@ -19,7 +19,16 @@ const (
 
 type Option func(*Storage)
 
-func UseBuckets(b bool) Option                  { return func(s *Storage) { s.useBuckets = b } }
+func Buckets(levels ...int) Option {
+	return func(s *Storage) {
+		s.bucketLevels = levels
+		s.bucketPrefixLen = 0
+		for _, l := range levels {
+			s.bucketPrefixLen += l + 1
+		}
+	}
+}
+
 func HideFunc(fn func(name string) bool) Option { return func(s *Storage) { s.hideFunc = fn } }
 func DirPerm(m os.FileMode) Option              { return func(s *Storage) { s.dirPerm = m } }
 func FilePerm(m os.FileMode) Option             { return func(s *Storage) { s.filePerm = m } }
@@ -27,11 +36,12 @@ func FilePerm(m os.FileMode) Option             { return func(s *Storage) { s.fi
 var _ blob.Storage = (*Storage)(nil)
 
 type Storage struct {
-	root       string
-	useBuckets bool
-	hideFunc   func(string) bool
-	dirPerm    os.FileMode
-	filePerm   os.FileMode
+	root            string
+	bucketLevels    []int
+	bucketPrefixLen int
+	hideFunc        func(string) bool
+	dirPerm         os.FileMode
+	filePerm        os.FileMode
 }
 
 func NewStorage(root string, opt ...Option) (*Storage, error) {
@@ -136,12 +146,20 @@ func (s Storage) Delete(_ context.Context, refs ...string) error {
 }
 
 func (s Storage) refPath(ref string) string {
-	if s.useBuckets {
-		prefix := ref
-		for len(prefix) < 2 {
-			prefix = strings.Repeat("_", 2-len(prefix))
+	if len(s.bucketLevels) > 0 {
+		parts := make([]string, len(s.bucketLevels)+2)
+		parts = append(parts, s.root)
+		var start int
+		for _, l := range s.bucketLevels {
+			end := start + l
+			if end > len(ref) {
+				end = len(ref)
+			}
+			parts = append(parts, ref[start:end]+strings.Repeat("_", l-(end-start)))
+			start = end
 		}
-		return filepath.Join(s.root, prefix[:2], ref)
+		parts = append(parts, ref)
+		return filepath.Join(parts...)
 	}
 	return filepath.Join(s.root, ref)
 }
@@ -151,11 +169,5 @@ func (s Storage) pathRef(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if s.useBuckets {
-
-		// TODO: path validation
-
-		ref = ref[3:]
-	}
-	return ref, nil
+	return ref[s.bucketPrefixLen:], nil
 }
