@@ -33,9 +33,9 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 	}
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
-			id   INTEGER  PRIMARY KEY AUTOINCREMENT,
-			data BLOB     NULL,
-			ts   DATETIME NOT NULL
+			id      INTEGER  PRIMARY KEY AUTOINCREMENT,
+			data    BLOB     NULL,
+			version INTEGER  NOT NULL DEFAULT 1
 		)
 	`, t.nodes)); err != nil {
 		return tables{}, fmt.Errorf("failed to create %s table: %w", t.nodes, err)
@@ -61,10 +61,10 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 	}
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
-			from_id     INTEGER  NOT NULL,
-			type_id     INTEGER  NOT NULL,
-			count       INTEGER  NOT NULL DEFAULT 0,
-			last_update DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			from_id     INTEGER NOT NULL,
+			type_id     INTEGER NOT NULL,
+			count       INTEGER NOT NULL DEFAULT 0,
+			version 	INTEGER NOT NULL NOT NULL DEFAULT 0,
 
 			PRIMARY KEY(from_id, type_id),
 			FOREIGN KEY(from_id) REFERENCES %s(id) ON DELETE CASCADE
@@ -77,7 +77,7 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 		BEGIN
 			INSERT INTO %s (from_id, type_id, count) VALUES (NEW.from_id, NEW.type_id, 1)
 			ON CONFLICT(from_id, type_id) DO
-				UPDATE SET count = count + 1, last_update = CURRENT_TIMESTAMP;
+				UPDATE SET count = count + 1, version = version + 1;
 		END
 	`, t.edges, t.edges, t.edgeInfos)); err != nil {
 		return tables{}, fmt.Errorf("failed to create %s insert trigger: %w", t.edges, err)
@@ -85,7 +85,7 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TRIGGER IF NOT EXISTS %s_update AFTER UPDATE ON %s 
 		BEGIN
-			UPDATE %s SET last_update = CURRENT_TIMESTAMP
+			UPDATE %s SET version = version + 1
 			WHERE from_id = NEW.from_id AND type_id = NEW.type_id;
 		END
 	`, t.edges, t.edges, t.edgeInfos)); err != nil {
@@ -94,7 +94,7 @@ func (s *store) tables(nt grf.NodeType) (tables, error) {
 	if _, err := s.db.Exec(fmt.Sprintf(`
 		CREATE TRIGGER IF NOT EXISTS %s_insert AFTER DELETE ON %s 
 		BEGIN
-			UPDATE %s SET count = count - 1, last_update = CURRENT_TIMESTAMP
+			UPDATE %s SET count = count - 1, version = version + 1
 			WHERE from_id = OLD.from_id AND type_id = OLD.type_id;
 		END
 	`, t.edges, t.edges, t.edgeInfos)); err != nil {

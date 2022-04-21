@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/koud-fi/pkg/grf"
 )
@@ -31,7 +30,7 @@ func (s *store) Node(nt grf.NodeType, id ...grf.LocalID) ([]grf.NodeData, error)
 		return []grf.NodeData{}, nil
 	}
 	rows, err := s.db.Query(fmt.Sprintf(`
-		SELECT id, data, ts FROM %s
+		SELECT id, data, version FROM %s
 		WHERE id IN (%s)
 	`, t.nodes, idStr(id)))
 	if err != nil {
@@ -46,7 +45,7 @@ func (s *store) NodeRange(nt grf.NodeType, after grf.LocalID, limit int) ([]grf.
 		return nil, err
 	}
 	rows, err := s.db.Query(fmt.Sprintf(`
-		SELECT id, data, ts FROM %s
+		SELECT id, data, version FROM %s
 		WHERE id > ?
 		ORDER BY id ASC
 		LIMIT ?
@@ -59,7 +58,7 @@ func (s *store) NodeRange(nt grf.NodeType, after grf.LocalID, limit int) ([]grf.
 
 func scanNodes(rows *sql.Rows, out []grf.NodeData) ([]grf.NodeData, error) {
 	return scanRows(rows, out, func(rows *sql.Rows, nd *grf.NodeData) error {
-		return rows.Scan(&nd.ID, &nd.Data, &nd.Timestamp)
+		return rows.Scan(&nd.ID, &nd.Data, &nd.Version)
 	})
 }
 
@@ -94,7 +93,7 @@ func (s *store) EdgeInfo(
 		return make(map[grf.EdgeTypeID]grf.EdgeInfo), nil
 	}
 	rows, err := s.db.Query(fmt.Sprintf(`
-		SELECT type_id, count, last_update
+		SELECT type_id, count, version
 		FROM %s WHERE from_id = ? AND type_id IN (%s)
 	`, t.edgeInfos, idStr(et)), from)
 	if err != nil {
@@ -106,7 +105,7 @@ func (s *store) EdgeInfo(
 			et   grf.EdgeTypeID
 			info grf.EdgeInfo
 		)
-		if err := rows.Scan(&et, &info.Count, &info.LastUpdate); err != nil {
+		if err := rows.Scan(&et, &info.Count, &info.Version); err != nil {
 			return nil, err
 		}
 		out[et] = info
@@ -139,30 +138,33 @@ func scanEdges(rows *sql.Rows, out []grf.EdgeData) ([]grf.EdgeData, error) {
 	})
 }
 
-func (s *store) AddNode(nt grf.NodeType, data []byte) (grf.LocalID, time.Time, error) {
+func (s *store) AddNode(nt grf.NodeType, data []byte) (grf.LocalID, int64, error) {
 	t, err := s.tables(nt)
 	if err != nil {
-		return 0, time.Time{}, err
+		return 0, 0, err
 	}
-	ts := time.Now()
+	ver := int64(1)
 	res, err := s.db.Exec(fmt.Sprintf(`
-		INSERT INTO %s (data, ts) VALUES (?, ?)
-	`, t.nodes), data, ts)
+		INSERT INTO %s (data, version) VALUES (?, ?)
+	`, t.nodes), data, ver)
 	if err != nil {
-		return 0, time.Time{}, err
+		return 0, 0, err
 	}
 	id, err := res.LastInsertId()
-	return grf.LocalID(id), ts, err
+	return grf.LocalID(id), ver, err
 }
 
-func (s *store) UpdateNode(nt grf.NodeType, id grf.LocalID, data []byte) error {
+func (s *store) UpdateNode(
+	nt grf.NodeType, id grf.LocalID, data []byte, currentVersion int64,
+) error {
 	t, err := s.tables(nt)
 	if err != nil {
 		return err
 	}
 	res, err := s.db.Exec(fmt.Sprintf(`
-		UPDATE %s SET data = ? WHERE id = ?
-	`, t.nodes), data, id)
+		UPDATE %s SET data = ?, version = version + 1
+		WHERE id = ? AND version = ?
+	`, t.nodes), data, id, currentVersion)
 	if err != nil {
 		return err
 	}
@@ -171,6 +173,15 @@ func (s *store) UpdateNode(nt grf.NodeType, id grf.LocalID, data []byte) error {
 		return err
 	}
 	if n == 0 {
+		var exists bool
+		if err := s.db.QueryRow(fmt.Sprintf(`
+			SELECT EXISTS(SELECT 1 FROM %s WHERE id = ?)
+		`, t.nodes), id).Scan(&exists); err != nil {
+			return err
+		}
+		if exists {
+			return grf.ErrVersionMismatch
+		}
 		return grf.ErrNotFound
 	}
 	return nil
