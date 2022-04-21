@@ -18,8 +18,8 @@ type nodeList struct {
 
 type node struct {
 	grf.NodeData
-	Edges     map[grf.EdgeType][]grf.Edge `json:"edges"`
-	IsDeleted bool                        `json:"isDeleted,omitempty"`
+	Edges     map[grf.EdgeType][]grf.EdgeData `json:"edges"`
+	IsDeleted bool                            `json:"isDeleted,omitempty"`
 }
 
 func NewStore() grf.Store {
@@ -108,7 +108,7 @@ func (s *store) AddNode(nt grf.NodeType, data []byte) (grf.LocalID, int64, error
 			Data:    data,
 			Version: ver,
 		},
-		Edges: make(map[grf.EdgeType][]grf.Edge),
+		Edges: make(map[grf.EdgeType][]grf.EdgeData),
 	})
 	s.Data[nt] = nl
 	return nl.LastInsertID, ver, nil
