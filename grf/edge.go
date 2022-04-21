@@ -22,11 +22,14 @@ func (e Edge[T]) String() string {
 // TODO: edge lookup / listing
 
 func (g *Graph) SetEdge(e ...Edge[any]) error {
-	ed := make([]struct {
-		EdgeData
-		ti TypeInfo
-		s  Store
-	}, len(e))
+	var (
+		ed = make([]struct {
+			EdgeData
+			ti TypeInfo
+			s  Store
+		}, len(e))
+		seq = time.Now().UnixNano()
+	)
 	for i := range e {
 		var err error
 		if ed[i].ti, ed[i].s, err = g.parseID(e[i].From); err != nil {
@@ -43,7 +46,8 @@ func (g *Graph) SetEdge(e ...Edge[any]) error {
 			return ErrInvalidEdgeType
 		}
 		if ed[i].Sequence == 0 {
-			ed[i].Sequence = time.Now().UnixNano()
+			ed[i].Sequence = seq
+			seq++
 		}
 	}
 	for _, ed := range ed {
