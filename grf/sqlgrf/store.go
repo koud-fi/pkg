@@ -73,7 +73,7 @@ func (s *store) Edge(
 		return []grf.EdgeData{}, nil
 	}
 	rows, err := s.db.Query(fmt.Sprintf(`
-		SELECT from_id, type_id, to_id, seq, data FROM %s
+		SELECT from_id, type_id, to_id, sequence, data FROM %s
 		WHERE from_id = ? AND type_id = ? AND to_id IN (%s)
 	`, t.edges, idStr(to)), from, et)
 	if err != nil {
@@ -113,7 +113,7 @@ func (s *store) EdgeRange(
 		return nil, err
 	}
 	rows, err := s.db.Query(fmt.Sprintf(`
-		SELECT from_id, type_id, to_id, seq, data FROM %s
+		SELECT from_id, type_id, to_id, sequence, data FROM %s
 		WHERE from_id = ? AND type_id = ?
 		ORDER BY seq DESC
 		LIMIT ? OFFSET ?
