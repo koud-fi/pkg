@@ -58,11 +58,16 @@ func Update[T any](g *Graph, id ID, fn func(T) (T, error)) (*Node[T], error) {
 	if err != nil {
 		return nil, err
 	}
+	return update(g, n, fn)
+}
+
+func update[T any](g *Graph, n *Node[T], fn func(T) (T, error)) (*Node[T], error) {
+	var err error
 	if n.Data, err = fn(n.Data); err != nil {
 		return nil, err
 	}
-	return n, g.shardForID(id.shardID()).
-		UpdateNode(n.Type, id.localID(), marshal(n.Data), n.Version)
+	return n, g.shardForID(n.ID.shardID()).
+		UpdateNode(n.Type, n.ID.localID(), marshal(n.Data), n.Version)
 }
 
 func Delete(g *Graph, id ID) error {
