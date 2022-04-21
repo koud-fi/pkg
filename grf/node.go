@@ -23,14 +23,10 @@ func Lookup[T any](g *Graph, id ID) (*Node[T], error) {
 	if len(ns) == 0 {
 		return nil, fmt.Errorf("%w: %d", ErrNotFound, id)
 	}
-	v, err := unmarshal[T](ti.dataType, ns[0].Data)
-	if err != nil {
-		return nil, fmt.Errorf("data decoding failed: %w", err)
-	}
 	return &Node[T]{
 		ID:      id,
 		Type:    ti.Type,
-		Data:    v,
+		Data:    unmarshal[T](ti.dataType, ns[0].Data),
 		Version: ns[0].Version,
 	}, nil
 }

@@ -29,24 +29,14 @@ func LookupEdge[T any](g *Graph, from ID, et EdgeType, to ID) (*Edge[T], error) 
 	if err != nil {
 		return nil, fmt.Errorf("argument parsing failed: %w", err)
 	}
-	es, err := s.Edge(ti.Type, from.localID(), etID, to)
+	eds, err := s.Edge(ti.Type, from.localID(), etID, to)
 	if err != nil {
 		return nil, fmt.Errorf("store lookup failed: %w", err)
 	}
-	if len(es) == 0 {
+	if len(eds) == 0 {
 		return nil, ErrNotFound // TODO: better error message
 	}
-	v, err := unmarshal[T](nil, es[0].Data)
-	if err != nil {
-		return nil, fmt.Errorf("data decoding failed: %w", err)
-	}
-	return &Edge[T]{
-		From:     from,
-		Type:     et,
-		To:       es[0].To,
-		Sequence: es[0].Sequence,
-		Data:     v,
-	}, nil
+	return &convertEdges[T](from, et, eds)[0], nil
 }
 
 func LookupEdgeInfo(g *Graph, from ID, et ...EdgeType) (map[EdgeType]EdgeInfo, error) {
@@ -77,10 +67,26 @@ func LookupEdgeInfo(g *Graph, from ID, et ...EdgeType) (map[EdgeType]EdgeInfo, e
 }
 
 func EdgeRange[T any](g *Graph, from ID, et EdgeType, offset, limit int) ([]Edge[T], error) {
+	ti, etID, s, err := g.parseEdgeArgs(from, et)
+	if err != nil {
+		return nil, fmt.Errorf("argument parsing failed: %w", err)
+	}
+	eds, err := s.EdgeRange(ti.Type, from.localID(), etID, offset, limit)
+	return convertEdges[T](from, et, eds), err
+}
 
-	// ???
-
-	panic("TODO")
+func convertEdges[T any](from ID, et EdgeType, eds []EdgeData) []Edge[T] {
+	es := make([]Edge[T], 0, len(eds))
+	for _, ed := range eds {
+		es = append(es, Edge[T]{
+			From:     from,
+			Type:     et,
+			To:       ed.To,
+			Sequence: ed.Sequence,
+			Data:     unmarshal[T](nil, ed.Data),
+		})
+	}
+	return es
 }
 
 func SetEdge(g *Graph, e ...Edge[any]) error {
@@ -126,7 +132,7 @@ func SetEdge(g *Graph, e ...Edge[any]) error {
 func DeleteEdge(g *Graph, from ID, et EdgeType, to ...ID) error {
 	ti, etID, s, err := g.parseEdgeArgs(from, et)
 	if err != nil {
-		return err
+		return fmt.Errorf("argument parsing failed: %w", err)
 	}
 	return s.DeleteEdge(ti.Type, from.localID(), etID, to...)
 }
