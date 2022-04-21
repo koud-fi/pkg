@@ -17,10 +17,7 @@ func SetMapped[T any](
 }
 
 func DeleteMapped(g *Graph, nt NodeType, key ...string) error {
-
-	// ???
-
-	panic("TODO")
+	return g.m.DeleteMapping(nt, key...)
 }
 
 /*
