@@ -6,7 +6,7 @@ type Iter[T any] interface {
 	Close() error
 }
 
-func From[T any](data ...T) Iter[T] {
+func SliceIter[T any](data ...T) Iter[T] {
 	return &sliceIter[T]{data: data, offset: -1}
 }
 
@@ -22,3 +22,5 @@ func (it *sliceIter[T]) Next() bool {
 
 func (it sliceIter[T]) Value() T     { return it.data[it.offset] }
 func (it sliceIter[T]) Close() error { return nil }
+
+func FromFunc()
