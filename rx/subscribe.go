@@ -21,6 +21,6 @@ func Sum[T Number](it Iter[T]) (T, error) {
 	return Reduce(it, func(sum, n T) (T, error) { return sum + n, nil })
 }
 
-func Discard[T any](it Iter[T]) {
+func Drain[T any](it Iter[T]) {
 	ForEach(it, func(_ T) error { return nil })
 }
