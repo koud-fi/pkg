@@ -12,7 +12,7 @@ func SliceIter[T any](data ...T) Iter[T] {
 
 type sliceIter[T any] struct{ data []T }
 
-func (it *sliceIter[T]) Next() bool {
+func (it *sliceIter[_]) Next() bool {
 	if len(it.data) == 0 {
 		return false
 	}
@@ -21,7 +21,7 @@ func (it *sliceIter[T]) Next() bool {
 }
 
 func (it sliceIter[T]) Value() T     { return it.data[0] }
-func (it sliceIter[T]) Close() error { return nil }
+func (it sliceIter[_]) Close() error { return nil }
 
 func FuncIter[T any](fn func() ([]T, error)) Iter[T] {
 	return &funcIter[T]{fn: fn}
@@ -33,7 +33,7 @@ type funcIter[T any] struct {
 	err error
 }
 
-func (it *funcIter[T]) Next() bool {
+func (it *funcIter[_]) Next() bool {
 	if it.err != nil {
 		return false
 	}
@@ -44,4 +44,4 @@ func (it *funcIter[T]) Next() bool {
 	return len(it.data) > 0 && it.err == nil
 }
 
-func (it funcIter[T]) Close() error { return it.err }
+func (it funcIter[_]) Close() error { return it.err }
