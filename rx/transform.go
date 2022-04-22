@@ -18,3 +18,9 @@ func Take[T any](it Iter[T], n int) Iter[T] {
 		return []T{v}, nil
 	})
 }
+
+func Map[T1, T2 any](it Iter[T1], fn func(T1) T2) Iter[T2] {
+	return Transform(it, func(v T1) ([]T2, error) {
+		return []T2{fn(v)}, nil
+	})
+}
