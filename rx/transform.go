@@ -9,13 +9,6 @@ func Transform[T1, T2 any](it Iter[T1], fn func(T1) ([]T2, bool, error)) Iter[T2
 	})
 }
 
-func Take[T any](it Iter[T], n int) Iter[T] {
-	return Transform(it, func(v T) ([]T, bool, error) {
-		n--
-		return []T{v}, n >= 0, nil
-	})
-}
-
 func Map[T1, T2 any](it Iter[T1], fn func(T1) T2) Iter[T2] {
 	return Transform(it, func(v T1) ([]T2, bool, error) {
 		return []T2{fn(v)}, true, nil
@@ -28,5 +21,22 @@ func Filter[T any](it Iter[T], fn func(T) bool) Iter[T] {
 			return []T{v}, true, nil
 		}
 		return nil, true, nil
+	})
+}
+
+func Skip[T any](it Iter[T], n int) Iter[T] {
+	return Transform(it, func(v T) ([]T, bool, error) {
+		n--
+		if n >= 0 {
+			return nil, true, nil
+		}
+		return []T{v}, true, nil
+	})
+}
+
+func Take[T any](it Iter[T], n int) Iter[T] {
+	return Transform(it, func(v T) ([]T, bool, error) {
+		n--
+		return []T{v}, n >= 0, nil
 	})
 }
