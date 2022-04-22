@@ -1,5 +1,7 @@
 package rx
 
+import "golang.org/x/exp/constraints"
+
 type Iter[T any] interface {
 	Next() bool
 	Value() T
@@ -45,3 +47,15 @@ func (it *funcIter[_]) Next() bool {
 }
 
 func (it funcIter[_]) Close() error { return it.err }
+
+type Countable interface {
+	constraints.Integer | constraints.Float | constraints.Complex
+}
+
+func Counter[T Countable](start, step T) Iter[T] {
+	return FuncIter(func() ([]T, error) {
+		next := start
+		start += step
+		return []T{next}, nil
+	})
+}
