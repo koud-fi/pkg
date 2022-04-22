@@ -11,6 +11,12 @@ func Transform[T1, T2 any](it Iter[T1], fn func(T1) ([]T2, bool, error)) Iter[T2
 	})
 }
 
+func Any[T any](it Iter[T]) Iter[any] {
+	return Transform(it, func(v T) ([]any, bool, error) {
+		return []any{v}, true, nil
+	})
+}
+
 func Map[T1, T2 any](it Iter[T1], fn func(T1) T2) Iter[T2] {
 	return Transform(it, func(v T1) ([]T2, bool, error) {
 		return []T2{fn(v)}, true, nil
