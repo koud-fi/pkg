@@ -16,3 +16,7 @@ func TestIter(t *testing.T) {
 	s = rx.Take(s, 5)
 	rx.Discard(rx.Log(s, "2."))
 }
+
+func TestSum(t *testing.T) {
+	t.Log(rx.Sum(rx.Take(rx.Counter(1, 1), 10)))
+}
