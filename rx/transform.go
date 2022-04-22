@@ -1,5 +1,7 @@
 package rx
 
+import "log"
+
 func Transform[T1, T2 any](it Iter[T1], fn func(T1) ([]T2, bool, error)) Iter[T2] {
 	return FuncIter(func() ([]T2, bool, error) {
 		if !it.Next() {
@@ -38,5 +40,16 @@ func Take[T any](it Iter[T], n int) Iter[T] {
 	return Transform(it, func(v T) ([]T, bool, error) {
 		n--
 		return []T{v}, n >= 0, nil
+	})
+}
+
+func Log[T any](it Iter[T], prefix string) Iter[T] {
+	return Transform(it, func(v T) ([]T, bool, error) {
+		if prefix == "" {
+			log.Print(v)
+		} else {
+			log.Println(prefix, v)
+		}
+		return []T{v}, true, nil
 	})
 }
