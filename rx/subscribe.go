@@ -29,8 +29,8 @@ func Slice[T any](it Iter[T]) ([]T, error) {
 	return Reduce(it, func(s []T, v T) ([]T, error) { return append(s, v), nil }, []T{})
 }
 
-func Sum[T Number](it Iter[T]) (T, error) {
-	return Reduce(it, func(sum, n T) (T, error) { return sum + n, nil }, 0)
+func Sum[N Number](it Iter[N]) (N, error) {
+	return Reduce(it, func(sum, n N) (N, error) { return sum + n, nil }, 0)
 }
 
 func Drain[T any](it Iter[T]) {

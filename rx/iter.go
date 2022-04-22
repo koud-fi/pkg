@@ -50,10 +50,10 @@ func (it *funcIter[_]) Next() bool {
 
 func (it funcIter[_]) Close() error { return it.err }
 
-func Counter[T Number](start, step T) Iter[T] {
-	return FuncIter(func() ([]T, bool, error) {
+func Counter[N Number](start, step N) Iter[N] {
+	return FuncIter(func() ([]N, bool, error) {
 		next := start
 		start += step
-		return []T{next}, true, nil
+		return []N{next}, true, nil
 	})
 }
