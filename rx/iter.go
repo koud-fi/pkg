@@ -7,20 +7,20 @@ type Iter[T any] interface {
 }
 
 func SliceIter[T any](data ...T) Iter[T] {
-	return &sliceIter[T]{data: data}
+	return &sliceIter[T]{data: data, offset: -1}
 }
 
-type sliceIter[T any] struct{ data []T }
+type sliceIter[T any] struct {
+	data   []T
+	offset int
+}
 
 func (it *sliceIter[_]) Next() bool {
-	if len(it.data) == 0 {
-		return false
-	}
-	it.data = (it.data)[1:]
-	return len(it.data) > 0
+	it.offset++
+	return it.offset < len(it.data)
 }
 
-func (it sliceIter[T]) Value() T     { return it.data[0] }
+func (it sliceIter[T]) Value() T     { return it.data[it.offset] }
 func (it sliceIter[_]) Close() error { return nil }
 
 func FuncIter[T any](fn func() ([]T, bool, error)) Iter[T] {
@@ -41,10 +41,11 @@ func (it *funcIter[_]) Next() bool {
 		return true
 	}
 	hasMore := true
-	for hasMore && len(it.data) == 0 && it.err == nil {
+	for hasMore && it.offset >= len(it.data) && it.err == nil {
 		it.data, hasMore, it.err = it.fn()
+		it.offset = 0
 	}
-	return hasMore && len(it.data) > 0 && it.err == nil
+	return hasMore && it.offset < len(it.data) && it.err == nil
 }
 
 func (it funcIter[_]) Close() error { return it.err }
