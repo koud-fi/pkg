@@ -24,7 +24,7 @@ Common types and operations for file processing, based on blob interface.
 ### rx
 Reactive eXtensions, loose implementation of https://reactivex.io/
 
-[![Go Reference](https://pkg.go.dev/github.com/koud-fi/pkg/rx.svg)](https://pkg.go.dev/github.com/koud-fi/pkg/rx)
+[![Go Reference](https://pkg.go.dev/badge/github.com/koud-fi/pkg/rx.svg)](https://pkg.go.dev/github.com/koud-fi/pkg/rx)
 
 ### shell
 Higher level wrapper over the standard exec package.
