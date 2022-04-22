@@ -16,7 +16,7 @@ func (it *sliceIter[_]) Next() bool {
 	if len(it.data) == 0 {
 		return false
 	}
-	it.data = (it.data)[:len(it.data)-1]
+	it.data = (it.data)[1:]
 	return len(it.data) > 0
 }
 
