@@ -1,5 +1,13 @@
 package rx
 
+func First[T any](it Iter[T]) (T, bool, error) {
+	if !it.Next() {
+		var zero T
+		return zero, false, it.Close()
+	}
+	return it.Value(), true, nil
+}
+
 func ForEach[T any](it Iter[T], fn func(v T) error) error {
 	for it.Next() {
 		if err := fn(it.Value()); err != nil {
