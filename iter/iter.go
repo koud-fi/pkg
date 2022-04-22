@@ -22,3 +22,12 @@ func (it *dataIter[T]) Next() bool {
 
 func (it dataIter[T]) Value() T     { return it.data[it.offset] }
 func (it dataIter[T]) Close() error { return nil }
+
+func ForEach[T any](it Iter[T], fn func(v T) error) error {
+	for it.Next() {
+		if err := fn(it.Value()); err != nil {
+			return err
+		}
+	}
+	return it.Close()
+}
