@@ -17,8 +17,8 @@ func TestIter(t *testing.T) {
 	rx.Drain(rx.Log(s, "2."))
 }
 
-func TestUnique(_ *testing.T) {
-	rx.Drain(rx.Log(rx.Unique(rx.SliceIter(2, 1, 2, 3, 3, 1, 4, 1)), ""))
+func TestUnique(t *testing.T) {
+	t.Log(rx.Slice(rx.Unique(rx.SliceIter(5, 2, 1, 2, 3, 3, 1, 4, 1))))
 }
 
 func TestSum(t *testing.T) {
