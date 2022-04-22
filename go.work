@@ -11,8 +11,8 @@ use (
 	./fetch
 	./file
 	./grf
-	./iter
 	./pk
+	./rx
 	./schema
 	./serve
 	./shell
