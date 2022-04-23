@@ -35,6 +35,10 @@ func TestSkipAndTake(t *testing.T) {
 	t.Log(rx.Slice(rx.Take(rx.Skip(rx.Counter(1, 1), 10), 10)))
 }
 
+func TestParition(t *testing.T) {
+	t.Log(rx.Slice(rx.PartitionAll(rx.Take(rx.Counter(1, 1), 10), 3)))
+}
+
 func TestSum(t *testing.T) {
 	t.Log(rx.Sum(rx.Take(rx.Counter(1, 1), 10)))
 }
