@@ -60,3 +60,7 @@ func Counter[N Number](start, step N) Iter[N] {
 		return []N{next}, true, nil
 	})
 }
+
+func Range[N Number](start, step N, count int) Iter[N] {
+	return Take(Counter(start, step), count)
+}

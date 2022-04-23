@@ -36,15 +36,15 @@ func TestSkipAndTake(t *testing.T) {
 }
 
 func TestParition(t *testing.T) {
-	t.Log(rx.Slice(rx.PartitionAll(rx.Take(rx.Counter(1, 1), 10), 3)))
+	t.Log(rx.Slice(rx.PartitionAll(rx.Range(1, 1, 10), 3)))
 }
 
 func TestSum(t *testing.T) {
-	t.Log(rx.Sum(rx.Take(rx.Counter(1, 1), 10)))
+	t.Log(rx.Sum(rx.Range(1, 1, 10)))
 }
 
 func TestToMapAndSelect(t *testing.T) {
-	m, keys, _ := rx.ToMap(rx.Take(rx.Counter(1, 1), 5), func(n int) string {
+	m, keys, _ := rx.ToMap(rx.Range(1, 1, 5), func(n int) string {
 		return "." + strconv.Itoa(n)
 	})
 	t.Log(m, keys, rx.SelectKeys(m, keys))
