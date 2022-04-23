@@ -115,7 +115,7 @@ func videoToImage(src string, p Params) (io.ReadCloser, error) {
 
 		return nil, errors.New("non-local blobs not supported")
 	}
-	args := []any{"-v", "fatal"}
+	args := []any{"-hide_banner", "-v", "fatal"}
 	if seek, _ := p["t"]; seek > 0 {
 		var (
 			t  = time.Duration(seek) * time.Second
