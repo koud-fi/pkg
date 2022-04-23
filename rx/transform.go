@@ -57,7 +57,7 @@ func Skip[T any](it Iter[T], n int) Iter[T] {
 func Take[T any](it Iter[T], n int) Iter[T] {
 	return Transform(it, func(v T) ([]T, bool, error) {
 		n--
-		return []T{v}, n >= 0, nil
+		return []T{v}, n > 0, nil
 	})
 }
 
