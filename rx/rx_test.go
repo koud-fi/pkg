@@ -43,8 +43,9 @@ func TestSum(t *testing.T) {
 	t.Log(rx.Sum(rx.Take(rx.Counter(1, 1), 10)))
 }
 
-func TestToMap(t *testing.T) {
-	t.Log(rx.ToMap(rx.Take(rx.Counter(1, 1), 5), func(n int) string {
+func TestToMapAndSelect(t *testing.T) {
+	m, keys, _ := rx.ToMap(rx.Take(rx.Counter(1, 1), 5), func(n int) string {
 		return "." + strconv.Itoa(n)
-	}))
+	})
+	t.Log(m, keys, rx.SelectKeys(m, keys))
 }

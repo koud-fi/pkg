@@ -10,3 +10,11 @@ func ToMap[K comparable, V any](it Iter[V], keyFn func(V) K) (m map[K]V, keys []
 	})
 	return
 }
+
+func SelectKeys[K comparable, V any](m map[K]V, keys []K) []V {
+	out := make([]V, 0, len(keys))
+	for _, k := range keys {
+		out = append(out, m[k])
+	}
+	return out
+}
