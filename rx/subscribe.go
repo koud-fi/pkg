@@ -8,13 +8,21 @@ func First[T any](it Iter[T]) (T, bool, error) {
 	return it.Value(), true, nil
 }
 
-func ForEach[T any](it Iter[T], fn func(v T) error) error {
+func ForEach[T any](it Iter[T], fn func(T) error) error {
 	for it.Next() {
 		if err := fn(it.Value()); err != nil {
 			return err
 		}
 	}
 	return it.Close()
+}
+
+func ForEachN[T any](it Iter[T], fn func(T, int) error) error {
+	i := -1
+	return ForEach(it, func(v T) error {
+		i++
+		return fn(v, i)
+	})
 }
 
 func Reduce[T, S any](it Iter[T], fn func(S, T) (S, error), sum S) (S, error) {
