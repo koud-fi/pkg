@@ -25,3 +25,18 @@ func PartitionAll[T any](it Iter[T], n int) Iter[[]T] {
 		return vs, nil
 	})
 }
+
+func PartitionLoops[T comparable](it Iter[T]) Iter[[]T] {
+	return Partition(it, func(vs []T) ([]T, [][]T) {
+		last := len(vs) - 1
+		for i := last - 1; i >= 0; i-- {
+			if vs[i] == vs[last] {
+				if i > 0 {
+					return []T{vs[last]}, [][]T{vs[:i], vs[i:last]}
+				}
+				return nil, [][]T{vs}
+			}
+		}
+		return vs, nil
+	})
+}

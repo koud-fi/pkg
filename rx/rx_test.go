@@ -39,6 +39,10 @@ func TestParitionAll(t *testing.T) {
 	t.Log(rx.Slice(rx.PartitionAll(rx.Range(1, 1, 10), 3)))
 }
 
+func TestParitionLoops(t *testing.T) {
+	t.Log(rx.Slice(rx.PartitionLoops(rx.SliceIter(0, 1, 2, 3, 4, 2, 3, 4, 0, 5, 4, 1))))
+}
+
 func TestSum(t *testing.T) {
 	t.Log(rx.Sum(rx.Range(1, 1, 10)))
 }
