@@ -10,6 +10,7 @@ use (
 	./cas
 	./fetch
 	./file
+	./fingerprint
 	./grf
 	./pk
 	./rx
