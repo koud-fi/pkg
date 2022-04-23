@@ -27,6 +27,10 @@ func TestUnique(t *testing.T) {
 	t.Log(rx.Slice(rx.Unique(rx.SliceIter(5, 2, 1, 2, 3, 3, 1, 4, 1))))
 }
 
+func TestDistinct(t *testing.T) {
+	t.Log(rx.Slice(rx.Distinct(rx.SliceIter(0, 0, 2, 1, 1, 1, 2, 3, 2, 2, 3, 3, 4))))
+}
+
 func TestSkipAndTake(t *testing.T) {
 	t.Log(rx.Slice(rx.Take(rx.Skip(rx.Counter(1, 1), 10), 10)))
 }

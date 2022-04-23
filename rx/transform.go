@@ -51,6 +51,26 @@ func Unique[T comparable](it Iter[T]) Iter[T] {
 	})
 }
 
+func Distinct[T comparable](it Iter[T]) Iter[T] {
+	return DistinctFunc(it, func(next, prev T) bool { return next != prev })
+}
+
+func DistinctFunc[T any](it Iter[T], fn func(T, T) bool) Iter[T] {
+	var (
+		init bool
+		prev T
+	)
+	return Filter(it, func(v T) bool {
+		if !init {
+			init = true
+		} else if !fn(v, prev) {
+			return false
+		}
+		prev = v
+		return true
+	})
+}
+
 func Skip[T any](it Iter[T], n int) Iter[T] {
 	return Filter(it, func(T) bool {
 		n--
