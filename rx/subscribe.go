@@ -33,6 +33,12 @@ func Sum[N Number](it Iter[N]) (N, error) {
 	return Reduce(it, func(sum, n N) (N, error) { return sum + n, nil }, 0)
 }
 
+func Count[T any](it Iter[T]) (int, error) {
+	var n int
+	err := ForEach(it, func(T) error { n++; return nil })
+	return n, err
+}
+
 func Drain[T any](it Iter[T]) error {
-	return ForEach(it, func(_ T) error { return nil })
+	return ForEach(it, func(T) error { return nil })
 }
