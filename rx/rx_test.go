@@ -17,6 +17,12 @@ func TestIter(t *testing.T) {
 	rx.Drain(rx.Log(s, "2."))
 }
 
+func TestFuncIter(t *testing.T) {
+	rx.Drain(rx.Log(rx.FuncIter(func() ([]int, bool, error) {
+		return []int{1, 2, 3}, false, nil
+	}), ""))
+}
+
 func TestUnique(t *testing.T) {
 	t.Log(rx.Slice(rx.Unique(rx.SliceIter(5, 2, 1, 2, 3, 3, 1, 4, 1))))
 }
