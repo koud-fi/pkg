@@ -33,6 +33,6 @@ func Sum[N Number](it Iter[N]) (N, error) {
 	return Reduce(it, func(sum, n N) (N, error) { return sum + n, nil }, 0)
 }
 
-func Drain[T any](it Iter[T]) {
-	ForEach(it, func(_ T) error { return nil })
+func Drain[T any](it Iter[T]) error {
+	return ForEach(it, func(_ T) error { return nil })
 }

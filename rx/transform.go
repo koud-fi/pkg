@@ -5,7 +5,7 @@ import "log"
 func Transform[T1, T2 any](it Iter[T1], fn func(T1) ([]T2, bool, error)) Iter[T2] {
 	return FuncIter(func() ([]T2, bool, error) {
 		if !it.Next() {
-			return nil, false, nil
+			return nil, false, it.Close()
 		}
 		return fn(it.Value())
 	})
