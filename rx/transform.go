@@ -18,8 +18,16 @@ func Any[T any](it Iter[T]) Iter[any] {
 }
 
 func Map[T1, T2 any](it Iter[T1], fn func(T1) T2) Iter[T2] {
+	return MapErr(it, func(v T1) (T2, error) { return fn(v), nil })
+}
+
+func MapErr[T1, T2 any](it Iter[T1], fn func(T1) (T2, error)) Iter[T2] {
 	return Transform(it, func(v T1) ([]T2, bool, error) {
-		return []T2{fn(v)}, true, nil
+		out, err := fn(v)
+		if err != nil {
+			return nil, false, err
+		}
+		return []T2{out}, true, nil
 	})
 }
 
