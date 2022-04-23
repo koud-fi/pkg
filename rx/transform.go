@@ -49,16 +49,12 @@ func Unique[T comparable](it Iter[T]) Iter[T] {
 		set[v] = struct{}{}
 		return true
 	})
-
 }
 
 func Skip[T any](it Iter[T], n int) Iter[T] {
-	return Transform(it, func(v T) ([]T, bool, error) {
+	return Filter(it, func(T) bool {
 		n--
-		if n >= 0 {
-			return nil, true, nil
-		}
-		return []T{v}, true, nil
+		return n < 0
 	})
 }
 
