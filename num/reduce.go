@@ -1,35 +1,36 @@
 package num
 
-func Sum(n ...int) int {
-	sum := 0
+import "golang.org/x/exp/constraints"
+
+func Sum[N Number](n ...N) (sum N) {
 	for i := range n {
 		sum += n[i]
 	}
-	return sum
+	return
 }
 
-func Min(n ...int) int {
+func Min[T constraints.Ordered](n ...T) (min T) {
 	if len(n) == 0 {
-		return 0
+		return
 	}
-	min := n[0]
+	min = n[0]
 	for i := range n {
 		if n[i] < min {
 			min = n[i]
 		}
 	}
-	return min
+	return
 }
 
-func Max(n ...int) int {
+func Max[T constraints.Ordered](n ...T) (max T) {
 	if len(n) == 0 {
-		return 0
+		return
 	}
-	max := n[0]
+	max = n[0]
 	for i := range n {
 		if n[i] > max {
 			max = n[i]
 		}
 	}
-	return max
+	return
 }
