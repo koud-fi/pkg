@@ -14,7 +14,6 @@ use (
 	./grf
 	./pk
 	./rx
-	./schema
 	./serve
 	./shell
 	./sorted
