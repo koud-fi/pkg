@@ -78,6 +78,9 @@ func (t *Dice) UnmarshalJSON(data []byte) error {
 		die, _ := strconv.Atoi(parts[1])
 		t.Die = Die(die)
 	}
+	if t.N <= 0 {
+		t.N = 1
+	}
 	return nil
 }
 
