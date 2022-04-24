@@ -12,6 +12,7 @@ use (
 	./file
 	./fingerprint
 	./grf
+	./num
 	./pk
 	./rx
 	./serve
