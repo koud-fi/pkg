@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/koud-fi/pkg/blob v0.0.0-20220326182236-0c4243c96d1c
-	github.com/koud-fi/pkg/shell v0.0.0-20220423161729-d832a9368551
+	github.com/koud-fi/pkg/shell v0.0.0-20220424081240-d6ced22e8df4
 	golang.org/x/image v0.0.0-20220413100746-70e8d0d3baa9
 )
 
