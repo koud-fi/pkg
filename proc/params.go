@@ -9,16 +9,16 @@ import (
 )
 
 type Params interface {
-	Apply(interface{}) error
+	Apply(any) error
 }
 
-type ParamFunc func(v interface{}) error
+type ParamFunc func(v any) error
 
-func (fn ParamFunc) Apply(v interface{}) error { return fn(v) }
+func (fn ParamFunc) Apply(v any) error { return fn(v) }
 
 type ParamMap map[string][]string
 
-func (m ParamMap) Apply(v interface{}) error {
+func (m ParamMap) Apply(v any) error {
 	return applyParams(reflect.ValueOf(v), func(key string) []string {
 		return m[key]
 	})
