@@ -41,12 +41,17 @@ func Filter[T any](it Iter[T], fn func(T) bool) Iter[T] {
 }
 
 func Unique[T comparable](it Iter[T]) Iter[T] {
-	set := make(map[T]struct{})
+	return UniqueFunc(it, func(v T) T { return v })
+}
+
+func UniqueFunc[T any, K comparable](it Iter[T], fn func(T) K) Iter[T] {
+	set := make(map[K]struct{})
 	return Filter(it, func(v T) bool {
-		if _, ok := set[v]; ok {
+		k := fn(v)
+		if _, ok := set[k]; ok {
 			return false
 		}
-		set[v] = struct{}{}
+		set[k] = struct{}{}
 		return true
 	})
 }
