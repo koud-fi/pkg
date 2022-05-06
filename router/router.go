@@ -1,20 +1,36 @@
 package router
 
 type Router struct {
-	routes map[string]any
+	routeMap map[string]any
+}
+
+type Route struct {
+	Path    string
+	Handler any
 }
 
 func New() *Router {
-	return &Router{routes: make(map[string]any)}
+	return &Router{routeMap: make(map[string]any)}
 }
 
 func (r *Router) Add(route string, handler any) {
-	r.routes[route] = handler
+	r.routeMap[route] = handler
 }
 
 func (r Router) Lookup(route string) (any, func(string) string) {
 
 	// TODO: support route parameters
 
-	return r.routes[route], func(key string) string { return "" }
+	return r.routeMap[route], func(key string) string { return "" }
+}
+
+func (r Router) Routes() []Route {
+	rs := make([]Route, 0, len(r.routeMap))
+	for p, h := range r.routeMap {
+		rs = append(rs, Route{
+			Path:    p,
+			Handler: h,
+		})
+	}
+	return rs
 }
