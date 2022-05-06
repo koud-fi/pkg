@@ -15,7 +15,6 @@ use (
 	./num
 	./pk
 	./proc
-	./router
 	./rx
 	./serve
 	./shell
