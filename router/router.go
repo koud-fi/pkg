@@ -17,7 +17,7 @@ func (r *Router[T]) Add(route string, handler T) {
 	r.routeMap[route] = handler
 }
 
-func (r Router[T]) Lookup(route string) (any, func(string) string) {
+func (r Router[T]) Lookup(route string) (T, func(string) string) {
 
 	// TODO: support route parameters
 
