@@ -1,4 +1,4 @@
-package proc
+package procrouter
 
 import (
 	"context"
@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/koud-fi/pkg/proc"
 )
 
 const endpointPattern = `^[\.a-zA-Z0-9]+$`
@@ -13,14 +15,14 @@ const endpointPattern = `^[\.a-zA-Z0-9]+$`
 var endpointValidator = regexp.MustCompile(endpointPattern)
 
 type Router struct {
-	endpoints map[string]Proc
+	endpoints map[string]proc.Proc
 }
 
-func NewRouter() Router {
-	return Router{endpoints: make(map[string]Proc)}
+func New() Router {
+	return Router{endpoints: make(map[string]proc.Proc)}
 }
 
-func (r *Router) Add(endpoint string, pr Proc) {
+func (r *Router) Add(endpoint string, pr proc.Proc) {
 	if !endpointValidator.MatchString(endpoint) {
 		panic(fmt.Sprintf("%s doesn't match endpoint pattern: %s",
 			endpoint, endpointPattern))
@@ -28,7 +30,7 @@ func (r *Router) Add(endpoint string, pr Proc) {
 	r.endpoints[normalizeEndpoint(endpoint)] = pr
 }
 
-func (r Router) Invoke(ctx context.Context, route string, p Params) (any, error) {
+func (r Router) Invoke(ctx context.Context, route string, p proc.Params) (any, error) {
 	pr, ok := r.endpoints[normalizeEndpoint(route)]
 	if !ok {
 		return nil, fmt.Errorf("not found: %s", route)
