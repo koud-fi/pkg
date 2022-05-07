@@ -79,8 +79,6 @@ func newProc(fn any) (pr Proc) {
 	return pr
 }
 
-func (pr Proc) IsValid() bool { return !pr.fn.IsNil() }
-
 func (pr Proc) Invoke(ctx context.Context, p Params) (any, error) {
 	var callArgs []reflect.Value
 	if pr.numIn > 0 {
