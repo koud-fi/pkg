@@ -52,12 +52,15 @@ func Blob(w http.ResponseWriter, r *http.Request, b blob.Blob, opt ...Option) (*
 		return nil, err
 	}
 	defer rc.Close()
+	return Reader(w, r, rc, opt...)
+}
 
-	var (
-		c  = buildConfig(opt)
-		rd io.Reader
-	)
-	if br, ok := rc.(blob.BytesReader); ok {
+func Reader(w http.ResponseWriter, r *http.Request, rd io.Reader, opt ...Option) (*Info, error) {
+	if c, ok := rd.(io.Closer); ok {
+		defer c.Close()
+	}
+	var c = buildConfig(opt)
+	if br, ok := rd.(blob.BytesReader); ok {
 		buf := br.Bytes()
 		c.ContentLength = int64(len(buf))
 
@@ -66,7 +69,7 @@ func Blob(w http.ResponseWriter, r *http.Request, b blob.Blob, opt ...Option) (*
 		rd = bytes.NewReader(buf)
 
 	} else {
-		if f, ok := rc.(fs.File); ok {
+		if f, ok := rd.(fs.File); ok {
 			info, err := f.Stat()
 			if err != nil {
 				return nil, err
@@ -77,7 +80,6 @@ func Blob(w http.ResponseWriter, r *http.Request, b blob.Blob, opt ...Option) (*
 
 		// TODO: detect content-type
 
-		rd = rc
 	}
 	c.writeHeader(w)
 
