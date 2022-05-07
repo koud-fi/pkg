@@ -23,7 +23,14 @@ func (c CLI) Run(ctx context.Context, args ...string) error {
 		cmd = args[0]
 		args = args[1:]
 	}
-	out, err := c.r.Invoke(ctx, cmd, Params(args...))
+	return writeOutput(c.r.Invoke(ctx, cmd, Params(args...)))
+}
+
+func Run(ctx context.Context, p proc.Proc, args ...string) error {
+	return writeOutput(p.Invoke(ctx, Params(args...)))
+}
+
+func writeOutput(out any, err error) error {
 	if err != nil {
 		return err
 	}
