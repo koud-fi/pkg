@@ -56,9 +56,6 @@ func Blob(w http.ResponseWriter, r *http.Request, b blob.Blob, opt ...Option) (*
 }
 
 func Reader(w http.ResponseWriter, r *http.Request, rd io.Reader, opt ...Option) (*Info, error) {
-	if c, ok := rd.(io.Closer); ok {
-		defer c.Close()
-	}
 	var c = buildConfig(opt)
 	if br, ok := rd.(blob.BytesReader); ok {
 		buf := br.Bytes()
