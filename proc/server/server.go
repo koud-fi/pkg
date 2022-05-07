@@ -7,6 +7,7 @@ import (
 
 	"github.com/koud-fi/pkg/proc"
 	"github.com/koud-fi/pkg/proc/router"
+	"github.com/koud-fi/pkg/serve"
 )
 
 type Server struct {
@@ -18,32 +19,32 @@ func New(r router.Router) Server {
 }
 
 func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	endpoint := r.URL.Path
-	switch r.Method {
-	case http.MethodHead, http.MethodGet:
-	default:
-		endpoint = r.Method + endpoint
-	}
-	var params proc.Params
-	switch contentTypeBase(r) {
-	case "text/json", "application/json":
-		params = proc.ParamFunc(json.NewDecoder(r.Body).Decode)
-
-	// TODO: multi-part form
-
-	default:
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+	serve.Handle(w, r, func() (*serve.Info, error) {
+		endpoint := r.URL.Path
+		switch r.Method {
+		case http.MethodHead, http.MethodGet:
+		default:
+			endpoint = r.Method + endpoint
 		}
-		params = proc.ParamMap(r.Form)
-	}
-	out, err := s.r.Invoke(r.Context(), endpoint, params)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	proc.WriteOutput(w, out)
+		var params proc.Params
+		switch contentTypeBase(r) {
+		case "text/json", "application/json":
+			params = proc.ParamFunc(json.NewDecoder(r.Body).Decode)
+
+		// TODO: multi-part form
+
+		default:
+			if err := r.ParseForm(); err != nil {
+				return nil, err
+			}
+			params = proc.ParamMap(r.Form)
+		}
+		out, err := s.r.Invoke(r.Context(), endpoint, params)
+		if err != nil {
+			return nil, err
+		}
+		return serve.Blob(w, r, proc.OutputBlob(out))
+	})
 }
 
 func contentTypeBase(r *http.Request) string {

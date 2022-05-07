@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/proc"
 	"github.com/koud-fi/pkg/proc/router"
 )
@@ -34,7 +35,7 @@ func writeOutput(out any, err error) error {
 	if err != nil {
 		return err
 	}
-	return proc.WriteOutput(os.Stdout, out)
+	return blob.WriteTo(os.Stdout, proc.OutputBlob(out))
 }
 
 func Params(args ...string) proc.Params {
