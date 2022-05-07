@@ -35,6 +35,8 @@ func FromFS(fsys fs.FS, name string) Blob {
 	return Func(func() (io.ReadCloser, error) { return fsys.Open(name) })
 }
 
+func Empty() Blob { return FromBytes(nil) }
+
 type BytesReader interface {
 	io.ReadCloser
 	Bytes() []byte
