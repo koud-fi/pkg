@@ -22,6 +22,14 @@ func New() Router {
 	return Router{endpoints: make(map[string]proc.Proc)}
 }
 
+func (r Router) Clone() Router {
+	cr := Router{endpoints: make(map[string]proc.Proc, len(r.endpoints))}
+	for e, p := range r.endpoints {
+		cr.endpoints[e] = p
+	}
+	return cr
+}
+
 func (r *Router) Add(endpoint string, pr proc.Proc) {
 	if !endpointValidator.MatchString(endpoint) {
 		panic(fmt.Sprintf("%s doesn't match endpoint pattern: %s",
