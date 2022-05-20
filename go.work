@@ -8,6 +8,7 @@ use (
 	./cache
 	./calendar
 	./cas
+	./datastore
 	./fetch
 	./file
 	./fingerprint
