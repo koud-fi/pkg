@@ -4,9 +4,15 @@ import "github.com/koud-fi/pkg/blob"
 
 type Store struct {
 	s blob.Storage
+	c Codec
 }
 
-func New(s blob.Storage) *Store {
+type Codec struct {
+	Marshal   blob.MarshalFunc
+	Unmarshal blob.UnmarshalFunc
+}
+
+func New(s blob.Storage, c Codec) *Store {
 	return &Store{s: s}
 }
 
