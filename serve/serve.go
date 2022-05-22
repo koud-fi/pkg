@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/fs"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -17,6 +18,8 @@ import (
 )
 
 var ErrContentLengthMismatch = errors.New("content-length mismatch")
+
+var rangeParser = regexp.MustCompile(`bytes=(\d+)-(\d+)?`)
 
 type Option func(c *config)
 
@@ -95,10 +98,26 @@ func Reader(rw http.ResponseWriter, r *http.Request, rd io.Reader, opt ...Option
 		// TODO: detect content-type
 
 	}
-
-	// TODO: range requests
-
 	w := io.Writer(rw)
+
+	// TODO: support range requests with io.Seeker
+
+	if rat, ok := rd.(io.ReaderAt); ok {
+		rw.Header().Set("Accept-Ranges", "bytes")
+
+		if rh := r.Header.Get("Range"); rh != "" {
+			begin, end := parseRangeHeader(rh, c.ContentLength)
+			buf := make([]byte, end-begin)
+			if _, err := rat.ReadAt(buf, begin); err != nil {
+				return nil, err
+			}
+			rw.Header().Set("Content-Range",
+				fmt.Sprintf("bytes %d-%d/%d", begin, end-1, c.ContentLength))
+			c.StatusCode = http.StatusPartialContent
+
+			w = bytes.NewBuffer(buf)
+		}
+	}
 	if c.Compress {
 		rw.Header().Set("Vary", "Content-Encoding")
 		if c.ContentLength > 1400 && strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
@@ -162,4 +181,20 @@ func (nfo Info) writeHeader(w http.ResponseWriter) {
 		w.Header().Set("Content-Disposition", nfo.Disposition)
 	}
 	w.WriteHeader(nfo.StatusCode)
+}
+
+func parseRangeHeader(s string, size int64) (int64, int64) {
+	const bufSize = 1 << 22 // 4 MB
+	var (
+		sms      = rangeParser.FindStringSubmatch(s)
+		begin, _ = strconv.ParseInt(sms[1], 10, 64)
+		end, _   = strconv.ParseInt(sms[2], 10, 64)
+	)
+	if end <= 0 || end == begin || end-begin > bufSize {
+		end = begin + bufSize
+		if end > size {
+			end = size
+		}
+	}
+	return begin, end
 }
