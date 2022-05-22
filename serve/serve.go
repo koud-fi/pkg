@@ -2,6 +2,7 @@ package serve
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"io/fs"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/koud-fi/pkg/blob"
@@ -28,6 +30,7 @@ type Info struct {
 	LastModified  time.Time
 	MaxAge        time.Duration
 	Immutable     bool
+	Compress      bool
 	Disposition   string
 }
 
@@ -37,6 +40,7 @@ func ContentType(ct string) Option    { return func(c *config) { c.ContentType =
 func Location(loc string) Option      { return func(c *config) { c.Location = loc } }
 func LastModified(t time.Time) Option { return func(c *config) { c.LastModified = t } }
 func MaxAge(d time.Duration) Option   { return func(c *config) { c.MaxAge = d } }
+func Compress(b bool) Option          { return func(c *config) { c.Compress = b } }
 func Immutable(b bool) Option         { return func(c *config) { c.Immutable = b } }
 
 func Attachment(name string) Option {
@@ -68,7 +72,7 @@ func Blob(w http.ResponseWriter, r *http.Request, b blob.Blob, opt ...Option) (*
 	return Reader(w, r, rc, opt...)
 }
 
-func Reader(w http.ResponseWriter, r *http.Request, rd io.Reader, opt ...Option) (*Info, error) {
+func Reader(rw http.ResponseWriter, r *http.Request, rd io.Reader, opt ...Option) (*Info, error) {
 	var c = buildConfig(opt)
 	if br, ok := rd.(blob.BytesReader); ok {
 		buf := br.Bytes()
@@ -91,9 +95,25 @@ func Reader(w http.ResponseWriter, r *http.Request, rd io.Reader, opt ...Option)
 		// TODO: detect content-type
 
 	}
-	c.writeHeader(w)
 
 	// TODO: range requests
+
+	w := io.Writer(rw)
+	if c.Compress {
+		rw.Header().Set("Vary", "Content-Encoding")
+		if c.ContentLength > 1400 && strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			c.ContentLength = -1
+			rw.Header().Set("Content-Encoding", "gzip")
+
+			gw := gzip.NewWriter(w)
+			defer gw.Flush()
+			w = gw
+
+		} else {
+			c.Compress = false
+		}
+	}
+	c.writeHeader(rw)
 
 	if n, err := io.Copy(w, rd); err != nil {
 		return nil, err
