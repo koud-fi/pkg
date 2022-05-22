@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"net/http"
@@ -27,6 +28,7 @@ type Info struct {
 	LastModified  time.Time
 	MaxAge        time.Duration
 	Immutable     bool
+	Disposition   string
 }
 
 func StatusCode(n int) Option         { return func(c *config) { c.StatusCode = n } }
@@ -36,6 +38,15 @@ func Location(loc string) Option      { return func(c *config) { c.Location = lo
 func LastModified(t time.Time) Option { return func(c *config) { c.LastModified = t } }
 func MaxAge(d time.Duration) Option   { return func(c *config) { c.MaxAge = d } }
 func Immutable(b bool) Option         { return func(c *config) { c.Immutable = b } }
+
+func Attachment(name string) Option {
+	return func(c *config) {
+		if name == "" {
+			c.Disposition = ""
+		}
+		c.Disposition = fmt.Sprintf(`attachment; filename="%s"`, name)
+	}
+}
 
 func Header(w http.ResponseWriter, opt ...Option) (*Info, error) {
 	c := buildConfig(opt)
@@ -126,6 +137,9 @@ func (nfo Info) writeHeader(w http.ResponseWriter) {
 			v += ", immutable"
 		}
 		w.Header().Set("Cache-Control", v)
+	}
+	if nfo.Disposition != "" {
+		w.Header().Set("Content-Disposition", nfo.Disposition)
 	}
 	w.WriteHeader(nfo.StatusCode)
 }
