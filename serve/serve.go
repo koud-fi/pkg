@@ -25,8 +25,8 @@ type Info struct {
 	ContentType   string
 	Location      string
 	LastModified  time.Time
-
-	// TODO: cache rules
+	MaxAge        time.Duration
+	Immutable     bool
 }
 
 func StatusCode(n int) Option         { return func(c *config) { c.StatusCode = n } }
@@ -34,6 +34,8 @@ func ContentLength(n int64) Option    { return func(c *config) { c.ContentLength
 func ContentType(ct string) Option    { return func(c *config) { c.ContentType = ct } }
 func Location(loc string) Option      { return func(c *config) { c.Location = loc } }
 func LastModified(t time.Time) Option { return func(c *config) { c.LastModified = t } }
+func MaxAge(d time.Duration) Option   { return func(c *config) { c.MaxAge = d } }
+func Immutable(b bool) Option         { return func(c *config) { c.Immutable = b } }
 
 func Header(w http.ResponseWriter, opt ...Option) (*Info, error) {
 	c := buildConfig(opt)
@@ -114,6 +116,16 @@ func (nfo Info) writeHeader(w http.ResponseWriter) {
 	}
 	if !nfo.LastModified.IsZero() {
 		w.Header().Set("Last-Modified", nfo.LastModified.Format(http.TimeFormat))
+	}
+	if nfo.MaxAge > 0 || nfo.Immutable {
+		if nfo.Immutable && nfo.MaxAge == 0 {
+			nfo.MaxAge = time.Hour * 24 * 365 // year
+		}
+		v := "public, max-age=" + strconv.Itoa(int(nfo.MaxAge/time.Second))
+		if nfo.Immutable {
+			v += ", immutable"
+		}
+		w.Header().Set("Cache-Control", v)
 	}
 	w.WriteHeader(nfo.StatusCode)
 }
