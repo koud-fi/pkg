@@ -1,4 +1,4 @@
-package tagindex
+package search
 
 type Entity struct {
 	ID    string
