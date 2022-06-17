@@ -1,13 +1,13 @@
-package tagindex
+package search
 
-type Entity struct {
+type Entry struct {
 	ID    string
 	Order int64
 	Tags  []string
 }
 
 type QueryResult struct {
-	Data       []Entity
+	Data       []Entry
 	TotalCount int
 }
 
@@ -18,7 +18,7 @@ type TagInfo struct {
 
 type TagIndex interface {
 	Query(tags []string, limit int) (QueryResult, error)
-	Put(e ...Entity) error
+	Put(e ...Entry)
 	Commit() error
 	Tags(prefix string, limit int) ([]TagInfo, error)
 }

@@ -19,7 +19,7 @@ func (r *Request) OpenFile() (fs.File, error) {
 		return nil, err
 	}
 	return &file{
-		fileInfo: &fileInfo{url: req.URL, header: res.Header},
+		fileInfo: &fileInfo{url: req.URL, header: res.Header, dr: r.dirReader},
 		body:     res.Body,
 	}, nil
 }
@@ -30,7 +30,7 @@ func (r *Request) Stat() (fs.FileInfo, error) {
 		return nil, err
 	}
 	res.Body.Close()
-	return &fileInfo{url: req.URL, header: res.Header}, nil
+	return &fileInfo{url: req.URL, header: res.Header, dr: r.dirReader}, nil
 }
 
 func (r *Request) do() (*http.Response, *http.Request, error) {

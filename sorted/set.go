@@ -63,4 +63,6 @@ func (s *Set[T]) clean() {
 	}
 }
 
+func (s Set[T]) Data() []T { return s.data }
+
 // TODO: common set operations

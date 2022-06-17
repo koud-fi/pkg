@@ -8,6 +8,7 @@ use (
 	./cache
 	./calendar
 	./cas
+	./datastore
 	./fetch
 	./file
 	./fingerprint
@@ -16,6 +17,7 @@ use (
 	./pk
 	./proc
 	./rx
+	./search
 	./serve
 	./shell
 	./sorted
@@ -23,5 +25,4 @@ use (
 	./storage/localdisk
 	./storage/memory
 	./storage/storagetest
-	./tagindex
 )
