@@ -35,6 +35,7 @@ type Info struct {
 	Immutable     bool
 	Compress      bool
 	Disposition   string
+	Range         *[2]int64
 }
 
 func StatusCode(n int) Option         { return func(c *config) { c.StatusCode = n } }
@@ -53,6 +54,10 @@ func Attachment(name string) Option {
 		}
 		c.Disposition = fmt.Sprintf(`attachment; filename="%s"`, name)
 	}
+}
+
+func Range(start, end int64) Option {
+	return func(c *config) { c.Range = &[2]int64{start, end} }
 }
 
 func Header(w http.ResponseWriter, opt ...Option) (*Info, error) {
@@ -179,6 +184,9 @@ func (nfo Info) writeHeader(w http.ResponseWriter) {
 	}
 	if nfo.Disposition != "" {
 		w.Header().Set("Content-Disposition", nfo.Disposition)
+	}
+	if nfo.Range != nil {
+		w.Header().Set("Range", fmt.Sprintf("%d-%d", nfo.Range[0], nfo.Range[1]))
 	}
 	w.WriteHeader(nfo.StatusCode)
 }
