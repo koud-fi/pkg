@@ -62,7 +62,7 @@ func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] 
 		}
 		select {
 		case <-ctx.Done():
-			return nil, false, nil
+			return nil, false, ctx.Err()
 		default:
 			var out []blob.RefBlob // TODO: return larger batches of data
 			if i < len(s.data) {
