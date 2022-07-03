@@ -2,35 +2,69 @@ package diriter
 
 import (
 	"io/fs"
+	"path"
 
 	"github.com/koud-fi/pkg/rx"
 )
+
+const defaultBatchSize = 1 << 6
 
 type Node struct {
 	Path string
 	fs.DirEntry
 }
 
+type dirInfo struct {
+	path    string
+	entries []fs.DirEntry
+}
+
 func New(fsys fs.FS, root string) rx.Iter[Node] {
+	var (
+		dirs []dirInfo
+		init bool
+	)
 	return rx.FuncIter(func() ([]Node, bool, error) {
-
-		// TODO: proper lazy implementation
-
-		var nodes []Node
-		err := fs.WalkDir(fsys, root, func(path string, d fs.DirEntry, err error) error {
+		if !init {
+			dir, err := fs.ReadDir(fsys, root)
 			if err != nil {
-				return err
+				return nil, false, err
 			}
-			if d.IsDir() {
-				return nil
+			dirs = []dirInfo{{path: root, entries: dir}}
+			init = true
+		}
+		out := make([]Node, 0, defaultBatchSize)
+		for len(out) <= defaultBatchSize {
+			if len(dirs) == 0 {
+				break
 			}
-			nodes = append(nodes, Node{
-				Path:     path,
-				DirEntry: d,
-			})
-			return nil
-		})
-		return nodes, false, err
+			topDir := &dirs[len(dirs)-1]
+			if len(topDir.entries) == 0 {
+				dirs = dirs[:len(dirs)-1]
+			} else {
+				var (
+					topEntry = topDir.entries[len(topDir.entries)-1]
+					topPath  = path.Join(topDir.path, topEntry.Name())
+				)
+				if topEntry.IsDir() {
+					dir, err := fs.ReadDir(fsys, topPath)
+					if err != nil {
+						return nil, false, err
+					}
+					dirs = append(dirs, dirInfo{
+						path:    topPath,
+						entries: dir,
+					})
+				} else {
+					out = append(out, Node{
+						Path:     topPath,
+						DirEntry: topEntry,
+					})
+				}
+				topDir.entries = topDir.entries[:len(topDir.entries)-1]
+			}
+		}
+		return out, len(dirs) > 0, nil
 	})
 }
 
