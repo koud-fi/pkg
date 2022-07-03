@@ -79,9 +79,6 @@ func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
 
 /*
 func (s Storage) Enumerate(ctx context.Context, after string, fn func(string, int64) error) error {
-	if after != "" {
-		return errors.New("localdisk.Enumerate: after not supported") // TODO: implement "after"
-	}
 	return s.enumDir(ctx, s.root, fn)
 }
 
@@ -123,6 +120,9 @@ func (s Storage) enumDir(ctx context.Context, dirPath string, fn func(string, in
 */
 
 func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
+	if after != "" {
+		panic("localdisk.Iter: after not supported") // TODO: implement "after"
+	}
 
 	// ???
 
