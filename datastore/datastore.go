@@ -5,6 +5,7 @@ import (
 	"context"
 
 	"github.com/koud-fi/pkg/blob"
+	"github.com/koud-fi/pkg/rx"
 )
 
 type Store[T any] struct {
@@ -57,8 +58,14 @@ func (s *Store[T]) Update(ctx context.Context, key string, fn func(v T) (T, erro
 	return s.s.Set(ctx, key, bytes.NewReader(b2))
 }
 
+func (s *Store[T]) Iter(ctx context.Context, after string) rx.Iter[T] {
+	return rx.MapErr(s.s.Iter(ctx, after), func(b blob.RefBlob) (T, error) {
+		var v T
+		err := blob.Unmarshal(s.c.Unmarshal, b, &v)
+		return v, err
+	})
+}
+
 func (s *Store[T]) Delete(ctx context.Context, key ...string) error {
 	return s.s.Delete(ctx, key...)
 }
-
-// TODO: enumeration
