@@ -74,51 +74,62 @@ func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	})
 }
 
-/*
-func (s Storage) Enumerate(ctx context.Context, after string, fn func(string, int64) error) error {
-	tx, err := s.db.Begin(false)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
+	return &iter{s: s, ctx: ctx, after: after}
+}
 
-	b := tx.Bucket(s.statBucket)
-	if b == nil {
-		return nil
-	}
-	var (
-		c          = b.Cursor()
-		afterBytes = []byte(after)
-		k, v       []byte
-	)
-	if len(afterBytes) == 0 {
-		k, v = c.First()
-	} else {
-		c.Seek(afterBytes)
-		k, v = c.Next()
-	}
-	for k != nil {
-		select {
-		case <-ctx.Done():
-			break
-		default:
-			size, err := strconv.ParseInt(string(v), 10, 64)
-			if err != nil {
-				return err
-			}
-			fn(string(k), size)
-			k, v = c.Next()
+type iter struct {
+	s     *Storage
+	ctx   context.Context
+	after string
+
+	tx  *bolt.Tx
+	c   *bolt.Cursor
+	k   []byte
+	err error
+}
+
+func (it *iter) Next() bool {
+	if it.c == nil {
+		it.tx, it.err = it.s.db.Begin(false)
+		if it.err != nil {
+			return false
+		}
+		if b := it.tx.Bucket(it.s.statBucket); b != nil {
+			it.c = b.Cursor()
+		}
+		afterBytes := []byte(it.after)
+		if len(afterBytes) == 0 {
+			it.k, _ = it.c.First()
+		} else {
+			it.c.Seek(afterBytes)
+			it.k, _ = it.c.Next()
 		}
 	}
-	return nil
+	if it.k == nil {
+		return false
+	}
+	select {
+	case <-it.ctx.Done():
+		it.err = it.ctx.Err()
+		return false
+	default:
+		it.k, _ = it.c.Next()
+		return it.k != nil
+	}
 }
-*/
 
-func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
+func (it iter) Value() blob.RefBlob {
+	ref := string(it.k)
+	return blob.RefBlob{
+		Ref:  ref,
+		Blob: it.s.Get(it.ctx, ref),
+	}
+}
 
-	// ???
-
-	panic("TODO")
+func (it iter) Close() error {
+	it.tx.Rollback()
+	return it.err
 }
 
 func (s Storage) Delete(_ context.Context, refs ...string) error {
