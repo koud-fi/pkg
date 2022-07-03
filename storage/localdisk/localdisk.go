@@ -10,6 +10,7 @@ import (
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/blob/localfile"
 	"github.com/koud-fi/pkg/rx"
+	"github.com/koud-fi/pkg/rx/diriter"
 )
 
 const (
@@ -29,9 +30,9 @@ func Buckets(levels ...int) Option {
 	}
 }
 
-func HideFunc(fn func(name string) bool) Option { return func(s *Storage) { s.hideFunc = fn } }
-func DirPerm(m os.FileMode) Option              { return func(s *Storage) { s.dirPerm = m } }
-func FilePerm(m os.FileMode) Option             { return func(s *Storage) { s.filePerm = m } }
+//func HideFunc(fn func(name string) bool) Option { return func(s *Storage) { s.hideFunc = fn } }
+func DirPerm(m os.FileMode) Option  { return func(s *Storage) { s.dirPerm = m } }
+func FilePerm(m os.FileMode) Option { return func(s *Storage) { s.filePerm = m } }
 
 var _ blob.Storage = (*Storage)(nil)
 
@@ -39,9 +40,9 @@ type Storage struct {
 	root            string
 	bucketLevels    []int
 	bucketPrefixLen int
-	hideFunc        func(string) bool
-	dirPerm         os.FileMode
-	filePerm        os.FileMode
+	//hideFunc        func(string) bool
+	dirPerm  os.FileMode
+	filePerm os.FileMode
 }
 
 func NewStorage(root string, opt ...Option) (*Storage, error) {
@@ -50,8 +51,8 @@ func NewStorage(root string, opt ...Option) (*Storage, error) {
 		return nil, err
 	}
 	s := Storage{
-		root:     absRoot,
-		hideFunc: defaultHideFunc,
+		root: absRoot,
+		//hideFunc: defaultHideFunc,
 		dirPerm:  defaultDirPerm,
 		filePerm: defaultFilePerm,
 	}
@@ -77,56 +78,17 @@ func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	return localfile.WriteReader(path, r, s.filePerm)
 }
 
-/*
-func (s Storage) Enumerate(ctx context.Context, after string, fn func(string, int64) error) error {
-	return s.enumDir(ctx, s.root, fn)
-}
-
-func (s Storage) enumDir(ctx context.Context, dirPath string, fn func(string, int64) error) error {
-	dir, err := os.ReadDir(dirPath)
-	if err != nil {
-		return err
-	}
-	for _, d := range dir {
-		if s.hideFunc(d.Name()) {
-			continue
-		}
-		path := filepath.Join(dirPath, d.Name())
-		if d.IsDir() {
-			if err := s.enumDir(ctx, path, fn); err != nil {
-				return err
-			}
-			continue
-		}
-		ref, err := s.pathRef(path)
-		if err != nil {
-			return err
-		}
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-			stat, err := d.Info()
-			if err != nil {
-				return err
-			}
-			if err := fn(ref, stat.Size()); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-*/
-
-func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
+func (s Storage) Iter(_ context.Context, after string) rx.Iter[blob.RefBlob] {
 	if after != "" {
 		panic("localdisk.Iter: after not supported") // TODO: implement "after"
 	}
-
-	// ???
-
-	panic("TODO")
+	d := diriter.New(os.DirFS(s.root), "")
+	return rx.Map(d, (func(e diriter.Entry) blob.RefBlob {
+		return blob.RefBlob{
+			Ref:  e.Path,
+			Blob: localfile.New(s.refPath(e.Path)),
+		}
+	}))
 }
 
 func (s Storage) Delete(_ context.Context, refs ...string) error {
