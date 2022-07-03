@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/koud-fi/pkg/blob"
+	"github.com/koud-fi/pkg/rx"
 
 	bolt "go.etcd.io/bbolt"
 )
@@ -73,6 +74,7 @@ func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	})
 }
 
+/*
 func (s Storage) Enumerate(ctx context.Context, after string, fn func(string, int64) error) error {
 	tx, err := s.db.Begin(false)
 	if err != nil {
@@ -110,26 +112,13 @@ func (s Storage) Enumerate(ctx context.Context, after string, fn func(string, in
 	}
 	return nil
 }
+*/
 
-func (s Storage) Stat(_ context.Context, refs []string, fn func(string, int64) error) error {
-	return s.db.View(func(tx *bolt.Tx) error {
-		for _, ref := range refs {
-			if err := wrapTx(tx).useBucket(s.statBucket, true, func(b *bolt.Bucket) error {
-				buf := b.Get([]byte(ref))
-				if buf == nil {
-					return nil
-				}
-				size, err := strconv.ParseInt(string(buf), 10, 64)
-				if err != nil {
-					return err
-				}
-				return fn(ref, size)
-			}).err; err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
+
+	// ???
+
+	panic("TODO")
 }
 
 func (s Storage) Delete(_ context.Context, refs ...string) error {

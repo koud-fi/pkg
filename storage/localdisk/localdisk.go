@@ -2,7 +2,6 @@ package localdisk
 
 import (
 	"context"
-	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/blob/localfile"
+	"github.com/koud-fi/pkg/rx"
 )
 
 const (
@@ -77,6 +77,7 @@ func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	return localfile.WriteReader(path, r, s.filePerm)
 }
 
+/*
 func (s Storage) Enumerate(ctx context.Context, after string, fn func(string, int64) error) error {
 	if after != "" {
 		return errors.New("localdisk.Enumerate: after not supported") // TODO: implement "after"
@@ -119,21 +120,13 @@ func (s Storage) enumDir(ctx context.Context, dirPath string, fn func(string, in
 	}
 	return nil
 }
+*/
 
-func (s Storage) Stat(_ context.Context, refs []string, fn func(string, int64) error) error {
-	for _, ref := range refs {
-		info, err := os.Stat(s.refPath(ref))
-		if err != nil {
-			if os.IsNotExist(err) {
-				continue
-			}
-			return err
-		}
-		if err := fn(ref, info.Size()); err != nil {
-			return err
-		}
-	}
-	return nil
+func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
+
+	// ???
+
+	panic("TODO")
 }
 
 func (s Storage) Delete(_ context.Context, refs ...string) error {
