@@ -6,12 +6,17 @@ import (
 	"github.com/koud-fi/pkg/rx"
 )
 
-func New(fsys fs.FS, root string) rx.Iter[string] {
-	return rx.FuncIter(func() ([]string, bool, error) {
+type Node struct {
+	Path string
+	fs.DirEntry
+}
+
+func New(fsys fs.FS, root string) rx.Iter[Node] {
+	return rx.FuncIter(func() ([]Node, bool, error) {
 
 		// TODO: proper lazy implementation
 
-		var paths []string
+		var nodes []Node
 		err := fs.WalkDir(fsys, root, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -19,9 +24,16 @@ func New(fsys fs.FS, root string) rx.Iter[string] {
 			if d.IsDir() {
 				return nil
 			}
-			paths = append(paths, path)
+			nodes = append(nodes, Node{
+				Path:     path,
+				DirEntry: d,
+			})
 			return nil
 		})
-		return paths, false, err
+		return nodes, false, err
 	})
+}
+
+func Paths(it rx.Iter[Node]) rx.Iter[string] {
+	return rx.Map(it, func(n Node) string { return n.Path })
 }
