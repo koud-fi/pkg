@@ -9,7 +9,7 @@ import (
 
 const defaultBatchSize = 1 << 6
 
-type Node struct {
+type Entry struct {
 	Path string
 	fs.DirEntry
 }
@@ -19,12 +19,12 @@ type dirInfo struct {
 	entries []fs.DirEntry
 }
 
-func New(fsys fs.FS, root string) rx.Iter[Node] {
+func New(fsys fs.FS, root string) rx.Iter[Entry] {
 	var (
 		dirs []dirInfo
 		init bool
 	)
-	return rx.FuncIter(func() ([]Node, bool, error) {
+	return rx.FuncIter(func() ([]Entry, bool, error) {
 		if !init {
 			dir, err := fs.ReadDir(fsys, root)
 			if err != nil {
@@ -33,7 +33,7 @@ func New(fsys fs.FS, root string) rx.Iter[Node] {
 			dirs = []dirInfo{{path: root, entries: dir}}
 			init = true
 		}
-		out := make([]Node, 0, defaultBatchSize)
+		out := make([]Entry, 0, defaultBatchSize)
 		for len(out) <= defaultBatchSize {
 			if len(dirs) == 0 {
 				break
@@ -56,7 +56,7 @@ func New(fsys fs.FS, root string) rx.Iter[Node] {
 						entries: dir,
 					})
 				} else {
-					out = append(out, Node{
+					out = append(out, Entry{
 						Path:     topPath,
 						DirEntry: topEntry,
 					})
@@ -68,6 +68,6 @@ func New(fsys fs.FS, root string) rx.Iter[Node] {
 	})
 }
 
-func Paths(it rx.Iter[Node]) rx.Iter[string] {
-	return rx.Map(it, func(n Node) string { return n.Path })
+func Paths(it rx.Iter[Entry]) rx.Iter[string] {
+	return rx.Map(it, func(e Entry) string { return e.Path })
 }
