@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/koud-fi/pkg/blob"
+	"github.com/koud-fi/pkg/rx"
 )
 
 type Storage struct {
@@ -50,6 +51,7 @@ func (s *Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	return nil
 }
 
+/*
 func (s *Storage) Enumerate(ctx context.Context, after string, fn func(string, int64) error) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -68,19 +70,13 @@ func (s *Storage) Enumerate(ctx context.Context, after string, fn func(string, i
 	}
 	return nil
 }
+*/
 
-func (s *Storage) Stat(_ context.Context, refs []string, fn func(string, int64) error) error {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
 
-	for _, ref := range refs {
-		if i, ok := s.search(ref); ok {
-			if err := fn(ref, int64(len(s.data[i].data))); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
+	// TODO
+
+	return rx.SliceIter[blob.RefBlob]()
 }
 
 func (s *Storage) Delete(_ context.Context, refs ...string) error {

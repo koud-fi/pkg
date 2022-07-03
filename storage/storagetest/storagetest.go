@@ -10,6 +10,7 @@ import (
 	"unicode"
 
 	"github.com/koud-fi/pkg/blob"
+	"github.com/koud-fi/pkg/rx"
 )
 
 func Test(t *testing.T, s blob.Storage) {
@@ -31,17 +32,16 @@ func Test(t *testing.T, s blob.Storage) {
 	s.Delete(ctx, "b")
 	t.Log(blobStr(s.Get(ctx, "b")))
 
-	// TODO: test stat
-	testEnumerate(ctx, t, s)
+	testIter(ctx, t, s)
 }
 
-func testEnumerate(ctx context.Context, t *testing.T, s blob.Storage) {
-	if err := s.Enumerate(context.Background(), "", func(ref string, size int64) error {
-		header, err := blob.Peek(s.Get(ctx, ref), 1<<10)
+func testIter(ctx context.Context, t *testing.T, s blob.Storage) {
+	if err := rx.ForEach(s.Iter(ctx, ""), func(b blob.RefBlob) error {
+		header, err := blob.Peek(s.Get(ctx, b.Ref), 1<<10)
 		if err != nil {
-			return fmt.Errorf("%v: %v", ref, err)
+			return fmt.Errorf("%v: %v", b.Ref, err)
 		}
-		t.Log(ref, size, http.DetectContentType(header))
+		t.Log(b.Ref, http.DetectContentType(header))
 		return nil
 
 	}); err != nil {

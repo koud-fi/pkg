@@ -3,13 +3,14 @@ package blob
 import (
 	"context"
 	"io"
+
+	"github.com/koud-fi/pkg/rx"
 )
 
 type Storage interface {
 	Getter
 	Setter
-	Enumerator
-	Statter
+	Iterator
 	Deleter
 }
 
@@ -21,14 +22,15 @@ type Setter interface {
 	Set(ctx context.Context, ref string, r io.Reader) error
 }
 
-type Enumerator interface {
-	Enumerate(ctx context.Context, after string, fn func(string, int64) error) error
-}
-
-type Statter interface {
-	Stat(ctx context.Context, refs []string, fn func(string, int64) error) error
-}
-
 type Deleter interface {
 	Delete(ctx context.Context, refs ...string) error
+}
+
+type RefBlob struct {
+	Ref string
+	Blob
+}
+
+type Iterator interface {
+	Iter(ctx context.Context, after string) rx.Iter[RefBlob]
 }
