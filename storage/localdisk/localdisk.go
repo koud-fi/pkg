@@ -30,9 +30,9 @@ func Buckets(levels ...int) Option {
 	}
 }
 
-//func HideFunc(fn func(name string) bool) Option { return func(s *Storage) { s.hideFunc = fn } }
-func DirPerm(m os.FileMode) Option  { return func(s *Storage) { s.dirPerm = m } }
-func FilePerm(m os.FileMode) Option { return func(s *Storage) { s.filePerm = m } }
+func DirPerm(m os.FileMode) Option          { return func(s *Storage) { s.dirPerm = m } }
+func FilePerm(m os.FileMode) Option         { return func(s *Storage) { s.filePerm = m } }
+func IterOpts(opt ...diriter.Option) Option { return func(s *Storage) { s.iterOpts = opt } }
 
 var _ blob.Storage = (*Storage)(nil)
 
@@ -40,9 +40,9 @@ type Storage struct {
 	root            string
 	bucketLevels    []int
 	bucketPrefixLen int
-	//hideFunc        func(string) bool
-	dirPerm  os.FileMode
-	filePerm os.FileMode
+	dirPerm         os.FileMode
+	filePerm        os.FileMode
+	iterOpts        []diriter.Option
 }
 
 func NewStorage(root string, opt ...Option) (*Storage, error) {
@@ -51,8 +51,7 @@ func NewStorage(root string, opt ...Option) (*Storage, error) {
 		return nil, err
 	}
 	s := Storage{
-		root: absRoot,
-		//hideFunc: defaultHideFunc,
+		root:     absRoot,
 		dirPerm:  defaultDirPerm,
 		filePerm: defaultFilePerm,
 	}
@@ -60,10 +59,6 @@ func NewStorage(root string, opt ...Option) (*Storage, error) {
 		opt(&s)
 	}
 	return &s, nil
-}
-
-func defaultHideFunc(name string) bool {
-	return strings.HasPrefix(name, ".")
 }
 
 func (s Storage) Get(_ context.Context, ref string) blob.Blob {
@@ -82,7 +77,7 @@ func (s Storage) Iter(_ context.Context, after string) rx.Iter[blob.RefBlob] {
 	if after != "" {
 		panic("localdisk.Iter: after not supported") // TODO: implement "after"
 	}
-	d := diriter.New(os.DirFS(s.root), "")
+	d := diriter.New(os.DirFS(s.root), "", s.iterOpts...)
 	return rx.Map(d, (func(e diriter.Entry) blob.RefBlob {
 		return blob.RefBlob{
 			Ref:  e.Path,

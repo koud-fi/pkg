@@ -3,6 +3,7 @@ package diriter
 import (
 	"io/fs"
 	"path"
+	"strings"
 
 	"github.com/koud-fi/pkg/rx"
 )
@@ -14,12 +15,25 @@ type Entry struct {
 	fs.DirEntry
 }
 
-type dirInfo struct {
-	path    string
-	entries []fs.DirEntry
+type config struct {
+	hideFunc func(string) bool
 }
 
-func New(fsys fs.FS, root string) rx.Iter[Entry] {
+type Option func(*config)
+
+func HideFunc(fn func(name string) bool) Option { return func(c *config) { c.hideFunc = fn } }
+
+func New(fsys fs.FS, root string, opt ...Option) rx.Iter[Entry] {
+	c := config{
+		hideFunc: func(name string) bool { return strings.HasPrefix(name, ".") },
+	}
+	for _, opt := range opt {
+		opt(&c)
+	}
+	type dirInfo struct {
+		path    string
+		entries []fs.DirEntry
+	}
 	var (
 		dirs []dirInfo
 		init bool
@@ -55,7 +69,7 @@ func New(fsys fs.FS, root string) rx.Iter[Entry] {
 						path:    topPath,
 						entries: dir,
 					})
-				} else {
+				} else if !c.hideFunc(topEntry.Name()) {
 					out = append(out, Entry{
 						Path:     topPath,
 						DirEntry: topEntry,
