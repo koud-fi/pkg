@@ -51,32 +51,30 @@ func (s *Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	return nil
 }
 
-/*
-func (s *Storage) Enumerate(ctx context.Context, after string, fn func(string, int64) error) error {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
+	i := -1
+	return rx.FuncIter(func() ([]blob.RefBlob, bool, error) {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
 
-	i, _ := s.search(after)
-	for i < len(s.data) {
+		if i < 0 {
+			i, _ = s.search(after)
+		}
 		select {
 		case <-ctx.Done():
-			return nil
+			return nil, false, nil
 		default:
-			if err := fn(s.data[i].ref, int64(len(s.data[i].data))); err != nil {
-				return err
+			var out []blob.RefBlob // TODO: return larger batches of data
+			if i < len(s.data) {
+				out = append(out, blob.RefBlob{
+					Ref:  s.data[i].ref,
+					Blob: blob.FromBytes(s.data[i].data),
+				})
+				i++
 			}
-			i++
+			return out, i < len(s.data), nil
 		}
-	}
-	return nil
-}
-*/
-
-func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
-
-	// TODO
-
-	return rx.SliceIter[blob.RefBlob]()
+	})
 }
 
 func (s *Storage) Delete(_ context.Context, refs ...string) error {
