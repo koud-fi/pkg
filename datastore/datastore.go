@@ -13,11 +13,6 @@ type Store[T any] struct {
 	c Codec
 }
 
-type Codec struct {
-	Marshal   blob.MarshalFunc
-	Unmarshal blob.UnmarshalFunc
-}
-
 func New[T any](s blob.Storage, c Codec) *Store[T] {
 	return &Store[T]{s: s}
 }
