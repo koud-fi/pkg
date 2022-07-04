@@ -24,5 +24,6 @@ use (
 	./storage/bolt
 	./storage/localdisk
 	./storage/memory
+	./storage/sqlite
 	./storage/storagetest
 )
