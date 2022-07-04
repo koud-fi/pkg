@@ -64,3 +64,9 @@ func Counter[N Number](start, step N) Iter[N] {
 func Range[N Number](start, step N, count int) Iter[N] {
 	return Take(Counter(start, step), count)
 }
+
+func Error[T any](err error) Iter[T] {
+	return FuncIter(func() ([]T, bool, error) {
+		return nil, false, err
+	})
+}
