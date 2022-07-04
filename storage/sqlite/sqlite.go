@@ -31,8 +31,8 @@ var _ blob.Storage = (*Storage)(nil)
 func NewStorage(db *sql.DB, table string) *Storage {
 	if _, err := db.Exec(fmt.Sprintf(`
 		CREATE TABLE IF NOT EXISTS %s (
-			ref       TEXT
-			data_size INTEGER
+			ref       TEXT PRIMARY KEY,
+			data_size INTEGER,
 			data      BLOB
 		)
 	`, table)); err != nil {
@@ -44,18 +44,31 @@ func NewStorage(db *sql.DB, table string) *Storage {
 func (s *Storage) Get(ctx context.Context, ref string) blob.Blob {
 	return blob.ByteFunc(func() ([]byte, error) {
 		var buf []byte
-		return buf, s.db.QueryRowContext(ctx, fmt.Sprintf(`
+		if err := s.db.QueryRowContext(ctx, fmt.Sprintf(`
 			SELECT data FROM %s
 			WHERE ref = ? 
-		`, s.table), ref).Scan()
+		`, s.table), ref).Scan(); err != nil {
+			if err == sql.ErrNoRows {
+				return nil, os.ErrNotExist
+			}
+			return nil, err
+		}
+		return buf, nil
 	})
 }
 
 func (s *Storage) Set(ctx context.Context, ref string, r io.Reader) error {
-
-	// ???
-
-	panic("TODO")
+	buf, err := io.ReadAll(r)
+	if err != nil {
+		return err
+	}
+	_, err = s.db.ExecContext(ctx, fmt.Sprintf(`
+		INSERT INTO %s (ref, data_size, data) VALUES (?, ?, ?)
+		ON CONFLICT(ref) DO UPDATE SET
+			data_size = excluded.data_size,
+			data = excluded.data
+	`, s.table), ref, len(buf), buf)
+	return err
 }
 
 func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
@@ -67,7 +80,14 @@ func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] 
 
 func (s *Storage) Delete(ctx context.Context, refs ...string) error {
 
-	// ???
+	// TODO: optimize (use a single query)
 
-	panic("TODO")
+	for _, ref := range refs {
+		if _, err := s.db.ExecContext(ctx, fmt.Sprintf(`
+			DELETE FROM %s WHERE ref = ?
+		`, s.table), ref); err != nil {
+			return err
+		}
+	}
+	return nil
 }
