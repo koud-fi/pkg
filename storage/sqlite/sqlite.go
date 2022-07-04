@@ -47,7 +47,7 @@ func (s *Storage) Get(ctx context.Context, ref string) blob.Blob {
 		if err := s.db.QueryRowContext(ctx, fmt.Sprintf(`
 			SELECT data FROM %s
 			WHERE ref = ? 
-		`, s.table), ref).Scan(); err != nil {
+		`, s.table), ref).Scan(&buf); err != nil {
 			if err == sql.ErrNoRows {
 				return nil, os.ErrNotExist
 			}
@@ -72,10 +72,52 @@ func (s *Storage) Set(ctx context.Context, ref string, r io.Reader) error {
 }
 
 func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
+	return &iter{s: s, ctx: ctx, after: after}
+}
 
-	// ???
+type iter struct {
+	s     *Storage
+	ctx   context.Context
+	after string
 
-	panic("TODO")
+	rows *sql.Rows
+	ref  string
+	data []byte
+	err  error
+}
+
+func (it *iter) Next() bool {
+	if it.rows == nil {
+		if it.rows, it.err = it.s.db.QueryContext(it.ctx, fmt.Sprintf(`
+			SELECT ref, data FROM %s WHERE ref > ? 
+			ORDER BY ref ASC
+		`, it.s.table), it.after); it.err != nil {
+			return false
+		}
+	}
+	if !it.rows.Next() {
+		return false
+	}
+	it.err = it.rows.Scan(&it.ref, &it.data)
+	return it.err == nil
+}
+
+func (it iter) Value() blob.RefBlob {
+	return blob.RefBlob{
+		Ref:  it.ref,
+		Blob: blob.FromBytes(it.data),
+	}
+}
+
+func (it iter) Close() error {
+	var closeErr error
+	if it.rows != nil {
+		closeErr = it.rows.Close()
+	}
+	if it.err != nil {
+		return closeErr
+	}
+	return it.err
 }
 
 func (s *Storage) Delete(ctx context.Context, refs ...string) error {
