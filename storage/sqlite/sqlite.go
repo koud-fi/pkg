@@ -22,23 +22,33 @@ func Open(path string) (*sql.DB, error) {
 }
 
 type Storage struct {
-	db *sql.DB
+	db    *sql.DB
+	table string
 }
 
 var _ blob.Storage = (*Storage)(nil)
 
 func NewStorage(db *sql.DB, table string) *Storage {
-
-	// TODO: init table
-
-	return &Storage{db: db}
+	if _, err := db.Exec(fmt.Sprintf(`
+		CREATE TABLE IF NOT EXISTS %s (
+			ref       TEXT
+			data_size INTEGER
+			data      BLOB
+		)
+	`, table)); err != nil {
+		panic("failed to create sqlite table: " + err.Error())
+	}
+	return &Storage{db: db, table: table}
 }
 
 func (s *Storage) Get(ctx context.Context, ref string) blob.Blob {
-
-	// ???
-
-	panic("TODO")
+	return blob.ByteFunc(func() ([]byte, error) {
+		var buf []byte
+		return buf, s.db.QueryRowContext(ctx, fmt.Sprintf(`
+			SELECT data FROM %s
+			WHERE ref = ? 
+		`, s.table), ref).Scan()
+	})
 }
 
 func (s *Storage) Set(ctx context.Context, ref string, r io.Reader) error {
