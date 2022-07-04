@@ -128,7 +128,13 @@ func (it iter) Value() blob.RefBlob {
 }
 
 func (it iter) Close() error {
-	it.tx.Rollback()
+	var rollbackErr error
+	if it.tx != nil {
+		rollbackErr = it.tx.Rollback()
+	}
+	if it.err != nil {
+		return rollbackErr
+	}
 	return it.err
 }
 
