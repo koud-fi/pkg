@@ -53,6 +53,23 @@ func (it *funcIter[_]) Next() bool {
 
 func (it funcIter[_]) Close() error { return it.err }
 
+func WithClose[T any](it Iter[T], fn func() error) Iter[T] {
+	return closeIter[T]{Iter: it, closeFn: fn}
+}
+
+type closeIter[T any] struct {
+	Iter[T]
+	closeFn func() error
+}
+
+func (it closeIter[_]) Close() error {
+	if err := it.Iter.Close(); err != nil {
+		it.closeFn()
+		return err
+	}
+	return it.closeFn()
+}
+
 func Counter[N Number](start, step N) Iter[N] {
 	return FuncIter(func() ([]N, bool, error) {
 		next := start
