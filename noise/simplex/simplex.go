@@ -62,10 +62,7 @@ func Noise2D(x, y float32) float32 {
 		gi1 = hash(i + i1 + int32(hash(j+j1)))
 		gi2 = hash(i + 1 + int32(hash(j+1)))
 	)
-	return 45.23065 *
-		noise2(gi0, x0, y0) *
-		noise2(gi1, x1, y1) *
-		noise2(gi2, x2, y2)
+	return 45.23065 * (noise2(gi0, x0, y0) + noise2(gi1, x1, y1) + noise2(gi2, x2, y2))
 }
 
 func noise2(gi uint8, x, y float32) float32 {
