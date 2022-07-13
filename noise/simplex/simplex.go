@@ -13,7 +13,7 @@ func Noise1D(x float32) float32 {
 func noise1(i int32, x float32) float32 {
 	t := 1 - x*x
 	if t < 0 {
-		t = 0
+		return 0
 	}
 	t *= t
 	return t * t * grad1(hash(i), x)
@@ -31,10 +31,50 @@ func grad1(hash uint8, x float32) float32 {
 }
 
 func Noise2D(x, y float32) float32 {
+	const (
+		F2 = 0.36602540
+		G2 = 0.211324865
+	)
+	var (
+		s  = (x + y) * F2
+		xs = x + s
+		ys = y + s
+		i  = floor(xs)
+		j  = floor(ys)
 
-	// ???
+		t            = float32(i+j) * G2
+		X0           = float32(i) - t
+		Y0           = float32(j) - t
+		x0           = x - X0
+		y0           = y - Y0
+		i1, j1 int32 = 0, 1
+	)
+	if x0 > y0 {
+		i1, j1 = j1, i1
+	}
+	var (
+		x1 = x0 - float32(i1)*G2
+		y1 = y0 - float32(j1)*G2
+		x2 = x0 - 1 + (2 * G2)
+		y2 = y0 - 1 + (2 * G2)
 
-	panic("TODO")
+		gi0 = hash(i + int32(hash(j)))
+		gi1 = hash(i + i1 + int32(hash(j+j1)))
+		gi2 = hash(i + 1 + int32(hash(j+1)))
+	)
+	return 45.23065 *
+		noise2(gi0, x0, y0) *
+		noise2(gi1, x1, y1) *
+		noise2(gi2, x2, y2)
+}
+
+func noise2(gi uint8, x, y float32) float32 {
+	t := 0.5 - x*x - y*y
+	if t < 0 {
+		return 0
+	}
+	t *= t
+	return t * t * grad2(gi, x, y)
 }
 
 func grad2(hash uint8, x, y float32) float32 {
