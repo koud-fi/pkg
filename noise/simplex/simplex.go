@@ -94,9 +94,10 @@ func grad2(hash uint8, x, y float32) float32 {
 
 }
 
+/*
 func Noise3D(x, y, z float32) float32 {
 
-	// ???
+	// https://github.com/SRombauts/SimplexNoise/blob/97e62c5b5e26c8edabdc29a6b0a277192be3746c/src/SimplexNoise.cpp#L302
 
 	panic("TODO")
 }
@@ -123,6 +124,7 @@ func grad3(hash uint8, x, y, z float32) float32 {
 	}
 	return u + v
 }
+*/
 
 func floor(f float32) int32 {
 	n := int32(f)
