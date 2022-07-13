@@ -61,8 +61,16 @@ func Noise2D(x, y float32) float32 {
 		gi0 = hash(i + int32(hash(j)))
 		gi1 = hash(i + i1 + int32(hash(j+j1)))
 		gi2 = hash(i + 1 + int32(hash(j+1)))
+
+		n0 = noise2(gi0, x0, y0)
+		n1 = noise2(gi1, x1, y1)
+		n2 = noise2(gi2, x2, y2)
 	)
-	return 45.23065 * (noise2(gi0, x0, y0) + noise2(gi1, x1, y1) + noise2(gi2, x2, y2))
+
+	//fmt.Println(gi0, x0, y0, n0, "#", gi1, x1, y1, n1, "#", gi2, x2, y2, n2)
+	//fmt.Println("R", 45.23065*(n0+n1+n2))
+
+	return 45.23065 * (n0 + n1 + n2)
 }
 
 func noise2(gi uint8, x, y float32) float32 {
@@ -75,8 +83,8 @@ func noise2(gi uint8, x, y float32) float32 {
 }
 
 func grad2(hash uint8, x, y float32) float32 {
-	h := hash & 0x3F
-	if h < 4 {
+	h := hash & 0x07
+	if h >= 4 {
 		x, y = y, x
 	}
 	if h&1 > 0 {
@@ -88,7 +96,6 @@ func grad2(hash uint8, x, y float32) float32 {
 		y *= 2
 	}
 	return x + y
-
 }
 
 /*
