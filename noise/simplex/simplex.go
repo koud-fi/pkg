@@ -32,7 +32,7 @@ func grad1(hash uint8, x float32) float32 {
 
 func Noise2D(x, y float32) float32 {
 	const (
-		F2 = 0.36602540
+		F2 = 0.366025403
 		G2 = 0.211324865
 	)
 	var (
@@ -49,12 +49,13 @@ func Noise2D(x, y float32) float32 {
 		y0           = y - Y0
 		i1, j1 int32 = 0, 1
 	)
+
 	if x0 > y0 {
 		i1, j1 = j1, i1
 	}
 	var (
-		x1 = x0 - float32(i1)*G2
-		y1 = y0 - float32(j1)*G2
+		x1 = x0 - float32(i1) + G2
+		y1 = y0 - float32(j1) + G2
 		x2 = x0 - 1 + (2 * G2)
 		y2 = y0 - 1 + (2 * G2)
 
@@ -66,10 +67,6 @@ func Noise2D(x, y float32) float32 {
 		n1 = noise2(gi1, x1, y1)
 		n2 = noise2(gi2, x2, y2)
 	)
-
-	//fmt.Println(gi0, x0, y0, n0, "#", gi1, x1, y1, n1, "#", gi2, x2, y2, n2)
-	//fmt.Println("R", 45.23065*(n0+n1+n2))
-
 	return 45.23065 * (n0 + n1 + n2)
 }
 
@@ -132,7 +129,7 @@ func grad3(hash uint8, x, y, z float32) float32 {
 
 func floor(f float32) int32 {
 	n := int32(f)
-	if float32(n) < f {
+	if f < float32(n) {
 		return n - 1
 	}
 	return n
