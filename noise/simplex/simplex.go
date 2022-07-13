@@ -3,9 +3,11 @@ package simplex
 func Noise1D(x float32) float32 {
 	var (
 		i0 = floor(x)
+		i1 = i0 + 1
 		x0 = x - float32(i0)
+		x1 = x0 - 1
 	)
-	return 0.395 * (noise1(i0, x0) + noise1(i0+1, x0-1))
+	return 0.395 * (noise1(i0, x0) + noise1(i1, x1))
 }
 
 func noise1(i int32, x float32) float32 {
@@ -52,6 +54,13 @@ func grad2(hash uint8, x, y float32) float32 {
 
 }
 
+func Noise3D(x, y, z float32) float32 {
+
+	// ???
+
+	panic("TODO")
+}
+
 func grad3(hash uint8, x, y, z float32) float32 {
 	var (
 		h = hash & 15
@@ -73,13 +82,6 @@ func grad3(hash uint8, x, y, z float32) float32 {
 		v = -v
 	}
 	return u + v
-}
-
-func Noise3D(x, y, z float32) float32 {
-
-	// ???
-
-	panic("TODO")
 }
 
 func floor(f float32) int32 {
