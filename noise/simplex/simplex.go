@@ -19,4 +19,53 @@ var perm = [256]uint8{
 	222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180,
 }
 
-// TODO
+func grad1(hash int, x float32) float32 {
+	var (
+		h    = hash & 0x0F
+		grad = 1 + float32(h&7)
+	)
+	if (h & 8) != 0 {
+		grad = -grad
+	}
+	return grad * x
+}
+
+func grad2(hash int, x, y float32) float32 {
+	h := hash & 0x3F
+	if h < 4 {
+		x, y = y, x
+	}
+	if h&1 > 0 {
+		x = -x
+	}
+	if h&2 > 0 {
+		y *= -2
+	} else {
+		y *= 2
+	}
+	return x + y
+
+}
+
+func grad3(hash int, x, y, z float32) float32 {
+	var (
+		h = hash & 15
+		u = x
+		v = z
+	)
+	if h < 8 {
+		u = y
+	}
+	if h < 4 {
+		v = y
+	} else if h == 12 || h == 14 {
+		v = x
+	}
+	if h&1 > 0 {
+		u = -u
+	}
+	if h&2 > 0 {
+		v = -v
+	}
+	return u + v
+}
