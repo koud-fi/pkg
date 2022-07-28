@@ -14,6 +14,7 @@ use (
 	./file
 	./fingerprint
 	./grf
+	./merge
 	./noise
 	./num
 	./pk
