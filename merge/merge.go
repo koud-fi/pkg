@@ -5,13 +5,19 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/koud-fi/pkg/blob"
 )
 
-func Values(dst any, valueFn func(key string) []string) error {
-	return applyValues(reflect.ValueOf(dst), valueFn)
+func Values(dst any, valueFn func(string) []string) error {
+	return merge(reflect.ValueOf(dst), valueFn, nil)
 }
 
-func applyValues(dst reflect.Value, valueFn func(key string) []string) error {
+func Form(dst any, valueFn func(string) []string, fileFn func(string) blob.Blob) error {
+	return merge(reflect.ValueOf(dst), valueFn, fileFn)
+}
+
+func merge(dst reflect.Value, valueFn func(string) []string, fileFn func(string) blob.Blob) error {
 	if dst.Kind() == reflect.Ptr {
 		dst = dst.Elem()
 	}
@@ -27,18 +33,26 @@ func applyValues(dst reflect.Value, valueFn func(key string) []string) error {
 			fName = resolveFieldName(f)
 		)
 		if f.Anonymous {
-			applyValues(fVal, valueFn)
+			merge(fVal, valueFn, fileFn)
 			continue
 		}
 		vs := valueFn(fName)
 		if len(vs) == 0 {
 			continue
 		}
-		if fVal.CanAddr() && fVal.CanInterface() {
-			vi := fVal.Addr().Interface()
-			if p, ok := vi.(interface{ Parse(string) error }); ok {
-				err = p.Parse(vs[0])
-				continue
+		if fVal.CanInterface() {
+			if fVal.CanAddr() {
+				vi := fVal.Addr().Interface()
+				if p, ok := vi.(interface{ Parse(string) error }); ok {
+					err = p.Parse(vs[0])
+					continue
+				}
+			}
+			switch fVal.Interface().(type) {
+			case blob.Blob:
+				if fileFn != nil {
+					fVal.Set(reflect.ValueOf(fileFn(fName)))
+				}
 			}
 		}
 		fKind := f.Type.Kind()

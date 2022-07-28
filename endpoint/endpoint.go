@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"reflect"
-	"strings"
 
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/merge"
@@ -79,13 +78,24 @@ func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func applyInput(v any, r *http.Request) error {
-	ct := r.Header.Get("Content-Type")
-	switch {
-	case strings.HasPrefix("application/json", ct):
+	switch r.Header.Get("Content-Type") {
+	case "application/json":
 		return json.NewDecoder(r.Body).Decode(v)
-
-	// TODO: support multipart forms
-
+	case "multipart/form-data":
+		if err := r.ParseMultipartForm(1 << 24); err != nil {
+			return err
+		}
+		return merge.Form(v, func(key string) []string {
+			return r.MultipartForm.Value[key]
+		}, func(key string) blob.Blob {
+			fhs := r.MultipartForm.File[key]
+			if len(fhs) == 0 {
+				return blob.Empty()
+			}
+			return blob.Func(func() (io.ReadCloser, error) {
+				return fhs[0].Open()
+			})
+		})
 	default:
 		if err := r.ParseForm(); err != nil {
 			return err
