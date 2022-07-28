@@ -9,6 +9,7 @@ use (
 	./calendar
 	./cas
 	./datastore
+	./endpoint
 	./fetch
 	./file
 	./fingerprint
