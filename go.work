@@ -17,7 +17,6 @@ use (
 	./noise
 	./num
 	./pk
-	./proc
 	./rx
 	./search
 	./serve
