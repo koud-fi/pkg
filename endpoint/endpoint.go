@@ -100,9 +100,6 @@ func applyValues(v reflect.Value, lookup func(key string) []string) error {
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
-
-	// TODO: non-struct value handling?
-
 	var (
 		vType = v.Type()
 		vLen  = v.NumField()
