@@ -49,7 +49,7 @@ func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			reflect.New(e.inType),
 		}
 		if err := applyInput(args[1].Interface(), r); err != nil {
-			return nil, fmt.Errorf("can't apply params: %w", err)
+			return nil, fmt.Errorf("can't apply input: %w", err)
 		}
 		if !e.inTypeIsPtr {
 			args[1] = args[1].Elem()
