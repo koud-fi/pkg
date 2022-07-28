@@ -1,7 +1,6 @@
 package merge
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -37,8 +36,8 @@ func applyValues(dst reflect.Value, valueFn func(key string) []string) error {
 		}
 		if fVal.CanAddr() && fVal.CanInterface() {
 			vi := fVal.Addr().Interface()
-			if u, ok := vi.(json.Unmarshaler); ok {
-				err = u.UnmarshalJSON([]byte(vs[0]))
+			if p, ok := vi.(interface{ Parse(string) error }); ok {
+				err = p.Parse(vs[0])
 				continue
 			}
 		}
