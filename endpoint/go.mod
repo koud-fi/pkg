@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/koud-fi/pkg/blob v0.0.0-20220728144657-c6f4d528b26a
+	github.com/koud-fi/pkg/merge v0.0.0-20220728162411-ab9711f0dd04
 	github.com/koud-fi/pkg/serve v0.0.0-20220728144657-c6f4d528b26a
 )
 
