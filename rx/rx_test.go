@@ -47,10 +47,13 @@ func TestSum(t *testing.T) {
 	t.Log(rx.Sum(rx.Range(1, 1, 10)))
 }
 
-func TestToMapAndSelect(t *testing.T) {
+func TestToMapUtils(t *testing.T) {
 	m, keys, _ := rx.ToMap(rx.Range(1, 1, 5), func(n int) string {
 		return "." + strconv.Itoa(n)
 	})
+	pairs := rx.SortedPairs(m)
+	t.Log(pairs)
+
 	vs, _ := rx.Slice(rx.SelectKeys(m, rx.SliceIter(keys...)))
 	t.Log(m, keys, vs)
 }
