@@ -57,5 +57,5 @@ func SortValues[K comparable, V constraints.Ordered](a, b Pair[K, V]) bool {
 }
 
 func SortValuesDesc[K comparable, V constraints.Ordered](a, b Pair[K, V]) bool {
-	return a.Value < b.Value
+	return a.Value > b.Value
 }
