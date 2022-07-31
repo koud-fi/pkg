@@ -8,6 +8,7 @@ import (
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/datastore"
 	"github.com/koud-fi/pkg/file"
+	"github.com/koud-fi/pkg/rx"
 )
 
 type Node struct {
@@ -17,12 +18,16 @@ type Node struct {
 
 type Storage struct {
 	s  blob.Storage
-	ds datastore.Store[file.Attributes]
+	ds *datastore.Store[file.Attributes]
 
 	fileOpts []file.Option
 }
 
-func New(s blob.Storage, ds datastore.Store[file.Attributes], fileOps ...file.Option) *Storage {
+func New(
+	s blob.Storage,
+	ds *datastore.Store[file.Attributes],
+	fileOps ...file.Option,
+) *Storage {
 	return &Storage{s: s, ds: ds, fileOpts: fileOps}
 }
 
@@ -76,4 +81,11 @@ func (s *Storage) Add(ctx context.Context, b blob.Blob) (*Node, error) {
 
 // TODO: remover
 
-// TODO: node iterator
+func (s *Storage) Iter(ctx context.Context, after ID) rx.Iter[rx.Pair[ID, file.Attributes]] {
+	return rx.Map(s.ds.Iter(ctx, after.Hex()), func(
+		p rx.Pair[string, file.Attributes]) rx.Pair[ID, file.Attributes] {
+
+		id, _ := ParseID(p.Key)
+		return rx.Pair[ID, file.Attributes]{Key: id, Value: p.Value}
+	})
+}
