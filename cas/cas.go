@@ -3,35 +3,48 @@ package cas
 import (
 	"bytes"
 	"context"
+	"os"
 
 	"github.com/koud-fi/pkg/blob"
+	"github.com/koud-fi/pkg/datastore"
 	"github.com/koud-fi/pkg/file"
-	"github.com/koud-fi/pkg/grf"
 )
 
+type Node struct {
+	ID ID `json:"id"`
+	file.Attributes
+}
+
 type Storage struct {
-	s        blob.Storage
-	g        *grf.Graph
-	nt       grf.NodeType
+	s  blob.Storage
+	ds datastore.Store[file.Attributes]
+
 	fileOpts []file.Option
 }
 
-func New(s blob.Storage, g *grf.Graph, nt grf.NodeType, fileOps ...file.Option) *Storage {
-	return &Storage{s: s, g: g, nt: nt, fileOpts: fileOps}
+func New(s blob.Storage, ds datastore.Store[file.Attributes], fileOps ...file.Option) *Storage {
+	return &Storage{s: s, ds: ds, fileOpts: fileOps}
 }
 
-func (s *Storage) Lookup(id ID) (*Node, error) {
-	n, err := grf.Mapped[NodeData](s.g, s.nt, id.String())
+func (s *Storage) Node(ctx context.Context, id ID) (*Node, error) {
+	attrs, err := s.ds.Get(ctx, id.Hex())
 	if err != nil {
 		return nil, err
 	}
-	if n.Data.Size == 0 {
-		return nil, grf.ErrNotFound
-	}
-	return &Node{ID: id, NodeData: n.Data, s: s.s}, nil
+
+	// TODO: ensure that the attributes are up to date
+
+	return &Node{
+		ID:         id,
+		Attributes: attrs,
+	}, nil
 }
 
-func (s *Storage) Add(b blob.Blob) (*Node, error) {
+func (s *Storage) Get(ctx context.Context, id ID) blob.Blob {
+	return s.s.Get(ctx, id.Hex())
+}
+
+func (s *Storage) Add(ctx context.Context, b blob.Blob) (*Node, error) {
 
 	// TODO: avoid full memory copy
 
@@ -39,22 +52,28 @@ func (s *Storage) Add(b blob.Blob) (*Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	var (
-		id  = NewIDFromBytes(data)
-		key = id.String()
-	)
-	n, err := grf.SetMapped(s.g, s.nt, key, func(_ NodeData) (NodeData, error) {
-		if err := s.s.Set(context.Background(), id.Hex(), bytes.NewReader(data)); err != nil {
-			return NodeData{}, err
-		}
-		attrs, err := file.ResolveAttrs(blob.FromBytes(data), s.fileOpts...)
-		if err != nil {
-			return NodeData{}, err
-		}
-		return NodeData{Attributes: *attrs}, nil
-	})
+	id := NewIDFromBytes(data)
+	n, err := s.Node(ctx, id)
+	if err == nil {
+		return n, nil
+	}
+	if !os.IsNotExist(err) {
+		return nil, err
+	}
+	key := id.Hex()
+	if err := s.s.Set(ctx, key, bytes.NewReader(data)); err != nil {
+		return nil, err
+	}
+	attrs, err := file.ResolveAttrs(blob.FromBytes(data), s.fileOpts...)
 	if err != nil {
 		return nil, err
 	}
-	return &Node{ID: id, NodeData: n.Data, s: s.s}, nil
+	return &Node{
+		ID:         id,
+		Attributes: *attrs,
+	}, s.ds.Set(ctx, key, *attrs)
 }
+
+// TODO: remover
+
+// TODO: node iterator
