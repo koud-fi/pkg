@@ -90,6 +90,7 @@ type iter struct {
 }
 
 func (it *iter) Next() bool {
+	var init bool
 	if it.c == nil {
 		it.tx, it.err = it.s.db.Begin(false)
 		if it.err != nil {
@@ -103,9 +104,9 @@ func (it *iter) Next() bool {
 				it.k, _ = it.c.First()
 			} else {
 				it.c.Seek(afterBytes)
-				it.k, _ = it.c.Next()
 			}
 		}
+		init = true
 	}
 	if it.k == nil {
 		return false
@@ -115,7 +116,9 @@ func (it *iter) Next() bool {
 		it.err = it.ctx.Err()
 		return false
 	default:
-		it.k, _ = it.c.Next()
+		if !init {
+			it.k, _ = it.c.Next()
+		}
 		return it.k != nil
 	}
 }
