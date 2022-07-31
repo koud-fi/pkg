@@ -97,13 +97,14 @@ func (it *iter) Next() bool {
 		}
 		if b := it.tx.Bucket(it.s.statBucket); b != nil {
 			it.c = b.Cursor()
-		}
-		afterBytes := []byte(it.after)
-		if len(afterBytes) == 0 {
-			it.k, _ = it.c.First()
-		} else {
-			it.c.Seek(afterBytes)
-			it.k, _ = it.c.Next()
+
+			afterBytes := []byte(it.after)
+			if len(afterBytes) == 0 {
+				it.k, _ = it.c.First()
+			} else {
+				it.c.Seek(afterBytes)
+				it.k, _ = it.c.Next()
+			}
 		}
 	}
 	if it.k == nil {

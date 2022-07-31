@@ -2,8 +2,7 @@ github.com/koud-fi/pkg/blob v0.0.0-20220327065345-4cd6588cd3f8 h1:7F8DCipXKgJ+sZ
 github.com/koud-fi/pkg/blob v0.0.0-20220327065345-4cd6588cd3f8/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
 github.com/koud-fi/pkg/rx v0.0.0-20220703120905-a3e8e443c8c4 h1:QKuNed1hIzduc47vULaM8r1HxxiCyoXlP9XbCQTv31U=
 github.com/koud-fi/pkg/rx v0.0.0-20220703120905-a3e8e443c8c4/go.mod h1:11A6myvPh4NirnJHTCf/utpYN9FH8w5DJbWzqjX/QAQ=
-github.com/koud-fi/pkg/storage/storagetest v0.0.0-20220329034851-4b26a45a4c0e h1:+hIjGfpUHhfebxohch7za3/zjtI4s24uVpWu6qDc4A0=
-github.com/koud-fi/pkg/storage/storagetest v0.0.0-20220329034851-4b26a45a4c0e/go.mod h1:a0WnDcANyzXHuzaFTT75JsSMcLQ6dPMnwI0Z7820sqw=
+github.com/koud-fi/pkg/storage/storagetest v0.0.0-20220505044251-401d235d2935 h1:YfliAHqisyj7eT2CYfurgaGMI+pppiHjvdxX4jLulNw=
 go.etcd.io/bbolt v1.3.6 h1:/ecaJf0sk1l4l6V4awd65v2C3ILy7MSj+s/x1ADCIMU=
 go.etcd.io/bbolt v1.3.6/go.mod h1:qXsaaIqmgQH0T+OPdb99Bf+PKfBBQVAdyD6TY9G8XM4=
 golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd h1:zVFyTKZN/Q7mNRWSs1GOYnHM9NiFSJ54YVRsD0rNWT4=
