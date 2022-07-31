@@ -53,16 +53,11 @@ func (s *Store[T]) Update(ctx context.Context, key string, fn func(v T) (T, erro
 	return s.s.Set(ctx, key, bytes.NewReader(b2))
 }
 
-type Pair[T any] struct {
-	Key   string
-	Value T
-}
-
-func (s *Store[T]) Iter(ctx context.Context, after string) rx.Iter[Pair[T]] {
-	return rx.MapErr(s.s.Iter(ctx, after), func(b blob.RefBlob) (Pair[T], error) {
+func (s *Store[T]) Iter(ctx context.Context, after string) rx.Iter[rx.Pair[string, T]] {
+	return rx.MapErr(s.s.Iter(ctx, after), func(b blob.RefBlob) (rx.Pair[string, T], error) {
 		var v T
 		err := blob.Unmarshal(s.c.Unmarshal, b, &v)
-		return Pair[T]{Key: b.Ref, Value: v}, err
+		return rx.Pair[string, T]{Key: b.Ref, Value: v}, err
 	})
 }
 
