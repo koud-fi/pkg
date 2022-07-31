@@ -14,7 +14,7 @@ type Store[T any] struct {
 }
 
 func New[T any](s blob.Storage, c Codec) *Store[T] {
-	return &Store[T]{s: s}
+	return &Store[T]{s: s, c: c}
 }
 
 func (s *Store[T]) Get(ctx context.Context, key string) (T, error) {
