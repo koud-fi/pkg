@@ -77,11 +77,12 @@ func (s Storage) Iter(_ context.Context, after string) rx.Iter[blob.RefBlob] {
 	if after != "" {
 		panic("localdisk.Iter: after not supported") // TODO: implement "after"
 	}
-	d := diriter.New(os.DirFS(s.root), "", s.iterOpts...)
+	d := diriter.New(os.DirFS(s.root), ".", s.iterOpts...)
 	return rx.Map(d, (func(e diriter.Entry) blob.RefBlob {
+		ref := filepath.Base(e.Path)
 		return blob.RefBlob{
-			Ref:  e.Path,
-			Blob: localfile.New(s.refPath(e.Path)),
+			Ref:  ref,
+			Blob: localfile.New(s.refPath(ref)),
 		}
 	}))
 }
@@ -97,7 +98,7 @@ func (s Storage) Delete(_ context.Context, refs ...string) error {
 
 func (s Storage) refPath(ref string) string {
 	if len(s.bucketLevels) > 0 {
-		parts := make([]string, len(s.bucketLevels)+2)
+		parts := make([]string, 0, len(s.bucketLevels)+2)
 		parts = append(parts, s.root)
 		var start int
 		for _, l := range s.bucketLevels {
@@ -105,7 +106,8 @@ func (s Storage) refPath(ref string) string {
 			if end > len(ref) {
 				end = len(ref)
 			}
-			parts = append(parts, ref[start:end]+strings.Repeat("_", l-(end-start)))
+			part := ref[start:end] + strings.Repeat("_", l-(end-start))
+			parts = append(parts, part)
 			start = end
 		}
 		parts = append(parts, ref)

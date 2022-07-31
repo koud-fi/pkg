@@ -11,6 +11,7 @@ import (
 	"github.com/koud-fi/pkg/cas"
 	"github.com/koud-fi/pkg/datastore"
 	"github.com/koud-fi/pkg/file"
+	"github.com/koud-fi/pkg/rx"
 	"github.com/koud-fi/pkg/storage/localdisk"
 )
 
@@ -41,6 +42,7 @@ func TestStorage(t *testing.T) {
 		t.Logf("%s %v", path, n)
 		return nil
 	}))
+	assert(t, rx.Drain(rx.Log(s.Iter(context.Background(), ""), "")))
 }
 
 func assert(t *testing.T, err error) {

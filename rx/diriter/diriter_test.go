@@ -9,5 +9,5 @@ import (
 )
 
 func TestDirIter(t *testing.T) {
-	t.Log(rx.Drain(rx.Log(diriter.Paths(diriter.New(os.DirFS(".."), ".")), "")))
+	t.Log(rx.Drain(rx.Log(diriter.Paths(diriter.New(os.DirFS(".."), "")), "")))
 }

@@ -10,7 +10,7 @@ import (
 
 func Test(t *testing.T) {
 	os.RemoveAll("temp")
-	s, err := localdisk.NewStorage("temp")
+	s, err := localdisk.NewStorage("temp", localdisk.Buckets(1, 2))
 	if err != nil {
 		t.Fatal(err)
 	}
