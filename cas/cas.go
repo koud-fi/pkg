@@ -3,6 +3,7 @@ package cas
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/koud-fi/pkg/blob"
@@ -55,7 +56,7 @@ func (s *Storage) Add(ctx context.Context, b blob.Blob) (*Node, error) {
 
 	data, err := blob.Bytes(b)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load data: %w", err)
 	}
 	id := NewIDFromBytes(data)
 	n, err := s.Node(ctx, id)
