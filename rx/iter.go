@@ -70,7 +70,7 @@ func (it closeIter[_]) Close() error {
 	return it.closeFn()
 }
 
-func ErrIter[T any](err error) Iter[T] {
+func Error[T any](err error) Iter[T] {
 	return FuncIter(func() ([]T, bool, error) {
 		return nil, false, err
 	})
