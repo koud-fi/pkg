@@ -70,6 +70,12 @@ func (it closeIter[_]) Close() error {
 	return it.closeFn()
 }
 
+func ErrIter[T any](err error) Iter[T] {
+	return FuncIter(func() ([]T, bool, error) {
+		return nil, false, err
+	})
+}
+
 func Counter[N Number](start, step N) Iter[N] {
 	return FuncIter(func() ([]N, bool, error) {
 		next := start
