@@ -2,6 +2,7 @@ package fetch
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/fs"
@@ -93,6 +94,11 @@ func (r Request) UserAgent(ua string) *Request {
 
 func (r Request) Authorization(authHeader string) *Request {
 	return r.Header("Authorization", authHeader)
+}
+
+func (r Request) BasicAuth(username, password string) *Request {
+	auth := username + ":" + password
+	return r.Authorization("Basic " + base64.StdEncoding.EncodeToString([]byte(auth)))
 }
 
 func (r Request) User(u *url.Userinfo) *Request {
