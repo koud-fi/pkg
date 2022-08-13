@@ -6,27 +6,6 @@ type Iter[T any] interface {
 	Close() error
 }
 
-func SliceIter[T any](data ...T) Iter[T] {
-	return &sliceIter[T]{data: data}
-}
-
-type sliceIter[T any] struct {
-	data []T
-	init bool
-}
-
-func (it *sliceIter[_]) Next() bool {
-	if !it.init {
-		it.init = true
-	} else {
-		it.data = it.data[1:]
-	}
-	return len(it.data) > 0
-}
-
-func (it sliceIter[T]) Value() T     { return it.data[0] }
-func (it sliceIter[_]) Close() error { return nil }
-
 func FuncIter[T any](fn func() ([]T, bool, error)) Iter[T] {
 	return &funcIter[T]{fn: fn, hasMore: true}
 }

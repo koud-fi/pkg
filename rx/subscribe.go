@@ -33,10 +33,6 @@ func Reduce[T, S any](it Iter[T], fn func(S, T) (S, error), sum S) (S, error) {
 	return sum, err
 }
 
-func Slice[T any](it Iter[T]) ([]T, error) {
-	return Reduce(it, func(s []T, v T) ([]T, error) { return append(s, v), nil }, []T{})
-}
-
 func Sum[N Number](it Iter[N]) (N, error) {
 	return Reduce(it, func(sum, n N) (N, error) { return sum + n, nil }, 0)
 }
