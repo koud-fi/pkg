@@ -16,16 +16,20 @@ type Entry struct {
 }
 
 type config struct {
-	hideFunc func(string) bool
+	hideFunc func(fs.DirEntry) bool
 }
 
 type Option func(*config)
 
-func HideFunc(fn func(name string) bool) Option { return func(c *config) { c.hideFunc = fn } }
+func HideFunc(fn func(fs.DirEntry) bool) Option { return func(c *config) { c.hideFunc = fn } }
+
+func DefaultHideFunc(d fs.DirEntry) bool {
+	return strings.HasPrefix(d.Name(), ".")
+}
 
 func New(fsys fs.FS, root string, opt ...Option) rx.Iter[Entry] {
 	c := config{
-		hideFunc: func(name string) bool { return strings.HasPrefix(name, ".") },
+		hideFunc: DefaultHideFunc,
 	}
 	for _, opt := range opt {
 		opt(&c)
@@ -69,7 +73,7 @@ func New(fsys fs.FS, root string, opt ...Option) rx.Iter[Entry] {
 						path:    topPath,
 						entries: dir,
 					})
-				} else if !c.hideFunc(topEntry.Name()) {
+				} else if !c.hideFunc(topEntry) {
 					out = append(out, Entry{
 						Path:     topPath,
 						DirEntry: topEntry,
