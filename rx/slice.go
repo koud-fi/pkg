@@ -24,7 +24,7 @@ func (it *sliceIter[_]) Next() bool {
 
 func (it sliceIter[T]) Value() T     { return it.data[0] }
 func (it sliceIter[_]) Close() error { return nil }
-func (it sliceIter[T]) Slice() []T
+func (it sliceIter[T]) Slice() []T   { return it.data }
 
 func Slice[T any](it Iter[T]) ([]T, error) {
 	if s, ok := it.(Slicer[T]); ok {
