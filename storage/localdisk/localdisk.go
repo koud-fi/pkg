@@ -79,10 +79,9 @@ func (s Storage) Iter(_ context.Context, after string) rx.Iter[blob.RefBlob] {
 	}
 	d := diriter.New(os.DirFS(s.root), ".", s.iterOpts...)
 	return rx.Map(d, (func(e diriter.Entry) blob.RefBlob {
-		ref := filepath.Base(e.Path)
 		return blob.RefBlob{
-			Ref:  ref,
-			Blob: localfile.New(s.refPath(ref)),
+			Ref:  e.Path,
+			Blob: localfile.New(s.refPath(e.Path)),
 		}
 	}))
 }
