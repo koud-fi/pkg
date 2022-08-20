@@ -56,13 +56,13 @@ func New(fsys fs.FS, root string, opt ...Option) rx.Iter[Entry] {
 			if len(dirs) == 0 {
 				break
 			}
-			topDir := &dirs[len(dirs)-1]
-			if len(topDir.entries) == 0 {
+			i := len(dirs) - 1
+			if len(dirs[i].entries) == 0 {
 				dirs = dirs[:len(dirs)-1]
 			} else {
 				var (
-					topEntry = topDir.entries[len(topDir.entries)-1]
-					topPath  = path.Join(topDir.path, topEntry.Name())
+					topEntry = dirs[i].entries[len(dirs[i].entries)-1]
+					topPath  = path.Join(dirs[i].path, topEntry.Name())
 				)
 				if topEntry.IsDir() {
 					dir, err := fs.ReadDir(fsys, topPath)
@@ -79,7 +79,7 @@ func New(fsys fs.FS, root string, opt ...Option) rx.Iter[Entry] {
 						DirEntry: topEntry,
 					})
 				}
-				topDir.entries = topDir.entries[:len(topDir.entries)-1]
+				dirs[i].entries = dirs[i].entries[:len(dirs[i].entries)-1]
 			}
 		}
 		return out, len(dirs) > 0, nil
