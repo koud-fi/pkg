@@ -89,6 +89,13 @@ func (s *Storage) Delete(_ context.Context, refs ...string) error {
 	return nil
 }
 
+func (s *Storage) Clear() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.data = s.data[:0]
+}
+
 func (s *Storage) search(ref string) (int, bool) {
 	i := sort.Search(len(s.data), func(i int) bool {
 		return s.data[i].ref >= ref
