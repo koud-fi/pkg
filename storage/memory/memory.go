@@ -28,7 +28,7 @@ func (s *Storage) Get(_ context.Context, ref string) blob.Blob {
 		defer s.mu.RUnlock()
 
 		if i, ok := s.search(ref); ok {
-			return s.data[i].data, nil
+			return s.data[i].Value, nil
 		}
 		return nil, os.ErrNotExist
 	})
@@ -43,9 +43,9 @@ func (s *Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	defer s.mu.Unlock()
 
 	if i, ok := s.search(ref); ok {
-		s.data[i].data = data
+		s.data[i].Value = data
 	} else {
-		v := refData{ref: ref, data: data}
+		v := rx.Pair[string, []byte]{Key: ref, Value: data}
 		s.data = append(s.data[:i], append(refDataSlice{v}, s.data[i:]...)...)
 	}
 	return nil
@@ -67,8 +67,8 @@ func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] 
 			var out []blob.RefBlob // TODO: return larger batches of data
 			if i < len(s.data) {
 				out = append(out, blob.RefBlob{
-					Ref:  s.data[i].ref,
-					Blob: blob.FromBytes(s.data[i].data),
+					Ref:  s.data[i].Key,
+					Blob: blob.FromBytes(s.data[i].Value),
 				})
 				i++
 			}
@@ -98,18 +98,13 @@ func (s *Storage) Clear() {
 
 func (s *Storage) search(ref string) (int, bool) {
 	i := sort.Search(len(s.data), func(i int) bool {
-		return s.data[i].ref >= ref
+		return s.data[i].Key >= ref
 	})
-	return i, i < len(s.data) && s.data[i].ref == ref
+	return i, i < len(s.data) && s.data[i].Key == ref
 }
 
-type refData struct {
-	ref  string
-	data []byte
-}
-
-type refDataSlice []refData
+type refDataSlice []rx.Pair[string, []byte]
 
 func (s refDataSlice) Len() int           { return len(s) }
-func (s refDataSlice) Less(i, j int) bool { return s[j].ref < s[i].ref }
+func (s refDataSlice) Less(i, j int) bool { return s[j].Key < s[i].Key }
 func (s refDataSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
