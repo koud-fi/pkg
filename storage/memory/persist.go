@@ -37,8 +37,8 @@ func Save(path string, s *Storage, perm os.FileMode) error {
 }
 
 func Load(path string, s *Storage) error {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+
+	// TODO: use storage internals to make data writing faster
 
 	ctx := context.Background()
 	return rx.ForEachN(blob.LineIter(localfile.New(path)), func(data string, line int) error {
