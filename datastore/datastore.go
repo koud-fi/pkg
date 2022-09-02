@@ -47,7 +47,7 @@ func (s *Store[T]) Update(ctx context.Context, key string, fn func(v T) (T, erro
 	if err != nil {
 		return err
 	}
-	if bytes.Compare(b1, b2) == 0 {
+	if bytes.Equal(b1, b2) {
 		return nil
 	}
 	return s.s.Set(ctx, key, bytes.NewReader(b2))
