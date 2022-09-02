@@ -10,8 +10,12 @@ import (
 type Storage interface {
 	Getter
 	Setter
-	Iterator
 	Deleter
+}
+
+type SortedStorage interface {
+	Storage
+	Iterator
 }
 
 type Getter interface {

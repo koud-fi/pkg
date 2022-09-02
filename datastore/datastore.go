@@ -9,11 +9,11 @@ import (
 )
 
 type Store[T any] struct {
-	s blob.Storage
+	s blob.SortedStorage
 	c Codec
 }
 
-func New[T any](s blob.Storage, c Codec) *Store[T] {
+func New[T any](s blob.SortedStorage, c Codec) *Store[T] {
 	return &Store[T]{s: s, c: c}
 }
 
