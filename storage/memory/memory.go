@@ -16,7 +16,7 @@ type Storage struct {
 	data refDataSlice // TODO: optimize storage format to make insert/delete faster
 }
 
-var _ blob.Storage = (*Storage)(nil)
+var _ blob.SortedStorage = (*Storage)(nil)
 
 func NewStorage() *Storage {
 	return new(Storage)

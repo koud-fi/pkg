@@ -34,7 +34,7 @@ func DirPerm(m os.FileMode) Option          { return func(s *Storage) { s.dirPer
 func FilePerm(m os.FileMode) Option         { return func(s *Storage) { s.filePerm = m } }
 func IterOpts(opt ...diriter.Option) Option { return func(s *Storage) { s.iterOpts = opt } }
 
-var _ blob.Storage = (*Storage)(nil)
+var _ blob.SortedStorage = (*Storage)(nil)
 
 type Storage struct {
 	root            string

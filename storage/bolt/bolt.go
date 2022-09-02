@@ -22,7 +22,7 @@ func Open(path string) (*DB, error) {
 	return bolt.Open(path, os.FileMode(0600), nil)
 }
 
-var _ blob.Storage = (*Storage)(nil)
+var _ blob.SortedStorage = (*Storage)(nil)
 
 type Storage struct {
 	db         *DB

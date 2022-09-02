@@ -26,7 +26,7 @@ type Storage struct {
 	table string
 }
 
-var _ blob.Storage = (*Storage)(nil)
+var _ blob.SortedStorage = (*Storage)(nil)
 
 func NewStorage(db *sql.DB, table string) *Storage {
 	if _, err := db.Exec(fmt.Sprintf(`
