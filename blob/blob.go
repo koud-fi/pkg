@@ -3,8 +3,10 @@ package blob
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"io"
 	"io/fs"
+	"sync/atomic"
 )
 
 type Blob interface{ Open() (io.ReadCloser, error) }
@@ -30,6 +32,16 @@ func FromBytes(buf []byte) Blob {
 }
 
 func FromString(s string) Blob { return FromBytes([]byte(s)) }
+
+func FromReader(r io.Reader) Blob {
+	var opened int32
+	return Func(func() (io.ReadCloser, error) {
+		if atomic.AddInt32(&opened, 1) > 1 {
+			return nil, errors.New("multiple opens on io.Reader blob")
+		}
+		return io.NopCloser(r), nil
+	})
+}
 
 func FromFS(fsys fs.FS, name string) Blob {
 	return Func(func() (io.ReadCloser, error) { return fsys.Open(name) })
