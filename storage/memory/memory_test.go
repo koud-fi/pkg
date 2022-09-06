@@ -8,5 +8,10 @@ import (
 )
 
 func Test(t *testing.T) {
-	storagetest.Test(t, memory.NewStorage())
+	s := memory.NewStorage()
+	storagetest.Test(t, s)
+
+	if err := memory.Save("memstorage.temp", s, 0600); err != nil {
+		t.Fatal(err)
+	}
 }
