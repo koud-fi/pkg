@@ -60,10 +60,12 @@ func (s *Storage) Set(ctx context.Context, ref string, r io.Reader) error {
 }
 
 func (s *Storage) Delete(ctx context.Context, refs ...string) error {
-
-	// ???
-
-	panic("TODO")
+	if s.keyPrefix != "" {
+		for i := range refs {
+			refs[i] = s.key(refs[i])
+		}
+	}
+	return s.rc.Del(ctx, refs...).Err()
 }
 
 func (s *Storage) key(ref string) string { return s.keyPrefix + ref }
