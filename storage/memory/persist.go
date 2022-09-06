@@ -21,9 +21,12 @@ func Save(path string, s *Storage, perm os.FileMode) error {
 	// TODO: avoid full memory copy by streaming the data
 
 	buf := bytes.NewBuffer(nil)
-	if err := rx.ForEach(rx.SliceIter(s.data...), func(p rx.Pair[string, []byte]) error {
+	if err := rx.ForEachN(rx.SliceIter(s.data...), func(p rx.Pair[string, []byte], i int) error {
 		if bytes.ContainsRune(p.Value, '\n') {
 			return errors.New("values must not contain linebreaks")
+		}
+		if i > 0 {
+			buf.WriteByte('\n')
 		}
 		buf.WriteString(url.PathEscape(p.Key))
 		buf.WriteByte(' ')
