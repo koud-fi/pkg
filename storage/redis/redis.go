@@ -11,6 +11,12 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+type Options = redis.Options
+
+func Open(opts *Options) *redis.Client {
+	return redis.NewClient(opts)
+}
+
 var _ blob.Storage = (*Storage)(nil)
 
 type Storage struct {
