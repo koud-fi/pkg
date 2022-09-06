@@ -44,14 +44,14 @@ func Load(path string, s *Storage) error {
 	// TODO: use storage internals to make data writing faster
 
 	ctx := context.Background()
-	return rx.ForEachN(blob.LineIter(localfile.New(path)), func(data string, line int) error {
+	return rx.ForEachN(blob.LineIter(localfile.New(path)), func(data string, i int) error {
 		splitAt := strings.IndexByte(data, ' ')
 		if splitAt == -1 {
-			return fmt.Errorf("malformed data at line %d", line+1)
+			return fmt.Errorf("malformed data at line %d", i+1)
 		}
 		key, err := url.PathUnescape(data[splitAt:])
 		if err != nil {
-			return fmt.Errorf("malformed key at line %d: %w", line+1, err)
+			return fmt.Errorf("malformed key at line %d: %w", i+1, err)
 		}
 		s.Set(ctx, key, strings.NewReader(data[splitAt+1:]))
 		return nil
