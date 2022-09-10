@@ -5,9 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"io"
-	"regexp"
 
 	"golang.org/x/crypto/sha3"
 )
@@ -32,7 +30,7 @@ var (
 		47, 109, 15, 180, 46, 31, 67, 236,
 		138, 250, 175, 149, 50, 155, 94, 97,
 	}
-	idValidator = regexp.MustCompile(fmt.Sprintf("^[a-zA-Z0-9_-]{%d}$", idLen))
+	//idValidator = regexp.MustCompile(fmt.Sprintf("^[a-zA-Z0-9_-]{%d}$", idLen))
 )
 
 // ID is a 120-bit (15 byte) "content ID" for arbitrary binary data, with
