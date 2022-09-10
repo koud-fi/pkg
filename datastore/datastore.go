@@ -30,7 +30,7 @@ func (s *Store[T]) Put(ctx context.Context, key string, v T) error {
 	return s.s.Set(ctx, key, rc)
 }
 
-// Set is an alias to Put.
+// Set is an alias for Put.
 func (s *Store[T]) Set(ctx context.Context, key string, v T) error { return s.Put(ctx, key, v) }
 
 func (s *Store[T]) Update(ctx context.Context, key string, fn func(v T) (T, error)) error {
