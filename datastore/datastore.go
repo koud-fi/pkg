@@ -9,11 +9,11 @@ import (
 )
 
 type Store[T any] struct {
-	s blob.SortedStorage
+	s blob.Storage
 	c Codec[T]
 }
 
-func New[T any](s blob.SortedStorage, c Codec[T]) *Store[T] {
+func New[T any](s blob.Storage, c Codec[T]) *Store[T] {
 	return &Store[T]{s: s, c: c}
 }
 
@@ -55,13 +55,22 @@ func (s *Store[T]) Update(ctx context.Context, key string, fn func(v T) (T, erro
 	return s.s.Set(ctx, key, bytes.NewReader(b2))
 }
 
-func (s *Store[T]) Iter(ctx context.Context, after string) rx.Iter[rx.Pair[string, T]] {
-	return rx.MapErr(s.s.Iter(ctx, after), func(b blob.RefBlob) (rx.Pair[string, T], error) {
+func (s *Store[T]) Delete(ctx context.Context, key ...string) error {
+	return s.s.Delete(ctx, key...)
+}
+
+type Sorted[T any] struct {
+	Store[T]
+	ss blob.SortedStorage
+}
+
+func NewSorted[T any](ss blob.SortedStorage, c Codec[T]) *Sorted[T] {
+	return &Sorted[T]{Store: *New(ss, c), ss: ss}
+}
+
+func (s *Sorted[T]) Iter(ctx context.Context, after string) rx.Iter[rx.Pair[string, T]] {
+	return rx.MapErr(s.ss.Iter(ctx, after), func(b blob.RefBlob) (rx.Pair[string, T], error) {
 		v, err := s.c.Unmarshal(b)
 		return rx.Pair[string, T]{Key: b.Ref, Value: v}, err
 	})
-}
-
-func (s *Store[T]) Delete(ctx context.Context, key ...string) error {
-	return s.s.Delete(ctx, key...)
 }

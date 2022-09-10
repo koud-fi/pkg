@@ -19,14 +19,14 @@ type Node struct {
 
 type Storage struct {
 	s  blob.Storage
-	ds *datastore.Store[file.Attributes]
+	ds *datastore.Sorted[file.Attributes]
 
 	fileOpts []file.Option
 }
 
 func New(
 	s blob.Storage,
-	ds *datastore.Store[file.Attributes],
+	ds *datastore.Sorted[file.Attributes],
 	fileOps ...file.Option,
 ) *Storage {
 	return &Storage{s: s, ds: ds, fileOpts: fileOps}

@@ -25,7 +25,7 @@ func TestStorage(t *testing.T) {
 	assert(t, err)
 
 	var (
-		ds = datastore.New(metaBlobs, datastore.JSON[file.Attributes]())
+		ds = datastore.NewSorted(metaBlobs, datastore.JSON[file.Attributes]())
 		s  = cas.New(fileBlobs, ds, file.MediaAttrs(), file.Digests(crypto.MD5))
 	)
 	assert(t, fs.WalkDir(fsys, ".", func(path string, d fs.DirEntry, err error) error {
