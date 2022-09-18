@@ -9,15 +9,15 @@ import (
 	"github.com/koud-fi/pkg/blob"
 )
 
-func Values[T any](dst *T, valueFn func(string) string) error {
+func Values(dst any, valueFn func(string) []string) error {
 	return merge(reflect.ValueOf(dst), valueFn, nil)
 }
 
-func Form[T any](dst *T, valueFn func(string) string, fileFn func(string) blob.Blob) error {
+func Form(dst any, valueFn func(string) []string, fileFn func(string) blob.Blob) error {
 	return merge(reflect.ValueOf(dst), valueFn, fileFn)
 }
 
-func merge(dst reflect.Value, valueFn func(string) string, fileFn func(string) blob.Blob) error {
+func merge(dst reflect.Value, valueFn func(string) []string, fileFn func(string) blob.Blob) error {
 	if dst.Kind() == reflect.Ptr {
 		dst = dst.Elem()
 	}
@@ -36,12 +36,15 @@ func merge(dst reflect.Value, valueFn func(string) string, fileFn func(string) b
 			merge(fVal, valueFn, fileFn)
 			continue
 		}
-		v := valueFn(fName)
+		vs := valueFn(fName)
+		if len(vs) == 0 {
+			continue
+		}
 		if fVal.CanInterface() {
 			if fVal.CanAddr() {
 				vi := fVal.Addr().Interface()
 				if p, ok := vi.(interface{ Parse(string) error }); ok {
-					err = p.Parse(v)
+					err = p.Parse(vs[0])
 					continue
 				}
 			}
@@ -55,26 +58,26 @@ func merge(dst reflect.Value, valueFn func(string) string, fileFn func(string) b
 		fKind := f.Type.Kind()
 		switch fKind {
 		case reflect.String:
-			fVal.SetString(v)
+			fVal.SetString(vs[0])
 
 		case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
 			var i int64
-			if i, err = strconv.ParseInt(v, 10, f.Type.Bits()); err == nil {
+			if i, err = strconv.ParseInt(vs[0], 10, f.Type.Bits()); err == nil {
 				fVal.SetInt(i)
 			}
 		case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
 			var u uint64
-			if u, err = strconv.ParseUint(v, 10, f.Type.Bits()); err == nil {
+			if u, err = strconv.ParseUint(vs[0], 10, f.Type.Bits()); err == nil {
 				fVal.SetUint(u)
 			}
 		case reflect.Float64, reflect.Float32:
 			var fl float64
-			if fl, err = strconv.ParseFloat(v, f.Type.Bits()); err == nil {
+			if fl, err = strconv.ParseFloat(vs[0], f.Type.Bits()); err == nil {
 				fVal.SetFloat(fl)
 			}
 		case reflect.Bool:
 			var b bool
-			if b, err = strconv.ParseBool(v); err == nil {
+			if b, err = strconv.ParseBool(vs[0]); err == nil {
 				fVal.SetBool(b)
 			}
 

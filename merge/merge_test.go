@@ -12,12 +12,14 @@ type dstType struct {
 	B string
 }
 
+var testData = url.Values{
+	"A": {"42"},
+	"B": {"Hello, world?"},
+}
+
 func TestMerge(t *testing.T) {
 	var dst dstType
-	if err := merge.Values(&dst, url.Values{
-		"A": {"42"},
-		"B": {"Hello, world?"},
-	}.Get); err != nil {
+	if err := merge.Values(&dst, func(key string) []string { return testData[key] }); err != nil {
 		t.Fatal(err)
 	}
 	t.Log(dst) // TODO: assert the result correctly
