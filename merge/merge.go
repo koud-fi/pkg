@@ -9,11 +9,11 @@ import (
 	"github.com/koud-fi/pkg/blob"
 )
 
-func Values(dst any, valueFn func(string) []string) error {
+func Values[T any](dst *T, valueFn func(string) []string) error {
 	return merge(reflect.ValueOf(dst), valueFn, nil)
 }
 
-func Form(dst any, valueFn func(string) []string, fileFn func(string) blob.Blob) error {
+func Form[T any](dst *T, valueFn func(string) []string, fileFn func(string) blob.Blob) error {
 	return merge(reflect.ValueOf(dst), valueFn, fileFn)
 }
 
