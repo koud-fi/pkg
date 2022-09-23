@@ -1,27 +1,48 @@
 package router
 
-import "github.com/koud-fi/pkg/rx"
+import (
+	"strings"
+
+	"github.com/koud-fi/pkg/rx"
+)
+
+const (
+	PathSeparator = '/'
+	ParamPrefix   = ':'
+)
 
 type Router[T any] struct {
-	tree map[string]node[T]
+	children map[string]Router[T]
+	// TODO: isParam bool (or routeType?)
+	value T
 }
 
-func New[T any]() *Router[T] {
-	return &Router[T]{tree: make(map[string]node[T])}
-}
-
-func (r *Router[T]) Register(method, path string, v T) {
+func (r *Router[T]) Register(path string, v T) {
+	if r.children == nil {
+		r.children = make(map[string]Router[T])
+	}
+	//part, rest := splitPath(path)
 
 	// ???
 
 	panic("TODO")
 }
 
-func (r *Router[T]) Lookup(method, path string) (T, Params, bool) {
+func (r *Router[T]) Lookup(path ...string) (T, Params, bool) {
 
 	// ???
 
 	panic("TODO")
+}
+
+func splitPath(path string) (string, string) {
+	for len(path) > 0 && path[0] == PathSeparator {
+		path = path[1:]
+	}
+	if idx := strings.IndexByte(path, PathSeparator); idx > -1 {
+		return path[:idx], path[idx+1:]
+	}
+	return path, ""
 }
 
 type Params struct {
@@ -34,11 +55,5 @@ func (p Params) Get(key string) string {
 			return pair.Value
 		}
 	}
-	panic("router: undefined path parameter: " + key)
-}
-
-type node[T any] struct {
-	node    map[string]node[T]
-	isParam bool
-	value   T
+	panic("router: undefined parameter: " + key)
 }
