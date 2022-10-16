@@ -70,7 +70,9 @@ func NewAssignFunc(typ reflect.Type) AssignFunc {
 					if !ok {
 						continue
 					}
-					return fn(dst, vVal.Field(i).Interface())
+					if err := fn(dst, vVal.Field(i).Interface()); err != nil {
+						return err
+					}
 				}
 				return nil
 
