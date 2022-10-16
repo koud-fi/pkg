@@ -129,8 +129,29 @@ func NewAssignFunc(typ reflect.Type) AssignFunc {
 			return
 		}
 	case reflect.Slice:
-		panic("TODO")
-
+		var (
+			elTyp = typ.Elem()
+			elFn  = NewAssignFunc(elTyp)
+		)
+		return func(dst reflect.Value, v any) (err error) {
+			vVal := reflect.ValueOf(v)
+			switch vVal.Kind() {
+			case reflect.Slice, reflect.Array:
+				l := vVal.Len()
+				if dst.Cap() < l {
+					dst.Set(reflect.MakeSlice(dst.Type(), l, l))
+				}
+				dst.SetLen(l)
+				for i := 0; i < l; i++ {
+					if err := elFn(dst.Index(i), vVal.Index(i).Interface()); err != nil {
+						return err
+					}
+				}
+			default:
+				return fmt.Errorf("merge: cannot assign %T to slice", v)
+			}
+			return nil
+		}
 	case reflect.Struct:
 		fieldFns := make(map[string]AssignFunc, typ.NumField())
 		for i := 0; i < typ.NumField(); i++ {

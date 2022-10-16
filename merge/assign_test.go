@@ -13,7 +13,7 @@ func TestAssing(t *testing.T) {
 		InnerData struct {
 			C bool
 			D string
-			//S []int
+			S []int
 		}
 		Data struct {
 			A      int
@@ -33,6 +33,7 @@ func TestAssing(t *testing.T) {
 		Nested: InnerData{
 			C: true,
 			D: "derp",
+			S: []int{1, 2, 3},
 		},
 	}); err != nil {
 		t.Fatal(err)
