@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-//type Getter interface{ Get(string) (any, bool) }
-
 type AssignFunc func(reflect.Value, any) error
 
 func NewAssignFunc(typ reflect.Type) AssignFunc {
