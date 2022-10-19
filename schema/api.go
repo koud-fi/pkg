@@ -1,5 +1,12 @@
 package schema
 
+const (
+	QueryParam  ParamLocation = "query"
+	HeaderParam ParamLocation = "header"
+	PathParam   ParamLocation = "path"
+	CookieParam ParamLocation = "cookie"
+)
+
 type API struct {
 	Info    Info            `json:"info"`
 	Servers []Server        `json:"servers"`
@@ -31,17 +38,29 @@ type Path struct {
 }
 
 type Operation struct {
-	Parameters []Parameter         `json:"parameters,omitempty"`
-	Response   map[string]Response `json:"response"`
+	Params   []Param             `json:"parameters,omitempty"`
+	ReqBody  ReqBody             `json:"requestBody"`
+	Response map[string]Response `json:"response"`
 }
 
-type Parameter struct {
-	// TODO
+type Param struct {
+	Name        string        `json:"name"`
+	In          ParamLocation `json:"in"`
+	Description string        `json:"description,omitempty"`
+	Required    bool          `json:"required,omitempty"`
+}
+
+type ParamLocation string
+
+type ReqBody struct {
+	Description string               `json:"description,omitempty"`
+	Content     map[string]MediaType `json:"content"`
+	Required    bool                 `json:"required,omitempty"`
 }
 
 type Response struct {
 	Description string               `json:"description,omitempty"`
-	Content     map[string]MediaType `json:"content,omitempty"`
+	Content     map[string]MediaType `json:"content"`
 }
 
 type MediaType struct {
