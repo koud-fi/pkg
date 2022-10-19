@@ -13,4 +13,6 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/koud-fi/pkg/rx v0.0.0-20220617062645-d7d71be010cb // indirect
 	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd // indirect
+	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
+	golang.org/x/sys v0.0.0-20220325203850-36772127a21f // indirect
 )
