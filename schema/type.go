@@ -23,6 +23,8 @@ type Type struct {
 	Format     Format     `json:"format,omitempty"`
 	Properties Properties `json:"properties,omitempty"`
 	Items      *Type      `json:"items,omitempty"`
+
+	Tags map[string]string `json:"tags,omitempty"` // TODO
 }
 
 type (
