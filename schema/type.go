@@ -24,7 +24,7 @@ type Type struct {
 	Properties Properties `json:"properties,omitempty"`
 	Items      *Type      `json:"items,omitempty"`
 
-	Tags map[string]string `json:"tags,omitempty"` // TODO
+	Tags map[string]string `json:"tags,omitempty"`
 }
 
 type (
@@ -72,9 +72,9 @@ func (t Type) ExampleJSON() string {
 
 type Properties map[string]Type
 
-func (p Properties) fromStructFields(c config, t reflect.Type) {
-	for i := 0; i < t.NumField(); i++ {
-		sf := t.Field(i)
+func (p Properties) fromStructFields(c config, rt reflect.Type) {
+	for i := 0; i < rt.NumField(); i++ {
+		sf := rt.Field(i)
 		if sf.Anonymous {
 			p.fromStructFields(c, sf.Type)
 			continue
@@ -85,7 +85,18 @@ func (p Properties) fromStructFields(c config, t reflect.Type) {
 				continue
 			}
 		}
-		p[name] = resolveType(c, sf.Type)
+		t := resolveType(c, sf.Type)
+
+		for _, tag := range c.tags {
+			if v, ok := sf.Tag.Lookup(tag); ok {
+				if t.Tags == nil {
+					t.Tags = map[string]string{tag: v}
+				} else {
+					t.Tags[tag] = v
+				}
+			}
+		}
+		p[name] = t
 	}
 }
 
