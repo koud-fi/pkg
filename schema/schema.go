@@ -5,6 +5,7 @@ import (
 )
 
 type Schema struct {
+	Ref string `json:"$ref,omitempty"`
 	Type
 	Definitions map[string]Type `json:"definitions,omitempty"`
 }
