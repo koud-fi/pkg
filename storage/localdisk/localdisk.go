@@ -2,6 +2,8 @@ package localdisk
 
 import (
 	"context"
+	"crypto"
+	"encoding/hex"
 	"io"
 	"os"
 	"path/filepath"
@@ -30,6 +32,7 @@ func Buckets(levels ...int) Option {
 	}
 }
 
+func BucketHash(h crypto.Hash) Option       { return func(s *Storage) { s.bucketHash = &h } }
 func DirPerm(m os.FileMode) Option          { return func(s *Storage) { s.dirPerm = m } }
 func FilePerm(m os.FileMode) Option         { return func(s *Storage) { s.filePerm = m } }
 func IterOpts(opt ...diriter.Option) Option { return func(s *Storage) { s.iterOpts = opt } }
@@ -40,6 +43,7 @@ type Storage struct {
 	root            string
 	bucketLevels    []int
 	bucketPrefixLen int
+	bucketHash      *crypto.Hash
 	dirPerm         os.FileMode
 	filePerm        os.FileMode
 	iterOpts        []diriter.Option
@@ -99,13 +103,23 @@ func (s Storage) refPath(ref string) string {
 	if len(s.bucketLevels) > 0 {
 		parts := make([]string, 0, len(s.bucketLevels)+2)
 		parts = append(parts, s.root)
-		var start int
+		var (
+			bucketRef = ref
+			start     int
+		)
+		if s.bucketHash != nil {
+			h := s.bucketHash.New()
+			if _, err := h.Write([]byte(bucketRef)); err != nil {
+				panic("localdisk.refPath bucket hash error: " + err.Error())
+			}
+			bucketRef = hex.EncodeToString(h.Sum(nil))
+		}
 		for _, l := range s.bucketLevels {
 			end := start + l
-			if end > len(ref) {
-				end = len(ref)
+			if end > len(bucketRef) {
+				end = len(bucketRef)
 			}
-			part := ref[start:end] + strings.Repeat("_", l-(end-start))
+			part := bucketRef[start:end] + strings.Repeat("_", l-(end-start))
 			parts = append(parts, part)
 			start = end
 		}
@@ -113,12 +127,4 @@ func (s Storage) refPath(ref string) string {
 		return filepath.Join(parts...)
 	}
 	return filepath.Join(s.root, ref)
-}
-
-func (s Storage) pathRef(path string) (string, error) {
-	ref, err := filepath.Rel(s.root, path)
-	if err != nil {
-		return "", err
-	}
-	return ref[s.bucketPrefixLen:], nil
 }
