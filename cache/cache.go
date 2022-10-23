@@ -1,15 +1,17 @@
 package cache
 
 import (
+	"context"
 	"sync/atomic"
 
+	"github.com/koud-fi/pkg/rx"
 	"golang.org/x/sync/singleflight"
 )
 
 type Backend interface {
-	Has(key string) (bool, error)
-	Delete(key string) error
-	Keys(fn func(key string, size int64)) error
+	Has(ctx context.Context, key string) (bool, error)
+	Delete(ctx context.Context, key string) error
+	Keys(ctx context.Context) rx.Iter[rx.Pair[string, int64]]
 }
 
 type Cache struct {
@@ -26,9 +28,9 @@ type Cache struct {
 
 func New(b Backend) *Cache { return &Cache{b: b} }
 
-func (c *Cache) Resolve(key string, fn func() (int64, error)) error {
+func (c *Cache) Resolve(ctx context.Context, key string, fn func() (int64, error)) error {
 	_, err, _ := c.g.Do(key, func() (any, error) {
-		if ok, err := c.b.Has(key); err != nil {
+		if ok, err := c.b.Has(ctx, key); err != nil {
 			return nil, err
 		} else if ok {
 			return nil, nil

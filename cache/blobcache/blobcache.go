@@ -9,6 +9,7 @@ import (
 
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/cache"
+	"github.com/koud-fi/pkg/rx"
 )
 
 //lint:ignore ST1012 if returned from resolve; data is not written to storage.
@@ -19,7 +20,7 @@ type Cache struct {
 	backend
 }
 
-func New(s blob.Storage) *Cache {
+func New(s blob.SortedStorage) *Cache {
 	b := backend{s: s}
 	return &Cache{cache.New(&b), b}
 }
@@ -31,7 +32,7 @@ func (c *Cache) Resolve(ctx context.Context, key string, b blob.Blob) blob.Blob 
 			key    = hex.EncodeToString(digest[:])
 			out    io.ReadCloser
 		)
-		if err := c.Cache.Resolve(key, func() (int64, error) {
+		if err := c.Cache.Resolve(ctx, key, func() (int64, error) {
 			rc, err := b.Open()
 			if err != nil {
 				if err == NoCache {
@@ -57,27 +58,29 @@ func (c *Cache) Resolve(ctx context.Context, key string, b blob.Blob) blob.Blob 
 }
 
 type backend struct {
-	s blob.Storage
+	s blob.SortedStorage
 }
 
-func (b *backend) Has(key string) (bool, error) {
-	var ok bool
-	return ok, b.s.Stat(context.Background(), []string{key}, func(ref string, size int64) error {
-		if ref != key {
-			panic("blobcache: ref and key do not match")
-		}
-		ok = true
-		return nil
-	})
+func (b *backend) Has(ctx context.Context, key string) (bool, error) {
+	/*
+		var ok bool
+		return ok, b.s.Stat(ctx, []string{key}, func(ref string, size int64) error {
+			if ref != key {
+				panic("blobcache: ref and key do not match")
+			}
+			ok = true
+			return nil
+		})
+	*/
+	panic("TODO")
 }
 
-func (b *backend) Delete(key string) error {
-	return b.s.Delete(context.Background(), key)
+func (b *backend) Delete(ctx context.Context, key string) error {
+	return b.s.Delete(ctx, key)
 }
 
-func (b *backend) Keys(fn func(key string, size int64)) error {
-	return b.s.Enumerate(context.Background(), "", func(ref string, size int64) error {
-		fn(ref, size)
-		return nil
+func (b *backend) Keys(ctx context.Context) rx.Iter[rx.Pair[string, int64]] {
+	return rx.Map(b.s.Iter(ctx, ""), func(br blob.RefBlob) rx.Pair[string, int64] {
+		return rx.Pair[string, int64]{Key: br.Ref, Value: -1} // TODO: resolve blob sizes
 	})
 }
