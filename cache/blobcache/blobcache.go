@@ -77,6 +77,6 @@ func (b *backend) Delete(ctx context.Context, key string) error {
 
 func (b *backend) Keys(ctx context.Context) rx.Iter[rx.Pair[string, int64]] {
 	return rx.Map(b.s.Iter(ctx, ""), func(br blob.RefBlob) rx.Pair[string, int64] {
-		return rx.Pair[string, int64]{Key: br.Ref, Value: -1} // TODO: resolve blob sizes
+		return rx.Pair[string, int64]{Key: br.Ref, Value: 0} // TODO: resolve blob sizes
 	})
 }
