@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
+	"os"
 
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/cache"
@@ -62,17 +63,12 @@ type backend struct {
 }
 
 func (b *backend) Has(ctx context.Context, key string) (bool, error) {
-	/*
-		var ok bool
-		return ok, b.s.Stat(ctx, []string{key}, func(ref string, size int64) error {
-			if ref != key {
-				panic("blobcache: ref and key do not match")
-			}
-			ok = true
-			return nil
-		})
-	*/
-	panic("TODO")
+	if err := blob.Error(b.s.Get(ctx, key)); err == nil {
+		return true, nil
+	} else if !os.IsNotExist(err) {
+		return false, err
+	}
+	return false, nil
 }
 
 func (b *backend) Delete(ctx context.Context, key string) error {
