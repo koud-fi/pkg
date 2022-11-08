@@ -8,4 +8,4 @@ require (
 	golang.org/x/image v0.0.0-20220413100746-70e8d0d3baa9
 )
 
-require golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
+require golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
