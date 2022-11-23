@@ -23,6 +23,7 @@ use (
 	./rx
 	./schema
 	./search
+	./serializable
 	./serve
 	./shell
 	./sorted
