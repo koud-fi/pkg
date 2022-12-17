@@ -1,6 +1,7 @@
 package pk
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
@@ -65,3 +66,20 @@ func ParseUIDBytes(b []byte) (UID, error) {
 func (t UID) Bytes() []byte { return t.key[:] }
 
 func (t UID) String() string { return base64.URLEncoding.EncodeToString(t.key[:]) }
+
+func (t UID) MarshalJSON() ([]byte, error) {
+	buf := bytes.NewBuffer(make([]byte, 0, uidByteCount+2))
+	buf.WriteByte('"')
+	buf.Write(t.key[:])
+	buf.WriteByte('"')
+	return buf.Bytes(), nil
+}
+
+func (t *UID) UnmarshalJSON(data []byte) (err error) {
+	n := len(data)
+	if n >= 2 && data[0] == '"' && data[n-1] == '"' {
+		data = data[1 : n-1]
+	}
+	*t, err = ParseUIDBytes(data)
+	return
+}
