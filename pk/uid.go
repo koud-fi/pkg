@@ -6,6 +6,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
+
+	"github.com/koud-fi/pkg/blob"
 
 	"golang.org/x/crypto/sha3"
 )
@@ -20,9 +23,10 @@ type UID struct {
 
 type Salt []byte
 
-func NewUID(src ...any) (t UID) {
+func NewUID(src ...any) (UID, error) {
+	var u UID
 	if len(src) == 0 {
-		if _, err := rand.Read(t.key[:]); err != nil {
+		if _, err := rand.Read(u.key[:]); err != nil {
 			panic("pk.NewUID: " + err.Error())
 		}
 	} else {
@@ -37,13 +41,22 @@ func NewUID(src ...any) (t UID) {
 			switch v := src[i].(type) {
 			case []byte:
 				h.Write(v)
+
+			case blob.Blob:
+				if b, err := v.Open(); err != nil {
+					return u, err
+				} else {
+					if _, err := io.Copy(h, b); err != nil {
+						return u, err
+					}
+				}
 			default:
 				fmt.Fprint(h, v)
 			}
 		}
-		h.Read(t.key[:])
+		h.Read(u.key[:])
 	}
-	return
+	return u, nil
 }
 
 func ParseUID(s string) (UID, error) {
@@ -63,9 +76,9 @@ func ParseUIDBytes(b []byte) (UID, error) {
 	return t, nil
 }
 
-func (t UID) Bytes() []byte { return t.key[:] }
+func (u UID) Bytes() []byte { return u.key[:] }
 
-func (t UID) String() string { return base64.URLEncoding.EncodeToString(t.key[:]) }
+func (u UID) String() string { return base64.URLEncoding.EncodeToString(u.key[:]) }
 
 func (t UID) MarshalJSON() ([]byte, error) {
 	buf := bytes.NewBuffer(make([]byte, 0, uidByteCount+2))
@@ -75,11 +88,11 @@ func (t UID) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (t *UID) UnmarshalJSON(data []byte) (err error) {
+func (u *UID) UnmarshalJSON(data []byte) (err error) {
 	n := len(data)
 	if n >= 2 && data[0] == '"' && data[n-1] == '"' {
 		data = data[1 : n-1]
 	}
-	*t, err = ParseUIDBytes(data)
+	*u, err = ParseUIDBytes(data)
 	return
 }
