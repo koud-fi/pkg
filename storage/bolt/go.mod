@@ -11,5 +11,5 @@ require (
 
 require (
 	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd // indirect
-	golang.org/x/sys v0.1.0 // indirect
+	golang.org/x/sys v0.3.0 // indirect
 )
