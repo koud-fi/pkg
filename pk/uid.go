@@ -27,7 +27,7 @@ func NewUID(src ...any) (UID, error) {
 	var u UID
 	if len(src) == 0 {
 		if _, err := rand.Read(u.key[:]); err != nil {
-			panic("pk.NewUID: " + err.Error())
+			return u, err
 		}
 	} else {
 		h := sha3.NewShake128()
