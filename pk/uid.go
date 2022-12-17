@@ -38,7 +38,7 @@ func NewUID(src ...any) (UID, error) {
 			} else if i > 0 {
 				h.Write(uidSrcSeparator)
 			}
-			switch v := src[i].(type) {
+			switch v := v.(type) {
 			case []byte:
 				h.Write(v)
 
