@@ -11,9 +11,9 @@ type AttrNode interface {
 }
 
 func Attr(n Node, key string) (any, bool) {
-	v, ok, err := rx.First(n.Attrs(key))
+	p, ok, err := rx.First(n.Attrs(key))
 	if err != nil {
 		return err, false
 	}
-	return v, ok
+	return p.Value, ok
 }
