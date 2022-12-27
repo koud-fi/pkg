@@ -1,4 +1,3 @@
 github.com/koud-fi/pkg/blob v0.0.0-20220325061700-7ab00980137e h1:/HGSyCHV3bggTl1FW0Ei02+yTMd2bTkPaWg8MewkPko=
 github.com/koud-fi/pkg/blob v0.0.0-20220325061700-7ab00980137e/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
-golang.org/x/sync v0.0.0-20210220032951-036812b2e83c h1:5KslGYwFpkhGh+Q16bwMP3cOontH8FOep7tGV86Y7SQ=
-golang.org/x/sync v0.0.0-20210220032951-036812b2e83c/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 h1:uVc8UZUe6tr40fFVnUP5Oj+veunVezqYl9z7DYw9xzw=
