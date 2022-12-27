@@ -7,13 +7,13 @@ type Node interface {
 }
 
 type AttrNode interface {
-	Attr(key string) any
+	Attr(key string) (any, bool)
 }
 
-func Attr(n Node, key string) any {
-	v, _, err := rx.First(n.Attrs(key))
+func Attr(n Node, key string) (any, bool) {
+	v, ok, err := rx.First(n.Attrs(key))
 	if err != nil {
-		return err
+		return err, false
 	}
-	return v
+	return v, ok
 }
