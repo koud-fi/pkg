@@ -11,6 +11,9 @@ type AttrNode interface {
 }
 
 func Attr(n Node, key string) (any, bool) {
+	if an, ok := n.(AttrNode); ok {
+		return an.Attr(key)
+	}
 	p, ok, err := rx.First(n.Attrs(key))
 	if err != nil {
 		return err, false
