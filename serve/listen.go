@@ -55,7 +55,7 @@ func Listen(h http.Handler, opt ...ListenOption) {
 	}
 	if strings.HasSuffix(c.addr, DefaultTLSAddr) {
 		httpAddr := strings.TrimSuffix(c.addr, DefaultTLSAddr) + DefaultAddr
-		runServer(httpAddr, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		go runServer(httpAddr, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			target := "https://" + r.Host + r.URL.Path
 			if len(r.URL.RawQuery) > 0 {
 				target += "?" + r.URL.RawQuery
