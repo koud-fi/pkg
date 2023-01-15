@@ -12,17 +12,32 @@ const (
 	DefaultWriteTimeout = time.Second * 60
 	DefaultIdleTimeout  = time.Second * 120
 	DefaultAddr         = ":http"
-	//DefaultTLSAddr = ":https"
+	DefaultTLSAddr      = ":https"
+
+	autoCertCacheDir = ".autocert-cache"
 )
 
 type listenConfig struct {
-	addr string
+	addr      string
+	tlsConfig *tls.Config
 }
 
 type ListenOption func(*listenConfig)
 
 func Addr(addr string) ListenOption {
 	return func(c *listenConfig) { c.addr = addr }
+}
+
+func TLS(c *tls.Config) ListenOption {
+	return func(lc *listenConfig) {
+		if c == nil {
+			return
+		}
+		if lc.addr == DefaultAddr {
+			lc.addr = DefaultTLSAddr
+		}
+		lc.tlsConfig = c
+	}
 }
 
 func Listen(h http.Handler, opt ...ListenOption) {
@@ -32,10 +47,7 @@ func Listen(h http.Handler, opt ...ListenOption) {
 	for _, opt := range opt {
 		opt(&c)
 	}
-
-	// TODO
-
-	runServer(c.addr, h, nil)
+	runServer(c.addr, h, c.tlsConfig)
 }
 
 func runServer(addr string, h http.Handler, tlsConf *tls.Config) {
