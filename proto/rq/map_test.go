@@ -6,7 +6,7 @@ import (
 
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/blob/localfile"
-	"github.com/koud-fi/pkg/rq"
+	"github.com/koud-fi/pkg/proto/rq"
 )
 
 func TestMap(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/koud-fi/pkg/serializable"
+	"github.com/koud-fi/pkg/proto/serializable"
 )
 
 type Thing struct {

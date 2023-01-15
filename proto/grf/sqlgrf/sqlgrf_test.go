@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/koud-fi/pkg/grf/grftest"
-	"github.com/koud-fi/pkg/grf/sqlgrf"
+	"github.com/koud-fi/pkg/proto/grf/grftest"
+	"github.com/koud-fi/pkg/proto/grf/sqlgrf"
 
 	_ "github.com/mattn/go-sqlite3"
 )

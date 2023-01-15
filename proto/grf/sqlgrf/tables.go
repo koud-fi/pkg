@@ -3,7 +3,7 @@ package sqlgrf
 import (
 	"fmt"
 
-	"github.com/koud-fi/pkg/grf"
+	"github.com/koud-fi/pkg/proto/grf"
 )
 
 const (

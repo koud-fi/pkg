@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/koud-fi/pkg/grf"
+	"github.com/koud-fi/pkg/proto/grf"
 )
 
 type mapper struct {

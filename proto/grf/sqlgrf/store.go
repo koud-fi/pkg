@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/koud-fi/pkg/grf"
+	"github.com/koud-fi/pkg/proto/grf"
 )
 
 type store struct {

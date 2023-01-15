@@ -3,7 +3,7 @@ package grftest
 import (
 	"testing"
 
-	"github.com/koud-fi/pkg/grf"
+	"github.com/koud-fi/pkg/proto/grf"
 )
 
 var types = []grf.NodeType{"type1", "type2"}

@@ -1,4 +1,4 @@
-module github.com/koud-fi/pkg/rq
+module github.com/koud-fi/pkg/proto/rq
 
 go 1.18
 

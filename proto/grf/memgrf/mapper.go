@@ -1,6 +1,6 @@
 package memgrf
 
-import "github.com/koud-fi/pkg/grf"
+import "github.com/koud-fi/pkg/proto/grf"
 
 type mapper struct {
 	locker

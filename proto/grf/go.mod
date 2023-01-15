@@ -1,4 +1,4 @@
-module github.com/koud-fi/pkg/grf
+module github.com/koud-fi/pkg/proto/grf
 
 go 1.18
 

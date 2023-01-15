@@ -14,17 +14,17 @@ use (
 	./fetch
 	./file
 	./fingerprint
-	./grf
 	./merge
 	./noise
 	./num
 	./pk
-	./router
-	./rq
+	./proto/grf
+	./proto/router
+	./proto/rq
+	./proto/serializable
 	./rx
 	./schema
 	./search
-	./serializable
 	./serve
 	./shell
 	./sorted
