@@ -27,6 +27,9 @@ type ListenOption func(*listenConfig)
 
 func Addr(addr string) ListenOption {
 	return func(c *listenConfig) {
+		if addr == "" {
+			return
+		}
 		c.addr = addr
 	}
 }
