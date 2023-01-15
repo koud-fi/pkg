@@ -83,5 +83,9 @@ func runServer(addr string, h http.Handler, tlsConf *tls.Config) {
 		MaxHeaderBytes: http.DefaultMaxHeaderBytes,
 	}
 	log.Println("LISTEN", addr)
-	log.Fatal(s.ListenAndServe())
+
+	if s.TLSConfig == nil {
+		log.Fatal(s.ListenAndServe())
+	}
+	log.Fatal(s.ListenAndServeTLS("", ""))
 }
