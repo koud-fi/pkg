@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -25,7 +26,9 @@ type listenConfig struct {
 type ListenOption func(*listenConfig)
 
 func Addr(addr string) ListenOption {
-	return func(c *listenConfig) { c.addr = addr }
+	return func(c *listenConfig) {
+		c.addr = addr
+	}
 }
 
 func TLS(c *tls.Config) ListenOption {
@@ -46,6 +49,17 @@ func Listen(h http.Handler, opt ...ListenOption) {
 	}
 	for _, opt := range opt {
 		opt(&c)
+	}
+	if strings.HasSuffix(c.addr, DefaultTLSAddr) {
+		httpAddr := strings.TrimSuffix(c.addr, DefaultTLSAddr) + DefaultAddr
+		runServer(httpAddr, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			target := "https://" + r.Host + r.URL.Path
+			if len(r.URL.RawQuery) > 0 {
+				target += "?" + r.URL.RawQuery
+			}
+			log.Printf("REDIRECT %s TO HTTPS", r.RemoteAddr)
+			http.Redirect(w, r, target, http.StatusMovedPermanently)
+		}), nil)
 	}
 	runServer(c.addr, h, c.tlsConfig)
 }
