@@ -32,3 +32,11 @@ func Slice[T any](it Iter[T]) ([]T, error) {
 	}
 	return Reduce(it, func(s []T, v T) ([]T, error) { return append(s, v), nil }, []T{})
 }
+
+func UseSlice[T any](it Iter[T], fn func(s []T) error) error {
+	s, err := Slice(it)
+	if err != nil {
+		return fn(s)
+	}
+	return err
+}
