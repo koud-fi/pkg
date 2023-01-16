@@ -68,3 +68,6 @@ func SortValues[K comparable, V constraints.Ordered](a, b Pair[K, V]) bool {
 func SortValuesDesc[K comparable, V constraints.Ordered](a, b Pair[K, V]) bool {
 	return a.Value > b.Value
 }
+
+func Key[K comparable, V any](p Pair[K, V]) K   { return p.Key }
+func Value[K comparable, V any](p Pair[K, V]) V { return p.Value }
