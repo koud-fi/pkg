@@ -40,3 +40,12 @@ func UseSlice[T any](it Iter[T], fn func(s []T) error) error {
 	}
 	return err
 }
+
+/*
+func Tee[T any](it Iter[T], out *[]T) Iter[T] {
+	return Map(it, func(v T) T {
+		*out = append(*out, v)
+		return v
+	})
+}
+*/
