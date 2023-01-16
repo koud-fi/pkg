@@ -48,12 +48,21 @@ func TestSum(t *testing.T) {
 }
 
 func TestToMapUtils(t *testing.T) {
-	m, keys, _ := rx.ToMap(rx.Range(1, 1, 5), func(n int) string {
-		return "." + strconv.Itoa(n)
-	})
-	pairs := rx.SortedPairs(m, rx.SortKeys[string, int])
-	t.Log(pairs)
+	/*
+		pairs := rx.Pluck(rx.Range(1, 1, 5), func(n int) string {
+			return "." + strconv.Itoa(n)
+		})
 
-	vs, _ := rx.Slice(rx.SelectKeys(m, rx.SliceIter(keys...)))
-	t.Log(m, keys, vs)
+		// ???
+
+		m, keys, _ := rx.ToMap(rx.Range(1, 1, 5), func(n int) string {
+			return "." + strconv.Itoa(n)
+		})
+		pairs := rx.SortedPairs(m, rx.SortKeys[string, int])
+		t.Log(pairs)
+
+		vs, _ := rx.Slice(rx.SelectKeys(m, rx.SliceIter(keys...)))
+		t.Log(m, keys, vs)
+	*/
+	panic("TODO")
 }

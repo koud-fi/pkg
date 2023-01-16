@@ -11,15 +11,24 @@ type Pair[K comparable, V any] struct {
 	Value V
 }
 
-func ToMap[K comparable, V any](it Iter[V], keyFn func(V) K) (m map[K]V, keys []K, err error) {
-	m = make(map[K]V)
-	err = ForEach(it, func(v V) error {
-		k := keyFn(v)
-		m[k] = v
-		keys = append(keys, k)
+func Pluck[K comparable, V any](it Iter[V], keyFn func(V) K) Iter[Pair[K, V]] {
+	return PluckErr(it, func(v V) (K, error) { return keyFn(v), nil })
+}
+
+func PluckErr[K comparable, V any](it Iter[V], keyFn func(V) (K, error)) Iter[Pair[K, V]] {
+	return MapErr(it, func(v V) (p Pair[K, V], err error) {
+		p.Value = v
+		p.Key, err = keyFn(v)
+		return
+	})
+}
+
+func ToMap[K comparable, V any](it Iter[Pair[K, V]]) (map[K]V, error) {
+	m := make(map[K]V)
+	return m, ForEach(it, func(p Pair[K, V]) error {
+		m[p.Key] = p.Value
 		return nil
 	})
-	return
 }
 
 func SelectKeys[K comparable, V any](m map[K]V, keys Iter[K]) Iter[V] {
