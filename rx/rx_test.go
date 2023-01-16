@@ -51,9 +51,6 @@ func TestToMapUtils(t *testing.T) {
 	pairs := rx.Pluck(rx.Range(1, 1, 5), func(n int) string {
 		return "." + strconv.Itoa(n)
 	})
-
-	// TODO: resolve keys
-
 	m, _ := rx.ToMap(pairs)
 	pairSlice := rx.SortedPairs(m, rx.SortKeys[string, int])
 	t.Log(pairSlice)
