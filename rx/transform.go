@@ -31,6 +31,18 @@ func MapErr[T1, T2 any](it Iter[T1], fn func(T1) (T2, error)) Iter[T2] {
 	})
 }
 
+func Pluck[K comparable, V any](it Iter[V], fn func(V) K) Iter[Pair[K, V]] {
+	return PluckErr(it, func(v V) (K, error) { return fn(v), nil })
+}
+
+func PluckErr[K comparable, V any](it Iter[V], fn func(V) (K, error)) Iter[Pair[K, V]] {
+	return MapErr(it, func(v V) (p Pair[K, V], err error) {
+		p.Value = v
+		p.Key, err = fn(v)
+		return
+	})
+}
+
 func Filter[T any](it Iter[T], fn func(T) bool) Iter[T] {
 	return Transform(it, func(v T) ([]T, bool, error) {
 		if fn(v) {
