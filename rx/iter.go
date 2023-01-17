@@ -11,8 +11,8 @@ func FuncIter[T any](fn func() ([]T, bool, error)) Iter[T] {
 }
 
 type funcIter[T any] struct {
-	fn func() ([]T, bool, error)
-	sliceIter[T]
+	fn      func() ([]T, bool, error)
+	sIter   sliceIter[T]
 	hasMore bool
 	err     error
 }
@@ -21,15 +21,16 @@ func (it *funcIter[_]) Next() bool {
 	if it.err != nil {
 		return false
 	}
-	if it.sliceIter.Next() {
+	if it.sIter.Next() {
 		return true
 	}
-	for len(it.data) == 0 && it.hasMore && it.err == nil {
-		it.data, it.hasMore, it.err = it.fn()
+	for len(it.sIter.data) == 0 && it.hasMore && it.err == nil {
+		it.sIter.data, it.hasMore, it.err = it.fn()
 	}
-	return (len(it.data) > 0 || it.hasMore) && it.err == nil
+	return (len(it.sIter.data) > 0 || it.hasMore) && it.err == nil
 }
 
+func (it funcIter[T]) Value() T     { return it.sIter.Value() }
 func (it funcIter[_]) Close() error { return it.err }
 
 func WithClose[T any](it Iter[T], fn func() error) Iter[T] {
