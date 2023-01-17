@@ -1,6 +1,0 @@
-github.com/koud-fi/pkg/blob v0.0.0-20220507061658-9bf820e6ad40 h1:LDGOVgWjuL4NMstgQ6zylmd1cuenuG3Uk1tYWGVeUAA=
-github.com/koud-fi/pkg/blob v0.0.0-20220507061658-9bf820e6ad40/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
-github.com/koud-fi/pkg/rx v0.0.0-20220703160000-8eddaeae2265 h1:woFi4ZJ7V6ja6DXIA6JvL67UxAkOv7HZqtLJrNnqdPE=
-github.com/koud-fi/pkg/rx v0.0.0-20220703160000-8eddaeae2265/go.mod h1:11A6myvPh4NirnJHTCf/utpYN9FH8w5DJbWzqjX/QAQ=
-golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd h1:zVFyTKZN/Q7mNRWSs1GOYnHM9NiFSJ54YVRsD0rNWT4=
-golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd/go.mod h1:lgLbSvA5ygNOMpwM/9anMpWVlVJ7Z+cHWq/eFuinpGE=
