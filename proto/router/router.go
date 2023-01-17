@@ -51,8 +51,8 @@ type Params struct {
 
 func (p Params) Get(key string) string {
 	for _, pair := range p.pairs {
-		if pair.Key == key {
-			return pair.Value
+		if pair.Key() == key {
+			return pair.Value()
 		}
 	}
 	panic("router: undefined parameter: " + key)
