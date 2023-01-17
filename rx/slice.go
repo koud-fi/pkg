@@ -35,7 +35,7 @@ func Slice[T any](it Iter[T]) ([]T, error) {
 
 func UseSlice[T any](it Iter[T], fn func(s []T) error) error {
 	s, err := Slice(it)
-	if err != nil {
+	if err == nil {
 		return fn(s)
 	}
 	return err
