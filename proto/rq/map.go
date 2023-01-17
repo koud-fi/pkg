@@ -6,9 +6,11 @@ var _ AttrNode = (*MapNode[any])(nil)
 
 type MapNode[V any] map[string]V
 
-func (n MapNode[V]) Attr(key string) (any, bool) {
-	v, ok := n[key]
-	return v, ok
+func (n MapNode[V]) Attr(key string) rx.Maybe[any] {
+	if v, ok := n[key]; ok {
+		rx.Just(v)
+	}
+	return rx.None[any]()
 }
 
 func (n MapNode[V]) Attrs(keys ...string) rx.Iter[rx.Pair[string, V]] {

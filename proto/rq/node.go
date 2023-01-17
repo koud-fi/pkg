@@ -7,16 +7,16 @@ type Node interface {
 }
 
 type AttrNode interface {
-	Attr(key string) (any, bool)
+	Attr(key string) rx.Maybe[any]
 }
 
-func Attr(n Node, key string) (any, bool) {
+func Attr(n Node, key string) rx.Maybe[any] {
 	if an, ok := n.(AttrNode); ok {
 		return an.Attr(key)
 	}
-	p, ok, err := rx.First(n.Attrs(key))
-	if err != nil {
-		return err, false
+	v, _ := rx.First(n.Attrs(key))
+	if !v.Ok() {
+		return rx.None[any]()
 	}
-	return p.Value, ok
+	return rx.Just(v.Value().Value)
 }
