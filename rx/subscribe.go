@@ -1,11 +1,10 @@
 package rx
 
-func First[T any](it Iter[T]) (T, bool, error) {
+func First[T any](it Iter[T]) (Maybe[T], error) {
 	if !it.Next() {
-		var zero T
-		return zero, false, it.Close()
+		return None[T](), it.Close()
 	}
-	return it.Value(), true, nil
+	return Just(it.Value()), nil
 }
 
 func ForEach[T any](it Iter[T], fn func(T) error) error {
