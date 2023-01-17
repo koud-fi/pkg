@@ -17,25 +17,7 @@ type Entry struct {
 
 func (e Entry) Path() string { return e.path }
 
-type config struct {
-	hideFunc func(fs.DirEntry) bool
-}
-
-type Option func(*config)
-
-func HideFunc(fn func(fs.DirEntry) bool) Option { return func(c *config) { c.hideFunc = fn } }
-
-func DefaultHideFunc(d fs.DirEntry) bool {
-	return strings.HasPrefix(d.Name(), ".")
-}
-
-func New(fsys fs.FS, root string, opt ...Option) rx.Iter[Entry] {
-	c := config{
-		hideFunc: DefaultHideFunc,
-	}
-	for _, opt := range opt {
-		opt(&c)
-	}
+func New(fsys fs.FS, root string) rx.Iter[Entry] {
 	type dirInfo struct {
 		path    string
 		entries []fs.DirEntry
@@ -75,7 +57,7 @@ func New(fsys fs.FS, root string, opt ...Option) rx.Iter[Entry] {
 						path:    topPath,
 						entries: dir,
 					})
-				} else if !c.hideFunc(topEntry) {
+				} else {
 					out = append(out, Entry{
 						path:     topPath,
 						DirEntry: topEntry,
@@ -86,4 +68,8 @@ func New(fsys fs.FS, root string, opt ...Option) rx.Iter[Entry] {
 		}
 		return out, len(dirs) > 0, nil
 	})
+}
+
+func IsHidden(e Entry) bool {
+	return strings.HasPrefix(e.Name(), ".") // TODO: check for other common hidden file patters
 }
