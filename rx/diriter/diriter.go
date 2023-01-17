@@ -11,9 +11,11 @@ import (
 const defaultBatchSize = 1 << 6
 
 type Entry struct {
-	Path string
+	path string
 	fs.DirEntry
 }
+
+func (e Entry) Path() string { return e.path }
 
 type config struct {
 	hideFunc func(fs.DirEntry) bool
@@ -75,7 +77,7 @@ func New(fsys fs.FS, root string, opt ...Option) rx.Iter[Entry] {
 					})
 				} else if !c.hideFunc(topEntry) {
 					out = append(out, Entry{
-						Path:     topPath,
+						path:     topPath,
 						DirEntry: topEntry,
 					})
 				}
@@ -84,8 +86,4 @@ func New(fsys fs.FS, root string, opt ...Option) rx.Iter[Entry] {
 		}
 		return out, len(dirs) > 0, nil
 	})
-}
-
-func Paths(it rx.Iter[Entry]) rx.Iter[string] {
-	return rx.Map(it, func(e Entry) string { return e.Path })
 }
