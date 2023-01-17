@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -13,13 +14,17 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-const uidByteCount = 15
+const (
+	uidRawLen   = 15
+	idBase64Len = 20
+	idHexLen    = 30
+)
 
 var uidSrcSeparator = []byte{0}
 
-type UID struct {
-	key [uidByteCount]byte
-}
+// UID is a 120-bit (15 byte) "content ID" for arbitrary binary data, with
+// collision chance of 1 in ~2.66 trillion on trillion unique items.
+type UID struct{ key [uidRawLen]byte }
 
 type Salt []byte
 
@@ -60,15 +65,26 @@ func NewUID(src ...any) (UID, error) {
 }
 
 func ParseUID(s string) (UID, error) {
-	b, err := base64.URLEncoding.DecodeString(s)
+	var (
+		buf = make([]byte, uidRawLen)
+		err error
+	)
+	switch len(s) {
+	case idBase64Len:
+		_, err = base64.URLEncoding.Decode(buf, []byte(s))
+	case idHexLen:
+		_, err = hex.Decode(buf, []byte(s))
+	default:
+		err = errors.New("unknown encoding")
+	}
 	if err != nil {
 		return UID{}, fmt.Errorf("malformed UID, %w", err)
 	}
-	return ParseUIDBytes(b)
+	return ParseUIDBytes(buf)
 }
 
 func ParseUIDBytes(b []byte) (UID, error) {
-	if len(b) != uidByteCount {
+	if len(b) != uidRawLen {
 		return UID{}, errors.New("malformed UID, unexpected length")
 	}
 	var t UID
@@ -78,10 +94,14 @@ func ParseUIDBytes(b []byte) (UID, error) {
 
 func (u UID) Bytes() []byte { return u.key[:] }
 
+// Hex returns a hex encoded presentation of a ID.
+// This should be used when using IDs as filenames on case-insensitive filesystems.
+func (u UID) Hex() string { return hex.EncodeToString(u.key[:]) }
+
 func (u UID) String() string { return base64.URLEncoding.EncodeToString(u.key[:]) }
 
 func (t UID) MarshalJSON() ([]byte, error) {
-	buf := bytes.NewBuffer(make([]byte, 0, uidByteCount+2))
+	buf := bytes.NewBuffer(make([]byte, 0, uidRawLen+2))
 	buf.WriteByte('"')
 	buf.Write(t.key[:])
 	buf.WriteByte('"')
