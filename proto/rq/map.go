@@ -20,7 +20,7 @@ func (n MapNode[V]) Attrs(keys ...string) rx.Iter[rx.Pair[string, V]] {
 	out := make([]rx.Pair[string, V], 0, len(keys))
 	for _, k := range keys {
 		if v, ok := n[k]; ok {
-			out = append(out, rx.Pair[string, V]{Key: k, Value: v})
+			out = append(out, rx.NewPair(k, v))
 		}
 	}
 	return rx.SliceIter(out...)

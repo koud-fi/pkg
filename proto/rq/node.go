@@ -18,5 +18,5 @@ func Attr(n Node, key string) rx.Maybe[any] {
 	if !v.Ok() {
 		return rx.None[any]()
 	}
-	return rx.Just(v.Value().Value)
+	return rx.Just(v.Value().Value())
 }

@@ -47,15 +47,9 @@ func TestSum(t *testing.T) {
 	t.Log(rx.Sum(rx.Range(1, 1, 10)))
 }
 
-func TestToMapUtils(t *testing.T) {
+func TestPairs(t *testing.T) {
 	pairs := rx.Pluck(rx.Range(1, 1, 5), func(n int) string {
 		return "." + strconv.Itoa(n)
 	})
-	m, _ := rx.ToMap(pairs)
-	pairSlice := rx.SortedPairs(m, rx.SortKeys[string, int])
-	t.Log(pairSlice)
-	/*
-		vs, _ := rx.Slice(rx.SelectKeys(m, rx.SliceIter(keys...)))
-		t.Log(m, keys, vs)
-	*/
+	t.Log(rx.Slice(rx.Map(pairs, rx.Pair[string, int].Key)))
 }
