@@ -7,9 +7,9 @@ import (
 )
 
 type Table[T any] interface {
-	Get(ctx context.Context, keys rx.Iter[T]) rx.Iter[rx.Pair[T, rx.Maybe[T]]]
-	Put(ctx context.Context, values rx.Iter[T]) rx.Iter[T]
-	Delete(ctx context.Context, keys rx.Iter[T]) error
+	Get(ctx context.Context) func(key T) (rx.Pair[T, rx.Maybe[T]], error)
+	Put(ctx context.Context) func(value T) (T, error)
+	Delete(ctx context.Context) func(key T) error
 }
 
 // TODO: SortedTable interface

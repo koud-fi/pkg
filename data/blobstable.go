@@ -19,32 +19,43 @@ func BlobsTable[T any](bs blob.Storage, refFn func(T) (string, error)) Table[T] 
 	return &blobsTable[T]{blobs: bs, refFn: refFn}
 }
 
-func (bt *blobsTable[T]) Get(ctx context.Context, keys rx.Iter[T]) rx.Iter[rx.Pair[T, rx.Maybe[T]]] {
-	refKeys := rx.PluckErr(keys, bt.refFn)
-	return rx.MapErr(refKeys, func(p rx.Pair[string, T]) (rx.Pair[T, rx.Maybe[T]], error) {
+func (bt *blobsTable[T]) Get(ctx context.Context) func(key T) (rx.Pair[T, rx.Maybe[T]], error) {
+	return func(key T) (rx.Pair[T, rx.Maybe[T]], error) {
+		ref, err := bt.refFn(key)
+		if err != nil {
+			return rx.Pair[T, rx.Maybe[T]]{}, err
+		}
 		var v T
-		if err := blob.Unmarshal(json.Unmarshal, bt.blobs.Get(ctx, p.Key()), &v); err != nil {
+		if err := blob.Unmarshal(json.Unmarshal, bt.blobs.Get(ctx, ref), &v); err != nil {
 			if os.IsNotExist(err) {
-				return rx.NewPair(p.Value(), rx.None[T]()), nil
+				return rx.NewPair(key, rx.None[T]()), nil
 			}
 			return rx.Pair[T, rx.Maybe[T]]{}, err
 		}
-		return rx.NewPair(p.Value(), rx.Just(v)), nil
-	})
+		return rx.NewPair(key, rx.Just(v)), nil
+	}
 }
 
-func (bt *blobsTable[T]) Put(ctx context.Context, values rx.Iter[T]) rx.Iter[T] {
-	return rx.MapErr(rx.PluckErr(values, bt.refFn), func(p rx.Pair[string, T]) (v T, _ error) {
-		data, err := json.Marshal(p.Value())
+func (bt *blobsTable[T]) Put(ctx context.Context) func(value T) (T, error) {
+	return func(value T) (v T, _ error) {
+		ref, err := bt.refFn(value)
 		if err != nil {
 			return v, err
 		}
-		return p.Value(), bt.blobs.Set(ctx, p.Key(), bytes.NewReader(data))
-	})
+		data, err := json.Marshal(value)
+		if err != nil {
+			return v, err
+		}
+		return value, bt.blobs.Set(ctx, ref, bytes.NewReader(data))
+	}
 }
 
-func (bt *blobsTable[T]) Delete(ctx context.Context, keys rx.Iter[T]) error {
-	return rx.UseSlice(rx.MapErr(keys, bt.refFn), func(refs []string) error {
-		return bt.blobs.Delete(ctx, refs...)
-	})
+func (bt *blobsTable[T]) Delete(ctx context.Context) func(key T) error {
+	return func(key T) error {
+		ref, err := bt.refFn(key)
+		if err != nil {
+			return err
+		}
+		return bt.blobs.Delete(ctx, ref)
+	}
 }

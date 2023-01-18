@@ -22,14 +22,14 @@ func TestBlobsTable(t *testing.T) {
 			memory.NewStorage(),
 			func(v TestData) (string, error) { return v.ID, nil })
 	)
-	t.Log(rx.Slice(bt.Put(ctx, rx.SliceIter(
+	t.Log(rx.Slice(rx.MapErr(rx.SliceIter(
 		TestData{ID: "1", Value: 42},
-		TestData{ID: "2", Value: 69}))))
+		TestData{ID: "2", Value: 69}), bt.Put(ctx))))
 
-	t.Log(bt.Delete(ctx, rx.SliceIter(TestData{ID: "1"})))
+	t.Log(bt.Delete(ctx)(TestData{ID: "1"}))
 
-	t.Log(rx.Slice(bt.Get(ctx, rx.SliceIter(
+	t.Log(rx.Slice(rx.MapErr(rx.SliceIter(
 		TestData{ID: "1"},
 		TestData{ID: "2"},
-		TestData{ID: "3"}))))
+		TestData{ID: "3"}), bt.Get(ctx))))
 }
