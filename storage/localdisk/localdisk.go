@@ -32,10 +32,9 @@ func Buckets(levels ...int) Option {
 	}
 }
 
-func BucketHash(h crypto.Hash) Option       { return func(s *Storage) { s.bucketHash = &h } }
-func DirPerm(m os.FileMode) Option          { return func(s *Storage) { s.dirPerm = m } }
-func FilePerm(m os.FileMode) Option         { return func(s *Storage) { s.filePerm = m } }
-func IterOpts(opt ...diriter.Option) Option { return func(s *Storage) { s.iterOpts = opt } }
+func BucketHash(h crypto.Hash) Option { return func(s *Storage) { s.bucketHash = &h } }
+func DirPerm(m os.FileMode) Option    { return func(s *Storage) { s.dirPerm = m } }
+func FilePerm(m os.FileMode) Option   { return func(s *Storage) { s.filePerm = m } }
 
 var _ blob.SortedStorage = (*Storage)(nil)
 
@@ -46,7 +45,6 @@ type Storage struct {
 	bucketHash      *crypto.Hash
 	dirPerm         os.FileMode
 	filePerm        os.FileMode
-	iterOpts        []diriter.Option
 }
 
 func NewStorage(root string, opt ...Option) (*Storage, error) {
@@ -81,11 +79,11 @@ func (s Storage) Iter(_ context.Context, after string) rx.Iter[blob.RefBlob] {
 	if after != "" {
 		panic("localdisk.Iter: after not supported") // TODO: implement "after"
 	}
-	d := diriter.New(os.DirFS(s.root), ".", s.iterOpts...)
+	d := diriter.New(os.DirFS(s.root), ".")
 	return rx.Map(d, (func(e diriter.Entry) blob.RefBlob {
 		return blob.RefBlob{
-			Ref:  e.Path,
-			Blob: localfile.New(s.refPath(e.Path)),
+			Ref:  e.Path(),
+			Blob: localfile.New(s.refPath(e.Path())),
 		}
 	}))
 }
