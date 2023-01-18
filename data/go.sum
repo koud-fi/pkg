@@ -1,4 +1,9 @@
+github.com/koud-fi/pkg/blob v0.0.0-20220327071929-73cdb37bce2a h1:meYcf0q5X6vSbPFEGH5k08uPyl0deBdSl/TmVVHXVGk=
+github.com/koud-fi/pkg/blob v0.0.0-20220327071929-73cdb37bce2a/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
 github.com/koud-fi/pkg/rx v0.0.0-20230117164436-4f4692216384 h1:iwyY440vGJyyzI8IC/j2wzK3S1gzTiilAmQwbVAGqcI=
 github.com/koud-fi/pkg/rx v0.0.0-20230117164436-4f4692216384/go.mod h1:11A6myvPh4NirnJHTCf/utpYN9FH8w5DJbWzqjX/QAQ=
+github.com/koud-fi/pkg/storage/memory v0.0.0-20220704100549-03331ba1146e h1:6PFSu9QnhJG1ODdLU4Z05xt7lPo493BRRU509e2/EWc=
+github.com/koud-fi/pkg/storage/storagetest v0.0.0-20220505044251-401d235d2935 h1:YfliAHqisyj7eT2CYfurgaGMI+pppiHjvdxX4jLulNw=
 golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd h1:zVFyTKZN/Q7mNRWSs1GOYnHM9NiFSJ54YVRsD0rNWT4=
 golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd/go.mod h1:lgLbSvA5ygNOMpwM/9anMpWVlVJ7Z+cHWq/eFuinpGE=
+golang.org/x/net v0.5.0 h1:GyT4nK/YDHSqa1c4753ouYCDajOYKTja9Xb/OHtgvSw=
