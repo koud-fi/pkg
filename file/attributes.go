@@ -25,12 +25,6 @@ type Attributes struct {
 	Info
 }
 
-type Info struct {
-	ModTime *time.Time  `json:"modTime,omitempty"`
-	Mode    os.FileMode `json:"-"`
-	IsDir   bool        `json:"isDir,omitempty"`
-}
-
 func (a Attributes) Type() string {
 	return strings.SplitN(a.ContentType, "/", 2)[0]
 }
@@ -40,6 +34,21 @@ func (a Attributes) Ext() string {
 		return exts[len(exts)-1]
 	}
 	return ""
+}
+
+type Info struct {
+	ModTime *time.Time  `json:"modTime,omitempty"`
+	Mode    os.FileMode `json:"-"`
+	IsDir   bool        `json:"isDir,omitempty"`
+}
+
+func NewInfo(in os.FileInfo) (out Info) {
+	if modTime := in.ModTime(); !modTime.IsZero() {
+		out.ModTime = &modTime
+	}
+	out.Mode = in.Mode()
+	out.IsDir = in.IsDir()
+	return
 }
 
 type Option func(a *Attributes, b blob.Blob, contentType string) error
