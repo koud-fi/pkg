@@ -36,7 +36,7 @@ func (a Attributes) Ext() string {
 	return ""
 }
 
-func (a1 Attributes) EqualContent(a2 Attributes) bool {
+func (a1 Attributes) Equal(a2 Attributes) bool {
 	return (a1.Size == a2.Size) &&
 		((a1.ModTime == nil && a2.ModTime == nil) || a1.ModTime.Equal(*a2.ModTime))
 

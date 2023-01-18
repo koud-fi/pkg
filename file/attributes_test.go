@@ -23,7 +23,7 @@ func TestAttributes(t *testing.T) {
 		if err != nil {
 			return fmt.Errorf("%s: %w", path, err)
 		}
-		t.Logf("%s %v", path, *attrs)
+		t.Logf("%s %v", path, attrs)
 		return nil
 
 	}); err != nil {
