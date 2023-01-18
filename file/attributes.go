@@ -60,18 +60,18 @@ func NewInfo(in os.FileInfo) (out Info) {
 
 type Option func(a *Attributes, b blob.Blob, contentType string) error
 
-func ResolveAttrs(b blob.Blob, opts ...Option) (*Attributes, error) {
+func ResolveAttrs(b blob.Blob, opts ...Option) (Attributes, error) {
 	var a Attributes
 
-	switch b := b.(type) {
+	switch bt := b.(type) {
 	case blob.BytesReader:
-		buf := b.Bytes()
+		buf := bt.Bytes()
 		a.Size = int64(len(buf))
 		a.ContentType = http.DetectContentType(buf)
 	default:
-		rc, err := b.Open()
+		rc, err := bt.Open()
 		if err != nil {
-			return nil, err
+			return a, err
 		}
 		defer rc.Close()
 
@@ -79,7 +79,7 @@ func ResolveAttrs(b blob.Blob, opts ...Option) (*Attributes, error) {
 		case fs.File:
 			info, err := rc.Stat()
 			if err != nil {
-				return nil, err
+				return a, err
 			}
 			a.Size = info.Size()
 
@@ -92,7 +92,7 @@ func ResolveAttrs(b blob.Blob, opts ...Option) (*Attributes, error) {
 			if !a.IsDir {
 				br := bufio.NewReaderSize(rc, defaultHeaderPeekSize)
 				if a.ContentType, err = resolveContentType(br, info); err != nil {
-					return nil, fmt.Errorf("failed to resolve content-type: %w", err)
+					return a, fmt.Errorf("failed to resolve content-type: %w", err)
 				}
 			}
 
@@ -103,7 +103,7 @@ func ResolveAttrs(b blob.Blob, opts ...Option) (*Attributes, error) {
 		default:
 			buf, err := io.ReadAll(rc)
 			if err != nil {
-				return nil, fmt.Errorf("failed to read all data: %w", err)
+				return a, fmt.Errorf("failed to read all data: %w", err)
 			}
 			a.Size = int64(len(buf))
 			a.ContentType = http.DetectContentType(buf)
@@ -113,10 +113,10 @@ func ResolveAttrs(b blob.Blob, opts ...Option) (*Attributes, error) {
 	}
 	for _, opt := range opts {
 		if err := opt(&a, b, a.ContentType); err != nil {
-			return nil, err
+			return a, err
 		}
 	}
-	return &a, nil
+	return a, nil
 }
 
 func resolveContentType(br *bufio.Reader, info os.FileInfo) (string, error) {
