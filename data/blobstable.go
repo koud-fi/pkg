@@ -42,6 +42,9 @@ func (bt *blobsTable[T]) Put(ctx context.Context) func(value T) (T, error) {
 		if err != nil {
 			return v, err
 		}
+
+		// TODO: check if the value has changed to avoid pointless writing
+
 		data, err := json.Marshal(value)
 		if err != nil {
 			return v, err
