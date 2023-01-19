@@ -60,7 +60,7 @@ type APIResponse struct {
 }
 
 type Client struct {
-	AppID     string `json:"appID"`
+	AppID     string `json:"appId"`
 	AppSecret string `json:"appSecret"`
 	UserAgent string `json:"userAgent"`
 
