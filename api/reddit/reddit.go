@@ -51,20 +51,20 @@ type Thing struct {
 	}
 }
 
-type Client struct {
-	AppID     string `json:"appID"`
-	AppSecret string `json:"appSecret"`
-	UserAgent string `json:"userAgent"`
-
-	token *fetch.OAuthToken
-}
-
 type APIResponse struct {
 	Kind Kind `json:"kind"`
 	Data struct {
 		Children []Thing `json:"children,omitempty"`
 		After    string  `json:"after,omitempty"`
 	}
+}
+
+type Client struct {
+	AppID     string `json:"appID"`
+	AppSecret string `json:"appSecret"`
+	UserAgent string `json:"userAgent"`
+
+	token *fetch.OAuthToken
 }
 
 func (c *Client) Subreddit(ctx context.Context, r, after string) (*APIResponse, error) {
