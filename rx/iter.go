@@ -6,32 +6,39 @@ type Iter[T any] interface {
 	Close() error
 }
 
-func FuncIter[T any](fn func() ([]T, bool, error)) Iter[T] {
-	return &funcIter[T]{fn: fn, hasMore: true}
+type Doner interface{ Done() bool }
+
+type boolDoner bool
+
+func (b boolDoner) Done() bool { return bool(b) }
+func Done(b bool) Doner        { return boolDoner(b) }
+
+func FuncIter[T any, S Doner](fn func() ([]T, S, error)) Iter[T] {
+	return &funcIter[T, S]{fn: fn}
 }
 
-type funcIter[T any] struct {
-	fn      func() ([]T, bool, error)
-	sIter   sliceIter[T]
-	hasMore bool
-	err     error
+type funcIter[T any, S Doner] struct {
+	fn    func() ([]T, S, error)
+	state S
+	sIter sliceIter[T]
+	err   error
 }
 
-func (it *funcIter[_]) Next() bool {
+func (it *funcIter[_, _]) Next() bool {
 	if it.err != nil {
 		return false
 	}
 	if it.sIter.Next() {
 		return true
 	}
-	for len(it.sIter.data) == 0 && it.hasMore && it.err == nil {
-		it.sIter.data, it.hasMore, it.err = it.fn()
+	for len(it.sIter.data) == 0 && it.state.Done() && it.err == nil {
+		it.sIter.data, it.state, it.err = it.fn()
 	}
-	return (len(it.sIter.data) > 0 || it.hasMore) && it.err == nil
+	return (len(it.sIter.data) > 0 || it.state.Done()) && it.err == nil
 }
 
-func (it funcIter[T]) Value() T     { return it.sIter.Value() }
-func (it funcIter[_]) Close() error { return it.err }
+func (it funcIter[T, _]) Value() T     { return it.sIter.Value() }
+func (it funcIter[_, _]) Close() error { return it.err }
 
 func WithClose[T any](it Iter[T], fn func() error) Iter[T] {
 	return closeIter[T]{Iter: it, closeFn: fn}
