@@ -26,11 +26,11 @@ func New(fsys fs.FS, root string) rx.Iter[Entry] {
 		dirs []dirInfo
 		init bool
 	)
-	return rx.FuncIter(func() ([]Entry, bool, error) {
+	return rx.FuncIter(func() ([]Entry, rx.Done, error) {
 		if !init {
 			dir, err := fs.ReadDir(fsys, path.Clean(root))
 			if err != nil {
-				return nil, false, err
+				return nil, true, err
 			}
 			dirs = []dirInfo{{path: root, entries: dir}}
 			init = true
@@ -51,7 +51,7 @@ func New(fsys fs.FS, root string) rx.Iter[Entry] {
 				if topEntry.IsDir() {
 					dir, err := fs.ReadDir(fsys, topPath)
 					if err != nil {
-						return nil, false, err
+						return nil, true, err
 					}
 					dirs = append(dirs, dirInfo{
 						path:    topPath,
@@ -66,7 +66,7 @@ func New(fsys fs.FS, root string) rx.Iter[Entry] {
 				dirs[i].entries = dirs[i].entries[:len(dirs[i].entries)-1]
 			}
 		}
-		return out, len(dirs) > 0, nil
+		return out, len(dirs) == 0, nil
 	})
 }
 

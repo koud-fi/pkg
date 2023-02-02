@@ -8,10 +8,9 @@ type Iter[T any] interface {
 
 type Doner interface{ Done() bool }
 
-type boolDoner bool
+type Done bool
 
-func (b boolDoner) Done() bool { return bool(b) }
-func Done(b bool) Doner        { return boolDoner(b) }
+func (d Done) Done() bool { return bool(d) }
 
 func FuncIter[T any, S Doner](fn func() ([]T, S, error)) Iter[T] {
 	return &funcIter[T, S]{fn: fn}
@@ -31,10 +30,10 @@ func (it *funcIter[_, _]) Next() bool {
 	if it.sIter.Next() {
 		return true
 	}
-	for len(it.sIter.data) == 0 && it.state.Done() && it.err == nil {
+	for len(it.sIter.data) == 0 && !it.state.Done() && it.err == nil {
 		it.sIter.data, it.state, it.err = it.fn()
 	}
-	return (len(it.sIter.data) > 0 || it.state.Done()) && it.err == nil
+	return (len(it.sIter.data) > 0 || !it.state.Done()) && it.err == nil
 }
 
 func (it funcIter[T, _]) Value() T     { return it.sIter.Value() }
@@ -58,16 +57,16 @@ func (it closeIter[_]) Close() error {
 }
 
 func Error[T any](err error) Iter[T] {
-	return FuncIter(func() ([]T, bool, error) {
-		return nil, false, err
+	return FuncIter(func() ([]T, Done, error) {
+		return nil, true, err
 	})
 }
 
 func Counter[N Number](start, step N) Iter[N] {
-	return FuncIter(func() ([]N, bool, error) {
+	return FuncIter(func() ([]N, Done, error) {
 		next := start
 		start += step
-		return []N{next}, true, nil
+		return []N{next}, false, nil
 	})
 }
 

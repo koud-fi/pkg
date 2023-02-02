@@ -2,17 +2,17 @@ package rx
 
 func Partition[T any](it Iter[T], fn func([]T) ([]T, [][]T)) Iter[[]T] {
 	var vs []T
-	return FuncIter(func() ([][]T, bool, error) {
+	return FuncIter(func() ([][]T, Done, error) {
 		for it.Next() {
 			var out [][]T
 			if vs, out = fn(append(vs, it.Value())); len(out) > 0 {
-				return out, true, nil
+				return out, false, nil
 			}
 		}
 		if len(vs) > 0 {
-			return [][]T{vs}, false, it.Close()
+			return [][]T{vs}, true, it.Close()
 		}
-		return nil, false, it.Close()
+		return nil, true, it.Close()
 
 	})
 }

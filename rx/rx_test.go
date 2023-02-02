@@ -18,8 +18,8 @@ func TestIter(t *testing.T) {
 }
 
 func TestFuncIter(t *testing.T) {
-	rx.Drain(rx.Log(rx.FuncIter(func() ([]int, bool, error) {
-		return []int{1, 2, 3}, false, nil
+	rx.Drain(rx.Log(rx.FuncIter(func() ([]int, rx.Done, error) {
+		return []int{1, 2, 3}, true, nil
 	}), ""))
 }
 
