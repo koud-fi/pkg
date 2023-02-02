@@ -3,7 +3,7 @@ package rx
 import "log"
 
 func Transform[T1, T2 any](it Iter[T1], fn func(T1) ([]T2, Done, error)) Iter[T2] {
-	return FuncIter(func() ([]T2, Done, error) {
+	return FuncIter(func(Done) ([]T2, Done, error) {
 		if !it.Next() {
 			return nil, true, it.Close()
 		}

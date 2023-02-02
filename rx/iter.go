@@ -16,12 +16,12 @@ type Forever struct{}
 
 func (f Forever) Done() bool { return true }
 
-func FuncIter[T any, S Doner](fn func() ([]T, S, error)) Iter[T] {
+func FuncIter[T any, S Doner](fn func(S) ([]T, S, error)) Iter[T] {
 	return &funcIter[T, S]{fn: fn}
 }
 
 type funcIter[T any, S Doner] struct {
-	fn    func() ([]T, S, error)
+	fn    func(S) ([]T, S, error)
 	state S
 	sIter sliceIter[T]
 	err   error
@@ -35,7 +35,7 @@ func (it *funcIter[_, _]) Next() bool {
 		return true
 	}
 	for len(it.sIter.data) == 0 && !it.state.Done() && it.err == nil {
-		it.sIter.data, it.state, it.err = it.fn()
+		it.sIter.data, it.state, it.err = it.fn(it.state)
 	}
 	return (len(it.sIter.data) > 0 || !it.state.Done()) && it.err == nil
 }
@@ -61,13 +61,13 @@ func (it closeIter[_]) Close() error {
 }
 
 func Error[T any](err error) Iter[T] {
-	return FuncIter(func() ([]T, Done, error) {
+	return FuncIter(func(Done) ([]T, Done, error) {
 		return nil, true, err
 	})
 }
 
 func Counter[N Number](start, step N) Iter[N] {
-	return FuncIter(func() ([]N, Done, error) {
+	return FuncIter(func(Done) ([]N, Done, error) {
 		next := start
 		start += step
 		return []N{next}, false, nil

@@ -2,7 +2,7 @@ package rx
 
 func Partition[T any](it Iter[T], fn func([]T) ([]T, [][]T)) Iter[[]T] {
 	var vs []T
-	return FuncIter(func() ([][]T, Done, error) {
+	return FuncIter(func(Done) ([][]T, Done, error) {
 		for it.Next() {
 			var out [][]T
 			if vs, out = fn(append(vs, it.Value())); len(out) > 0 {

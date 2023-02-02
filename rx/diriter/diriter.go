@@ -26,7 +26,7 @@ func New(fsys fs.FS, root string) rx.Iter[Entry] {
 		dirs []dirInfo
 		init bool
 	)
-	return rx.FuncIter(func() ([]Entry, rx.Done, error) {
+	return rx.FuncIter(func(rx.Done) ([]Entry, rx.Done, error) {
 		if !init {
 			dir, err := fs.ReadDir(fsys, path.Clean(root))
 			if err != nil {
