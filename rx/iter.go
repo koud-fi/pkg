@@ -12,6 +12,10 @@ type Done bool
 
 func (d Done) Done() bool { return bool(d) }
 
+type Forever struct{}
+
+func (f Forever) Done() bool { return true }
+
 func FuncIter[T any, S Doner](fn func() ([]T, S, error)) Iter[T] {
 	return &funcIter[T, S]{fn: fn}
 }
