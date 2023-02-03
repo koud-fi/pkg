@@ -27,8 +27,8 @@ func FuncIter[T any, S Doner](fn func(S) ([]T, S, error)) Iter[T] {
 	return &funcIter[T, S]{fn: fn}
 }
 
-func Unfold[T any, S Doner](state S, fn func(S) ([]T, S, error)) Iter[T] {
-	return &funcIter[T, S]{fn: fn, state: state}
+func Unfold[T any, S Doner](s S, fn func(S) ([]T, S, error)) Iter[T] {
+	return &funcIter[T, S]{fn: fn, state: s}
 }
 
 // TODO: UnfoldLens
