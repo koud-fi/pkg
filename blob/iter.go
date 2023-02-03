@@ -12,18 +12,18 @@ func LineIter(b Blob) rx.Iter[string] {
 		rc io.ReadCloser
 		s  *bufio.Scanner
 	)
-	return rx.WithClose(rx.FuncIter(func() ([]string, bool, error) {
+	return rx.WithClose(rx.FuncIter(func(rx.Done) ([]string, rx.Done, error) {
 		if s == nil {
 			var err error
 			if rc, err = b.Open(); err != nil {
-				return nil, false, err
+				return nil, true, err
 			}
 			s = bufio.NewScanner(rc)
 		}
 		if !s.Scan() {
-			return nil, false, nil
+			return nil, true, nil
 		}
-		return []string{s.Text()}, true, nil
+		return []string{s.Text()}, false, nil
 
 	}), func() error {
 		defer rc.Close()
