@@ -53,7 +53,7 @@ func (s *Storage) Set(_ context.Context, ref string, r io.Reader) error {
 
 func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
 	i := -1
-	return rx.FuncIter(func() ([]blob.RefBlob, bool, error) {
+	return rx.FuncIter(func(rx.Done) ([]blob.RefBlob, rx.Done, error) {
 		s.mu.RLock()
 		defer s.mu.RUnlock()
 
@@ -62,7 +62,7 @@ func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] 
 		}
 		select {
 		case <-ctx.Done():
-			return nil, false, ctx.Err()
+			return nil, true, ctx.Err()
 		default:
 			var out []blob.RefBlob // TODO: return larger batches of data
 			if i < len(s.data) {
@@ -72,7 +72,7 @@ func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] 
 				})
 				i++
 			}
-			return out, i < len(s.data), nil
+			return out, i == len(s.data), nil
 		}
 	})
 }
