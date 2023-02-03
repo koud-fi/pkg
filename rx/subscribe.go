@@ -24,7 +24,7 @@ func ForEachN[T any](it Iter[T], fn func(T, int) error) error {
 	})
 }
 
-func Reduce[T, S any](it Iter[T], fn func(S, T) (S, error), sum S) (S, error) {
+func Fold[T, S any](it Iter[T], fn func(S, T) (S, error), sum S) (S, error) {
 	err := ForEach(it, func(v T) (err error) {
 		sum, err = fn(sum, v)
 		return
@@ -33,7 +33,7 @@ func Reduce[T, S any](it Iter[T], fn func(S, T) (S, error), sum S) (S, error) {
 }
 
 func Sum[N Number](it Iter[N]) (N, error) {
-	return Reduce(it, func(sum, n N) (N, error) { return sum + n, nil }, 0)
+	return Fold(it, func(sum, n N) (N, error) { return sum + n, nil }, 0)
 }
 
 func Count[T any](it Iter[T]) (int, error) {

@@ -30,7 +30,7 @@ func Slice[T any](it Iter[T]) ([]T, error) {
 	if s, ok := it.(Slicer[T]); ok {
 		return s.Slice(), nil
 	}
-	return Reduce(it, func(s []T, v T) ([]T, error) { return append(s, v), nil }, []T{})
+	return Fold(it, func(s []T, v T) ([]T, error) { return append(s, v), nil }, []T{})
 }
 
 func UseSlice[T any](it Iter[T], fn func(s []T) error) error {
