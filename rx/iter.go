@@ -16,16 +16,22 @@ type Forever struct{}
 
 func (f Forever) Done() bool { return true }
 
-func FuncIter[T any, S Doner](fn func(S) ([]T, S, error)) Iter[T] {
-	return &funcIter[T, S]{fn: fn}
-}
-
 type funcIter[T any, S Doner] struct {
 	fn    func(S) ([]T, S, error)
 	state S
 	sIter sliceIter[T]
 	err   error
 }
+
+func FuncIter[T any, S Doner](fn func(S) ([]T, S, error)) Iter[T] {
+	return &funcIter[T, S]{fn: fn}
+}
+
+func Unfold[T any, S Doner](state S, fn func(S) ([]T, S, error)) Iter[T] {
+	return &funcIter[T, S]{fn: fn, state: state}
+}
+
+// TODO: UnfoldLens
 
 func (it *funcIter[_, _]) Next() bool {
 	if it.err != nil {
