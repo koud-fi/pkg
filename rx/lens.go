@@ -32,3 +32,25 @@ func (al *atomicLens[T]) Set(v T) error {
 }
 
 func Atomic[T any](l Lens[T]) Lens[T] { return &atomicLens[T]{l: l} }
+
+type onceLens[T any] struct {
+	fn   func() (T, error)
+	init bool
+	v    T
+	err  error
+}
+
+func Once[T any](fn func() (T, error)) Lens[T] { return &onceLens[T]{fn: fn} }
+
+func (ol *onceLens[T]) Get() (v T, _ error) {
+	if !ol.init {
+		ol.v, ol.err = ol.fn()
+		ol.init = true
+	}
+	return ol.v, ol.err
+}
+
+func (ol *onceLens[T]) Set(v T) error {
+	ol.init, ol.v, ol.err = false, v, nil
+	return nil
+}
