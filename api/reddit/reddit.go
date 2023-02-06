@@ -56,6 +56,7 @@ type APIResponse struct {
 	Kind Kind `json:"kind"`
 	Data struct {
 		Children []Thing `json:"children,omitempty"`
+		Before   string  `json:"before,omitempty"`
 		After    string  `json:"after,omitempty"`
 	}
 }
