@@ -21,6 +21,9 @@ type funcIter[T any, S Doner] struct {
 	state S
 	sIter sliceIter[T]
 	err   error
+
+	lensInit bool
+	lens     Lens[S]
 }
 
 func FuncIter[T any, S Doner](fn func(S) ([]T, S, error)) Iter[T] {
@@ -31,7 +34,9 @@ func Unfold[T any, S Doner](s S, fn func(S) ([]T, S, error)) Iter[T] {
 	return &funcIter[T, S]{fn: fn, state: s}
 }
 
-// TODO: UnfoldLens
+func UnfoldLens[T any, S Doner](l Lens[S], fn func(S) ([]T, S, error)) Iter[T] {
+	return &funcIter[T, S]{fn: fn, lens: l}
+}
 
 func (it *funcIter[_, _]) Next() bool {
 	if it.err != nil {
@@ -40,7 +45,18 @@ func (it *funcIter[_, _]) Next() bool {
 	if it.sIter.Next() {
 		return true
 	}
+	if it.lens != nil && !it.lensInit {
+		if it.state, it.err = it.lens.Get(); it.err != nil {
+			return false
+		}
+		it.lensInit = true
+	}
 	for len(it.sIter.data) == 0 && !it.state.Done() && it.err == nil {
+		if it.lens != nil {
+			if it.err = it.lens.Set(it.state); it.err != nil {
+				return false
+			}
+		}
 		it.sIter.data, it.state, it.err = it.fn(it.state)
 	}
 	return (len(it.sIter.data) > 0 || !it.state.Done()) && it.err == nil
