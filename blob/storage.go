@@ -38,3 +38,5 @@ type RefBlob struct {
 type Iterator interface {
 	Iter(ctx context.Context, after string) rx.Iter[RefBlob]
 }
+
+// TODO: storage lens
