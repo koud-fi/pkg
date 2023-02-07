@@ -22,6 +22,10 @@ type Getter interface {
 	Get(ctx context.Context, ref string) Blob
 }
 
+type GetterFunc func(ctx context.Context, ref string) Blob
+
+func (f GetterFunc) Get(ctx context.Context, ref string) Blob { return f(ctx, ref) }
+
 type Setter interface {
 	Set(ctx context.Context, ref string, r io.Reader) error
 }
