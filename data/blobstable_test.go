@@ -3,6 +3,7 @@ package data_test
 import (
 	"testing"
 
+	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/data"
 	"github.com/koud-fi/pkg/rx"
 	"github.com/koud-fi/pkg/storage/memory"
@@ -20,7 +21,7 @@ func TestBlobsTable(t *testing.T) {
 		ctx = context.Background()
 		bt  = data.BlobsTable(
 			memory.NewStorage(),
-			func(v TestData) (string, error) { return v.ID, nil })
+			func(v TestData) (blob.Ref, error) { return blob.NewRef(v.ID), nil })
 	)
 	t.Log(rx.Slice(rx.MapErr(rx.SliceIter(
 		TestData{ID: "1", Value: 42},

@@ -12,10 +12,10 @@ import (
 
 type blobsTable[T any] struct {
 	blobs blob.Storage
-	refFn func(T) (string, error)
+	refFn func(T) (blob.Ref, error)
 }
 
-func BlobsTable[T any](bs blob.Storage, refFn func(T) (string, error)) Table[T] {
+func BlobsTable[T any](bs blob.Storage, refFn func(T) (blob.Ref, error)) Table[T] {
 	return &blobsTable[T]{blobs: bs, refFn: refFn}
 }
 

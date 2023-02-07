@@ -1,21 +1,13 @@
 package blobcache
 
 import (
-	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
-	"io"
-	"os"
-
-	"github.com/koud-fi/pkg/blob"
-	"github.com/koud-fi/pkg/cache"
-	"github.com/koud-fi/pkg/rx"
 )
 
 //lint:ignore ST1012 if returned from resolve; data is not written to storage.
 var NoCache = errors.New("no cache")
 
+/*
 type Cache struct {
 	*cache.Cache
 	backend
@@ -80,3 +72,4 @@ func (b *backend) Keys(ctx context.Context) rx.Iter[rx.Pair[string, int64]] {
 		return rx.NewPair(br.Ref, int64(0)) // TODO: resolve blob sizes
 	})
 }
+*/

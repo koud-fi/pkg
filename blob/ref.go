@@ -6,7 +6,7 @@ const RefDomainSeparator = ":"
 
 type Ref []string
 
-func ParseRef(s string) Ref {
+func NewRef(s string) Ref {
 	return Ref(strings.Split(s, RefDomainSeparator))
 }
 

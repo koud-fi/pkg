@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/fs"
 	"path"
+	"strings"
 
 	"github.com/koud-fi/pkg/rx"
 )
@@ -21,15 +22,15 @@ type SortedStorage interface {
 }
 
 type Getter interface {
-	Get(ctx context.Context, ref string) Blob
+	Get(ctx context.Context, ref Ref) Blob
 }
 
 type Setter interface {
-	Set(ctx context.Context, ref string, r io.Reader) error
+	Set(ctx context.Context, ref Ref, r io.Reader) error
 }
 
 type Deleter interface {
-	Delete(ctx context.Context, refs ...string) error
+	Delete(ctx context.Context, refs ...Ref) error
 }
 
 type RefBlob struct {
@@ -41,12 +42,12 @@ type Iterator interface {
 	Iter(ctx context.Context, after string) rx.Iter[RefBlob]
 }
 
-type GetterFunc func(ctx context.Context, ref string) Blob
+type GetterFunc func(ctx context.Context, ref Ref) Blob
 
-func (f GetterFunc) Get(ctx context.Context, ref string) Blob { return f(ctx, ref) }
+func (f GetterFunc) Get(ctx context.Context, ref Ref) Blob { return f(ctx, ref) }
 
 func FSGetter(fsys fs.FS) Getter {
-	return GetterFunc(func(_ context.Context, ref string) Blob {
-		return FromFS(fsys, path.Clean(ref))
+	return GetterFunc(func(_ context.Context, ref Ref) Blob {
+		return FromFS(fsys, path.Clean(strings.Join(ref, "/")))
 	})
 }
