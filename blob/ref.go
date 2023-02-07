@@ -2,12 +2,12 @@ package blob
 
 import "strings"
 
-const DomainSeparator = ":"
+const RefDomainSeparator = ":"
 
 type Ref []string
 
 func ParseRef(s string) Ref {
-	return Ref(strings.Split(s, DomainSeparator))
+	return Ref(strings.Split(s, RefDomainSeparator))
 }
 
 func (r Ref) Domain() string {
@@ -24,6 +24,6 @@ func (r Ref) Ref() Ref {
 	return Ref{}
 }
 
-func (r Ref) String() string { return strings.Join(r, DomainSeparator) }
+func (r Ref) String() string { return strings.Join(r, RefDomainSeparator) }
 
 // TODO: MarshalJSON/UnmarshalJSON
