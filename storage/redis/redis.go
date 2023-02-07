@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/koud-fi/pkg/blob"
+	"github.com/koud-fi/pkg/rx"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -38,7 +39,7 @@ func NewStorage(rc *redis.Client, opt ...Option) *Storage {
 	return &s
 }
 
-func (s *Storage) Get(ctx context.Context, ref string) blob.Blob {
+func (s *Storage) Get(ctx context.Context, ref blob.Ref) blob.Blob {
 	return blob.ByteFunc(func() ([]byte, error) {
 		data, err := s.rc.Get(ctx, s.key(ref)).Bytes()
 		if err != nil {
@@ -51,7 +52,7 @@ func (s *Storage) Get(ctx context.Context, ref string) blob.Blob {
 	})
 }
 
-func (s *Storage) Set(ctx context.Context, ref string, r io.Reader) error {
+func (s *Storage) Set(ctx context.Context, ref blob.Ref, r io.Reader) error {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
@@ -59,13 +60,9 @@ func (s *Storage) Set(ctx context.Context, ref string, r io.Reader) error {
 	return s.rc.Set(ctx, s.key(ref), data, s.expiration).Err()
 }
 
-func (s *Storage) Delete(ctx context.Context, refs ...string) error {
-	if s.keyPrefix != "" {
-		for i := range refs {
-			refs[i] = s.key(refs[i])
-		}
-	}
-	return s.rc.Del(ctx, refs...).Err()
+func (s *Storage) Delete(ctx context.Context, refs ...blob.Ref) error {
+	keys, _ := rx.Slice(rx.Map(rx.SliceIter(refs...), s.key))
+	return s.rc.Del(ctx, keys...).Err()
 }
 
-func (s *Storage) key(ref string) string { return s.keyPrefix + ref }
+func (s *Storage) key(ref blob.Ref) string { return s.keyPrefix + ref.String() }
