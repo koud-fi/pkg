@@ -34,12 +34,12 @@ type Deleter interface {
 }
 
 type RefBlob struct {
-	Ref string
+	Ref Ref
 	Blob
 }
 
 type Iterator interface {
-	Iter(ctx context.Context, after string) rx.Iter[RefBlob]
+	Iter(ctx context.Context, after Ref) rx.Iter[RefBlob]
 }
 
 type GetterFunc func(ctx context.Context, ref Ref) Blob

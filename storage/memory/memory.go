@@ -13,7 +13,7 @@ import (
 
 type Storage struct {
 	mu   sync.RWMutex
-	data refDataSlice // TODO: optimize storage format to make insert/delete faster
+	data refDataSlice // TODO: optimize storage format to make insert/delete faster, use blob.Ref as pair key
 }
 
 var _ blob.SortedStorage = (*Storage)(nil)
@@ -22,7 +22,7 @@ func NewStorage() *Storage {
 	return new(Storage)
 }
 
-func (s *Storage) Get(_ context.Context, ref string) blob.Blob {
+func (s *Storage) Get(_ context.Context, ref blob.Ref) blob.Blob {
 	return blob.ByteFunc(func() ([]byte, error) {
 		s.mu.RLock()
 		defer s.mu.RUnlock()
@@ -34,7 +34,7 @@ func (s *Storage) Get(_ context.Context, ref string) blob.Blob {
 	})
 }
 
-func (s *Storage) Set(_ context.Context, ref string, r io.Reader) error {
+func (s *Storage) Set(_ context.Context, ref blob.Ref, r io.Reader) error {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
@@ -42,7 +42,7 @@ func (s *Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	p := rx.NewPair(ref, data)
+	p := rx.NewPair(ref.String(), data)
 	if i, ok := s.search(ref); ok {
 		s.data[i] = p
 	} else {
@@ -51,7 +51,7 @@ func (s *Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	return nil
 }
 
-func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
+func (s *Storage) Iter(ctx context.Context, after blob.Ref) rx.Iter[blob.RefBlob] {
 	i := -1
 	return rx.FuncIter(func(rx.Done) ([]blob.RefBlob, rx.Done, error) {
 		s.mu.RLock()
@@ -67,7 +67,7 @@ func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] 
 			var out []blob.RefBlob // TODO: return larger batches of data
 			if i < len(s.data) {
 				out = append(out, blob.RefBlob{
-					Ref:  s.data[i].Key(),
+					Ref:  blob.NewRef(s.data[i].Key()),
 					Blob: blob.FromBytes(s.data[i].Value()),
 				})
 				i++
@@ -77,7 +77,7 @@ func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] 
 	})
 }
 
-func (s *Storage) Delete(_ context.Context, refs ...string) error {
+func (s *Storage) Delete(_ context.Context, refs ...blob.Ref) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -96,11 +96,12 @@ func (s *Storage) Clear() {
 	s.data = s.data[:0]
 }
 
-func (s *Storage) search(ref string) (int, bool) {
+func (s *Storage) search(ref blob.Ref) (int, bool) {
+	refStr := ref.String()
 	i := sort.Search(len(s.data), func(i int) bool {
-		return s.data[i].Key() >= ref
+		return s.data[i].Key() >= refStr
 	})
-	return i, i < len(s.data) && s.data[i].Key() == ref
+	return i, i < len(s.data) && s.data[i].Key() == refStr
 }
 
 type refDataSlice []rx.Pair[string, []byte]

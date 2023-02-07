@@ -20,17 +20,17 @@ func Test(t *testing.T, s blob.Storage) {
 	// TODO: actually test things...
 
 	// TODO: log errors
-	s.Set(ctx, "a", strings.NewReader("av"))
-	s.Set(ctx, "b", strings.NewReader("bv"))
-	s.Set(ctx, "d", strings.NewReader("dv"))
-	s.Set(ctx, "c", strings.NewReader("cv"))
-	s.Set(ctx, "e", strings.NewReader("ev"))
-	s.Set(ctx, "f", strings.NewReader("fv"))
-	s.Set(ctx, "g", strings.NewReader("gv"))
-	s.Set(ctx, "h", strings.NewReader("hv"))
+	s.Set(ctx, blob.NewRef("a"), strings.NewReader("av"))
+	s.Set(ctx, blob.NewRef("b"), strings.NewReader("bv"))
+	s.Set(ctx, blob.NewRef("d"), strings.NewReader("dv"))
+	s.Set(ctx, blob.NewRef("c"), strings.NewReader("cv"))
+	s.Set(ctx, blob.NewRef("e"), strings.NewReader("ev"))
+	s.Set(ctx, blob.NewRef("f"), strings.NewReader("fv"))
+	s.Set(ctx, blob.NewRef("g"), strings.NewReader("gv"))
+	s.Set(ctx, blob.NewRef("h"), strings.NewReader("hv"))
 
-	s.Delete(ctx, "b")
-	t.Log(blobStr(s.Get(ctx, "b")))
+	s.Delete(ctx, blob.NewRef("b"))
+	t.Log(blobStr(s.Get(ctx, blob.NewRef("b"))))
 
 	testIter(ctx, t, s)
 }
@@ -40,7 +40,7 @@ func testIter(ctx context.Context, t *testing.T, s blob.Storage) {
 	if !ok {
 		return
 	}
-	if err := rx.ForEach(ss.Iter(ctx, ""), func(b blob.RefBlob) error {
+	if err := rx.ForEach(ss.Iter(ctx, blob.NewRef("")), func(b blob.RefBlob) error {
 		header, err := blob.Peek(s.Get(ctx, b.Ref), 1<<10)
 		if err != nil {
 			return fmt.Errorf("%v: %v", b.Ref, err)
