@@ -45,6 +45,12 @@ func New() *Request {
 	return &Request{client: http.DefaultClient}
 }
 
+func Getter(reqFn func(context.Context, blob.Ref) blob.Blob) blob.Getter {
+	return blob.GetterFunc(func(ctx context.Context, ref blob.Ref) blob.Blob {
+		return reqFn(ctx, ref)
+	})
+}
+
 func Get(url string) *Request    { return New().Method(http.MethodGet).URL(url) }
 func Head(url string) *Request   { return New().Method(http.MethodHead).URL(url) }
 func Post(url string) *Request   { return New().Method(http.MethodPost).URL(url) }
