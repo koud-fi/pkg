@@ -26,6 +26,13 @@ func New(s blob.SortedStorage) *Cache {
 	return &Cache{cache.New(&b), b}
 }
 
+func Getter(s *Cache, g blob.Getter) blob.Getter {
+
+	// ???
+
+	panic("TODO")
+}
+
 func (c *Cache) Resolve(ctx context.Context, key string, b blob.Blob) blob.Blob {
 	return blob.Func(func() (io.ReadCloser, error) {
 		var (
