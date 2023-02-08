@@ -53,7 +53,7 @@ func FSGetter(fsys fs.FS) Getter {
 	})
 }
 
-type Mux map[string]Getter
+type Mux map[Domain]Getter
 
 func (m Mux) Get(ctx context.Context, ref Ref) Blob {
 	return Func(func() (io.ReadCloser, error) {
