@@ -37,14 +37,14 @@ func NewStorage(db *DB, bucket string) *Storage {
 	}
 }
 
-func (s Storage) Get(_ context.Context, ref string) blob.Blob {
+func (s Storage) Get(_ context.Context, ref blob.Ref) blob.Blob {
 	return blob.ByteFunc(func() (data []byte, err error) {
 		err = s.db.View(func(tx *bolt.Tx) error {
 			return wrapTx(tx).useBucket(s.dataBucket, false, func(b *bolt.Bucket) error {
 				if b == nil {
 					return os.ErrNotExist
 				}
-				buf := b.Get([]byte(ref))
+				buf := b.Get(ref.Bytes())
 				if buf == nil {
 					return os.ErrNotExist
 				}
@@ -57,13 +57,13 @@ func (s Storage) Get(_ context.Context, ref string) blob.Blob {
 	})
 }
 
-func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
+func (s Storage) Set(_ context.Context, ref blob.Ref, r io.Reader) error {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
 	}
 	return s.db.Update(func(tx *bolt.Tx) error {
-		key := []byte(ref)
+		key := ref.Bytes()
 		return wrapTx(tx).
 			useBucket(s.dataBucket, false, func(b *bolt.Bucket) error {
 				return b.Put(key, data)
@@ -74,14 +74,14 @@ func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	})
 }
 
-func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
-	return &iter{s: s, ctx: ctx, after: after}
+func (s *Storage) Iter(ctx context.Context, after blob.Ref) rx.Iter[blob.RefBlob] {
+	return &iter{s: s, ctx: ctx, after: after.Bytes()}
 }
 
 type iter struct {
 	s     *Storage
 	ctx   context.Context
-	after string
+	after []byte
 
 	tx  *bolt.Tx
 	c   *bolt.Cursor
@@ -99,11 +99,10 @@ func (it *iter) Next() bool {
 		if b := it.tx.Bucket(it.s.statBucket); b != nil {
 			it.c = b.Cursor()
 
-			afterBytes := []byte(it.after)
-			if len(afterBytes) == 0 {
+			if len(it.after) == 0 {
 				it.k, _ = it.c.First()
 			} else {
-				it.c.Seek(afterBytes)
+				it.c.Seek(it.after)
 			}
 		}
 		init = true
@@ -124,7 +123,7 @@ func (it *iter) Next() bool {
 }
 
 func (it iter) Value() blob.RefBlob {
-	ref := string(it.k)
+	ref := blob.NewRef(string(it.k))
 	return blob.RefBlob{
 		Ref:  ref,
 		Blob: it.s.Get(it.ctx, ref),
@@ -142,10 +141,10 @@ func (it iter) Close() error {
 	return it.err
 }
 
-func (s Storage) Delete(_ context.Context, refs ...string) error {
+func (s Storage) Delete(_ context.Context, refs ...blob.Ref) error {
 	return s.db.Update(func(tx *bolt.Tx) error {
 		for _, ref := range refs {
-			key := []byte(ref)
+			key := ref.Bytes()
 			return wrapTx(tx).
 				useBucket(s.statBucket, true, func(b *bolt.Bucket) error {
 					return b.Delete(key)

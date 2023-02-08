@@ -63,11 +63,11 @@ func NewStorage(root string, opt ...Option) (*Storage, error) {
 	return &s, nil
 }
 
-func (s Storage) Get(_ context.Context, ref string) blob.Blob {
+func (s Storage) Get(_ context.Context, ref blob.Ref) blob.Blob {
 	return localfile.New(s.refPath(ref))
 }
 
-func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
+func (s Storage) Set(_ context.Context, ref blob.Ref, r io.Reader) error {
 	path := s.refPath(ref)
 	if err := os.MkdirAll(filepath.Dir(path), s.dirPerm); err != nil {
 		return err
@@ -75,8 +75,8 @@ func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	return localfile.WriteReader(path, r, s.filePerm)
 }
 
-func (s Storage) Iter(_ context.Context, after string) rx.Iter[blob.RefBlob] {
-	if after != "" {
+func (s Storage) Iter(_ context.Context, after blob.Ref) rx.Iter[blob.RefBlob] {
+	if len(after) != 0 {
 		panic("localdisk.Iter: after not supported") // TODO: implement "after"
 	}
 	d := diriter.New(os.DirFS(s.root), ".")
@@ -88,7 +88,7 @@ func (s Storage) Iter(_ context.Context, after string) rx.Iter[blob.RefBlob] {
 	}))
 }
 
-func (s Storage) Delete(_ context.Context, refs ...string) error {
+func (s Storage) Delete(_ context.Context, refs ...blob.Ref) error {
 	for _, ref := range refs {
 		if err := os.Remove(s.refPath(ref)); err != nil {
 			return err
@@ -97,7 +97,7 @@ func (s Storage) Delete(_ context.Context, refs ...string) error {
 	return nil
 }
 
-func (s Storage) refPath(ref string) string {
+func (s Storage) refPath(ref blob.Ref) string {
 	if len(s.bucketLevels) > 0 {
 		parts := make([]string, 0, len(s.bucketLevels)+2)
 		parts = append(parts, s.root)

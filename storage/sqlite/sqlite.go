@@ -41,7 +41,7 @@ func NewStorage(db *sql.DB, table string) *Storage {
 	return &Storage{db: db, table: table}
 }
 
-func (s *Storage) Get(ctx context.Context, ref string) blob.Blob {
+func (s *Storage) Get(ctx context.Context, ref blob.Ref) blob.Blob {
 	return blob.ByteFunc(func() ([]byte, error) {
 		var buf []byte
 		if err := s.db.QueryRowContext(ctx, fmt.Sprintf(`
@@ -57,7 +57,7 @@ func (s *Storage) Get(ctx context.Context, ref string) blob.Blob {
 	})
 }
 
-func (s *Storage) Set(ctx context.Context, ref string, r io.Reader) error {
+func (s *Storage) Set(ctx context.Context, ref blob.Ref, r io.Reader) error {
 	buf, err := io.ReadAll(r)
 	if err != nil {
 		return err
@@ -71,8 +71,8 @@ func (s *Storage) Set(ctx context.Context, ref string, r io.Reader) error {
 	return err
 }
 
-func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
-	return &iter{s: s, ctx: ctx, after: after}
+func (s *Storage) Iter(ctx context.Context, after blob.Ref) rx.Iter[blob.RefBlob] {
+	return &iter{s: s, ctx: ctx, after: after.String()}
 }
 
 type iter struct {
@@ -104,7 +104,7 @@ func (it *iter) Next() bool {
 
 func (it iter) Value() blob.RefBlob {
 	return blob.RefBlob{
-		Ref:  it.ref,
+		Ref:  blob.NewRef(it.ref),
 		Blob: blob.FromBytes(it.data),
 	}
 }
@@ -120,7 +120,7 @@ func (it iter) Close() error {
 	return it.err
 }
 
-func (s *Storage) Delete(ctx context.Context, refs ...string) error {
+func (s *Storage) Delete(ctx context.Context, refs ...blob.Ref) error {
 
 	// TODO: optimize (use a single query)
 
