@@ -81,9 +81,10 @@ func (s Storage) Iter(_ context.Context, after blob.Ref) rx.Iter[blob.RefBlob] {
 	}
 	d := diriter.New(os.DirFS(s.root), ".")
 	return rx.Map(d, (func(e diriter.Entry) blob.RefBlob {
+		ref := blob.NewRef(e.Path())
 		return blob.RefBlob{
-			Ref:  e.Path(),
-			Blob: localfile.New(s.refPath(e.Path())),
+			Ref:  ref,
+			Blob: localfile.New(s.refPath(ref)),
 		}
 	}))
 }
@@ -98,11 +99,12 @@ func (s Storage) Delete(_ context.Context, refs ...blob.Ref) error {
 }
 
 func (s Storage) refPath(ref blob.Ref) string {
+	refStr := ref.String()
 	if len(s.bucketLevels) > 0 {
 		parts := make([]string, 0, len(s.bucketLevels)+2)
 		parts = append(parts, s.root)
 		var (
-			bucketRef = ref
+			bucketRef = refStr
 			start     int
 		)
 		if s.bucketHash != nil {
@@ -121,8 +123,8 @@ func (s Storage) refPath(ref blob.Ref) string {
 			parts = append(parts, part)
 			start = end
 		}
-		parts = append(parts, ref)
+		parts = append(parts, refStr)
 		return filepath.Join(parts...)
 	}
-	return filepath.Join(s.root, ref)
+	return filepath.Join(s.root, refStr)
 }
