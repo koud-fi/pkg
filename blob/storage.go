@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"io/fs"
+	"os"
 	"path"
 	"strings"
 
@@ -49,5 +50,17 @@ func (f GetterFunc) Get(ctx context.Context, ref Ref) Blob { return f(ctx, ref) 
 func FSGetter(fsys fs.FS) Getter {
 	return GetterFunc(func(_ context.Context, ref Ref) Blob {
 		return FromFS(fsys, path.Clean(strings.Join(ref, "/")))
+	})
+}
+
+type Mux map[string]Getter
+
+func (m Mux) Get(ctx context.Context, ref Ref) Blob {
+	return Func(func() (io.ReadCloser, error) {
+		g, ok := m[ref.Domain()]
+		if !ok {
+			return nil, os.ErrNotExist
+		}
+		return g.Get(ctx, ref.Ref()).Open()
 	})
 }
