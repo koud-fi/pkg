@@ -26,4 +26,6 @@ func (r Ref) Ref() Ref {
 
 func (r Ref) String() string { return strings.Join(r, RefDomainSeparator) }
 
+func (r Ref) Bytes() []byte { return []byte(r.String()) }
+
 // TODO: MarshalJSON/UnmarshalJSON
