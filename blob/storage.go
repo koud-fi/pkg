@@ -61,6 +61,6 @@ func (m Mux) Get(ctx context.Context, ref Ref) Blob {
 		if !ok {
 			return nil, os.ErrNotExist
 		}
-		return g.Get(ctx, ref.Ref()).Open()
+		return g.Get(ctx, ref).Open()
 	})
 }
