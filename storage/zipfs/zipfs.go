@@ -2,57 +2,45 @@ package zipfs
 
 import (
 	"archive/zip"
-	"io"
 	"io/fs"
-	"os"
-	"time"
+	"sort"
 )
 
-type file struct {
-	name string
-	file *zip.File
-	rc   io.ReadCloser
+type zipfs struct {
+	*zip.ReadCloser
+	list zipList
 }
 
-func (f *file) Stat() (fs.FileInfo, error) { return f, nil }
-
-func (f *file) Read(p []byte) (_ int, err error) {
-	if f.rc == nil {
-		if f.rc, err = f.file.Open(); err != nil {
-			return
-		}
-	}
-	return f.rc.Read(p)
+func New(rc *zip.ReadCloser) fs.FS {
+	list := make(zipList, len(rc.File))
+	copy(list, rc.File)
+	sort.Sort(list)
+	return &zipfs{rc, list}
 }
 
-func (f *file) Close() error {
-	if f.rc != nil {
-		return f.rc.Close()
-	}
-	return nil
+func (fsys *zipfs) Open(name string) (fs.File, error) {
+
+	// ???
+
+	panic("TODO")
 }
 
-func (f *file) Name() string { return f.name }
+func (fsys *zipfs) ReadDir(n int) ([]fs.DirEntry, error) {
 
-func (f *file) Size() int64 {
-	if f.file != nil {
-		return int64(f.file.UncompressedSize)
-	}
-	return 0
-}
-func (f *file) Mode() fs.FileMode {
-	if f.file != nil {
-		return 0444
-	}
-	return os.ModeDir | 0555
+	// ???
+
+	panic("TODO")
 }
 
-func (f *file) ModTime() time.Time {
-	if f.file != nil {
-		return f.file.ModTime()
-	}
-	return time.Time{}
+func (fsys *zipfs) Stat(name string) (fs.FileInfo, error) {
+
+	// ???
+
+	panic("TODO")
 }
 
-func (f *file) IsDir() bool { return f.file == nil }
-func (f *file) Sys() any    { return nil }
+type zipList []*zip.File
+
+func (z zipList) Len() int           { return len(z) }
+func (z zipList) Less(i, j int) bool { return z[i].Name < z[j].Name }
+func (z zipList) Swap(i, j int)      { z[i], z[j] = z[j], z[i] }
