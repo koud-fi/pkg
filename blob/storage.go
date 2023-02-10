@@ -59,7 +59,9 @@ func (m Mux) Get(ctx context.Context, ref Ref) Blob {
 	return Func(func() (io.ReadCloser, error) {
 		g, ok := m[ref.Domain()]
 		if !ok {
-			return nil, os.ErrNotExist
+			if g, ok = m[Default]; !ok {
+				return nil, os.ErrNotExist
+			}
 		}
 		return g.Get(ctx, ref).Open()
 	})

@@ -2,7 +2,11 @@ package blob
 
 import "strings"
 
-const RefDomainSeparator = ":"
+const (
+	Default Domain = ""
+
+	refDomainSeparator = ":"
+)
 
 type (
 	Domain string
@@ -10,7 +14,7 @@ type (
 )
 
 func NewRef(s string) Ref {
-	return Ref(strings.Split(s, RefDomainSeparator))
+	return Ref(strings.Split(s, refDomainSeparator))
 }
 
 func (r Ref) Domain() Domain {
@@ -27,7 +31,7 @@ func (r Ref) Ref() Ref {
 	return Ref{}
 }
 
-func (r Ref) String() string { return strings.Join(r, RefDomainSeparator) }
+func (r Ref) String() string { return strings.Join(r, refDomainSeparator) }
 
 func (r Ref) Bytes() []byte { return []byte(r.String()) }
 
