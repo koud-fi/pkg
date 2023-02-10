@@ -5,12 +5,14 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"strings"
 	"time"
 )
 
 type file struct {
 	name string
 	file *zip.File
+	dir  []*zip.File
 	rc   io.ReadCloser
 }
 
@@ -33,10 +35,34 @@ func (f *file) Close() error {
 }
 
 func (f *file) ReadDir(n int) ([]fs.DirEntry, error) {
-
-	// ???
-
-	panic("TODO")
+	var (
+		dir     []fs.DirEntry
+		dirName = f.name
+	)
+	if dirName == "." {
+		dirName = ""
+	} else {
+		dirName += "/"
+	}
+	var prevName string
+	for _, e := range f.dir {
+		if !strings.HasPrefix(e.Name, dirName) {
+			break
+		}
+		f := file{
+			name: e.Name[len(dirName):],
+			file: e,
+		}
+		if i := strings.IndexRune(f.name, '/'); i >= 0 {
+			f.name = f.name[0:i]
+			f.file = nil
+		}
+		if f.name != prevName {
+			dir = append(dir, (*fileInfo)(&f))
+			prevName = f.name
+		}
+	}
+	return dir, nil
 }
 
 type fileInfo file
@@ -65,3 +91,12 @@ func (fi *fileInfo) ModTime() time.Time {
 
 func (fi *fileInfo) IsDir() bool { return fi.file == nil }
 func (*fileInfo) Sys() any       { return nil }
+
+func (fi *fileInfo) Type() fs.FileMode {
+	if fi.file != nil {
+		return fi.file.Mode().Type()
+	}
+	return os.ModeDir
+}
+
+func (fi *fileInfo) Info() (fs.FileInfo, error) { return fi, nil }

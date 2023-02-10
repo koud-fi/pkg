@@ -31,6 +31,8 @@ func (fsys *zipfs) Open(name string) (fs.File, error) {
 	}
 	if exact {
 		f.file = fsys.list[i]
+	} else {
+		f.dir = fsys.list[i:]
 	}
 	return &f, nil
 }
