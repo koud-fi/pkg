@@ -57,12 +57,20 @@ type Mux map[Domain]Getter
 
 func (m Mux) Get(ctx context.Context, ref Ref) Blob {
 	return Func(func() (io.ReadCloser, error) {
-		g, ok := m[ref.Domain()]
-		if !ok {
-			if g, ok = m[Default]; !ok {
-				return nil, os.ErrNotExist
-			}
+		g, err := m.Lookup(ref)
+		if err != nil {
+			return nil, err
 		}
 		return g.Get(ctx, ref).Open()
 	})
+}
+
+func (m Mux) Lookup(ref Ref) (Getter, error) {
+	g, ok := m[ref.Domain()]
+	if !ok {
+		if g, ok = m[Default]; !ok {
+			return nil, os.ErrNotExist
+		}
+	}
+	return g, nil
 }
