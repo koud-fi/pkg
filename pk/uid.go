@@ -116,6 +116,6 @@ func (u *UID) UnmarshalJSON(data []byte) (err error) {
 	if n >= 2 && data[0] == '"' && data[n-1] == '"' {
 		data = data[1 : n-1]
 	}
-	*u, err = ParseUIDBytes(data)
+	*u, err = ParseUID(string(data)) // TODO: use unsafe string conversion to avoid alloc
 	return
 }
