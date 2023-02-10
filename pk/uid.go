@@ -20,7 +20,10 @@ const (
 	idHexLen    = 30
 )
 
-var uidSrcSeparator = []byte{0}
+var (
+	base64Encoding  = base64.URLEncoding
+	uidSrcSeparator = []byte{0}
+)
 
 // UID is a 120-bit (15 byte) "content ID" for arbitrary binary data, with
 // collision chance of 1 in ~2.66 trillion on trillion unique items.
@@ -71,7 +74,7 @@ func ParseUID(s string) (UID, error) {
 	)
 	switch len(s) {
 	case idBase64Len:
-		_, err = base64.URLEncoding.Decode(buf, []byte(s))
+		_, err = base64Encoding.Decode(buf, []byte(s))
 	case idHexLen:
 		_, err = hex.Decode(buf, []byte(s))
 	default:
@@ -98,12 +101,12 @@ func (u UID) Bytes() []byte { return u.key[:] }
 // This should be used when using IDs as filenames on case-insensitive filesystems.
 func (u UID) Hex() string { return hex.EncodeToString(u.key[:]) }
 
-func (u UID) String() string { return base64.URLEncoding.EncodeToString(u.key[:]) }
+func (u UID) String() string { return base64Encoding.EncodeToString(u.key[:]) }
 
 func (t UID) MarshalJSON() ([]byte, error) {
-	buf := bytes.NewBuffer(make([]byte, 0, uidRawLen+2))
+	buf := bytes.NewBuffer(make([]byte, 0, idBase64Len+2))
 	buf.WriteByte('"')
-	buf.Write(t.key[:])
+	base64.NewEncoder(base64Encoding, buf).Write(t.key[:])
 	buf.WriteByte('"')
 	return buf.Bytes(), nil
 }
