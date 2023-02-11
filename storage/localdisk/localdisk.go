@@ -85,7 +85,14 @@ func (s Storage) Iter(_ context.Context, d blob.Domain, after blob.Ref) rx.Iter[
 	}
 	it := diriter.New(os.DirFS(s.root), string(d))
 	return rx.Map(it, (func(e diriter.Entry) blob.RefBlob {
-		ref := blob.NewRef(d, strings.TrimPrefix(e.Path(), prefix))
+		var (
+			p  = strings.TrimPrefix(e.Path(), prefix)
+			bl = len(s.bucketLevels)
+		)
+		if bl > 0 {
+			p = strings.SplitN(p, "/", bl+1)[bl]
+		}
+		ref := blob.NewRef(d, p)
 		return blob.RefBlob{
 			Ref:  ref,
 			Blob: localfile.New(filepath.Join(s.root, ref.String())),
