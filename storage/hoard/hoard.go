@@ -3,7 +3,6 @@ package hoard
 import (
 	"bytes"
 	"context"
-	"crypto"
 	"encoding/json"
 	"io"
 	"os"
@@ -25,10 +24,7 @@ type Hoard[T any] struct {
 	file datastore.Table[File[T]]
 	ref  datastore.Table[fileRef]
 	data blob.Storage
-
-	idSalt       pk.Salt
-	fileAttrOpts []file.Option
-	src          blob.Mux
+	config
 }
 
 type File[T any] struct {
@@ -42,7 +38,11 @@ type fileRef struct {
 	ID  pk.UID `json:"id"`
 }
 
-func New[T any](meta, data blob.Storage) *Hoard[T] {
+func New[T any](meta, data blob.Storage, opt ...Option) *Hoard[T] {
+	var c config
+	for _, opt := range opt {
+		opt(&c)
+	}
 	return &Hoard[T]{
 		file: datastore.BlobsTable(meta, func(f File[T]) (blob.Ref, error) {
 			return blob.NewRef(f.ID.Hex()), nil
@@ -50,12 +50,8 @@ func New[T any](meta, data blob.Storage) *Hoard[T] {
 		ref: datastore.BlobsTable(meta, func(r fileRef) (blob.Ref, error) {
 			return blob.NewRef(r.Ref), nil
 		}),
-		data: data,
-
-		fileAttrOpts: []file.Option{
-			file.MediaAttrs(),
-			file.Digests(crypto.MD5, crypto.SHA1, crypto.SHA256),
-		},
+		data:   data,
+		config: c,
 	}
 }
 
