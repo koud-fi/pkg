@@ -11,17 +11,18 @@ import (
 )
 
 type blobsTable[T any] struct {
-	blobs blob.Storage
-	refFn func(T) (blob.Ref, error)
+	blobs  blob.Storage
+	domain blob.Domain
+	keyFn  func(T) (string, error)
 }
 
-func BlobsTable[T any](bs blob.Storage, refFn func(T) (blob.Ref, error)) Table[T] {
-	return &blobsTable[T]{blobs: bs, refFn: refFn}
+func BlobsTable[T any](bs blob.Storage, d blob.Domain, keyFn func(T) (string, error)) Table[T] {
+	return &blobsTable[T]{bs, d, keyFn}
 }
 
 func (bt *blobsTable[T]) Get(ctx context.Context) func(key T) (rx.Pair[T, rx.Maybe[T]], error) {
 	return func(key T) (rx.Pair[T, rx.Maybe[T]], error) {
-		ref, err := bt.refFn(key)
+		ref, err := bt.ref(key)
 		if err != nil {
 			return rx.Pair[T, rx.Maybe[T]]{}, err
 		}
@@ -38,7 +39,7 @@ func (bt *blobsTable[T]) Get(ctx context.Context) func(key T) (rx.Pair[T, rx.May
 
 func (bt *blobsTable[T]) Put(ctx context.Context) func(value T) (T, error) {
 	return func(value T) (v T, _ error) {
-		ref, err := bt.refFn(value)
+		ref, err := bt.ref(value)
 		if err != nil {
 			return v, err
 		}
@@ -59,7 +60,7 @@ func (bt *blobsTable[T]) Put(ctx context.Context) func(value T) (T, error) {
 
 func (bt *blobsTable[T]) Delete(ctx context.Context) func(key T) error {
 	return func(key T) error {
-		ref, err := bt.refFn(key)
+		ref, err := bt.ref(key)
 		if err != nil {
 			return err
 		}
@@ -67,14 +68,24 @@ func (bt *blobsTable[T]) Delete(ctx context.Context) func(key T) error {
 	}
 }
 
+func (bt *blobsTable[T]) ref(key T) (blob.Ref, error) {
+	refKey, err := bt.keyFn(key)
+	if err != nil {
+		return nil, err
+	}
+	return blob.NewRef(bt.domain, refKey), nil
+}
+
 type sortedBlobsTable[T any] struct {
 	blobsTable[T]
 	sorted blob.SortedStorage
 }
 
-func SortedBlobsTable[T any](sbs blob.SortedStorage, refFn func(T) (blob.Ref, error)) SortedTable[T] {
+func SortedBlobsTable[T any](
+	sbs blob.SortedStorage, d blob.Domain, keyFn func(T) (string, error),
+) SortedTable[T] {
 	return &sortedBlobsTable[T]{
-		blobsTable: blobsTable[T]{blobs: sbs, refFn: refFn},
+		blobsTable: blobsTable[T]{sbs, d, keyFn},
 		sorted:     sbs,
 	}
 }
@@ -83,11 +94,12 @@ func (sbt sortedBlobsTable[T]) Iter(ctx context.Context, after T) rx.Iter[T] {
 
 	// TODO: lazy iterator creation
 
-	afterRef, err := sbt.refFn(after)
+	afterRef, err := sbt.ref(after)
 	if err != nil {
 		return rx.Error[T](err)
 	}
-	return rx.MapErr(sbt.sorted.Iter(ctx, afterRef), func(rb blob.RefBlob) (v T, err error) {
+	it := sbt.sorted.Iter(ctx, sbt.domain, afterRef.Ref())
+	return rx.MapErr(it, func(rb blob.RefBlob) (v T, err error) {
 		err = blob.Unmarshal(json.Unmarshal, rb.Blob, &v)
 		return
 	})

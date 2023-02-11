@@ -14,7 +14,13 @@ import (
 	"github.com/koud-fi/pkg/rx"
 )
 
-const Meta blob.Domain = "meta"
+const (
+	Meta blob.Domain = "meta"
+
+	dataDomain blob.Domain = "data"
+	fileDomain blob.Domain = "file"
+	refDomain  blob.Domain = "ref"
+)
 
 var _ blob.Storage = (*Hoard[any])(nil)
 
@@ -45,11 +51,11 @@ func New[T any](meta blob.SortedStorage, data blob.Storage, opt ...Option) *Hoar
 		opt(&c)
 	}
 	return &Hoard[T]{
-		file: datastore.BlobsTable(meta, func(f File[T]) (blob.Ref, error) {
-			return blob.ParseRef(f.ID.Hex()), nil
+		file: datastore.BlobsTable(meta, fileDomain, func(f File[T]) (string, error) {
+			return f.ID.Hex(), nil
 		}),
-		ref: datastore.BlobsTable(meta, func(r fileRef) (blob.Ref, error) {
-			return blob.ParseRef(r.Ref), nil
+		ref: datastore.BlobsTable(meta, refDomain, func(r fileRef) (string, error) {
+			return r.Ref, nil
 		}),
 		data:   data,
 		config: c,
@@ -71,7 +77,7 @@ func (h *Hoard[T]) Get(ctx context.Context, ref blob.Ref) blob.Blob {
 			if m, err := h.File(ctx, true, ref); err != nil {
 				return nil, err
 			} else if m.Ok() {
-				return h.data.Get(ctx, blob.ParseRef(m.Value().ID.Hex())).Open()
+				return h.data.Get(ctx, blob.NewRef(dataDomain, m.Value().ID.Hex())).Open()
 			}
 		}
 		return nil, os.ErrNotExist
@@ -99,10 +105,14 @@ func (h *Hoard[T]) Set(ctx context.Context, ref blob.Ref, r io.Reader) error {
 			if f.ID, err = pk.NewUID(buf, h.idSalt); err != nil {
 				return err
 			}
-			if f.Attributes, err = file.ResolveAttrs(blob.FromBytes(buf), h.fileAttrOpts...); err != nil {
+			if f.Attributes, err = file.ResolveAttrs(
+				blob.FromBytes(buf), h.fileAttrOpts...,
+			); err != nil {
 				return err
 			}
-			if err := h.data.Set(ctx, blob.ParseRef(f.ID.Hex()), bytes.NewReader(buf)); err != nil {
+			if err := h.data.Set(
+				ctx, blob.NewRef(dataDomain, f.ID.Hex()), bytes.NewReader(buf),
+			); err != nil {
 				return err
 			}
 			for k, d := range f.Digest {

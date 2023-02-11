@@ -40,7 +40,7 @@ type RefBlob struct {
 }
 
 type Iterator interface {
-	Iter(ctx context.Context, after Ref) rx.Iter[RefBlob]
+	Iter(ctx context.Context, d Domain, after Ref) rx.Iter[RefBlob]
 }
 
 type GetterFunc func(ctx context.Context, ref Ref) Blob

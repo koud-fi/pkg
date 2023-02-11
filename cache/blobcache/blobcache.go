@@ -21,8 +21,8 @@ type Cache struct {
 	backend
 }
 
-func New(s blob.SortedStorage) *Cache {
-	b := backend{s: s}
+func New(s blob.SortedStorage, d blob.Domain) *Cache {
+	b := backend{s, d}
 	return &Cache{cache.New(&b), b}
 }
 
@@ -37,7 +37,7 @@ func (c *Cache) Resolve(ctx context.Context, key string, b blob.Blob) blob.Blob 
 		var (
 			digest = sha256.Sum256([]byte(key))
 			key    = hex.EncodeToString(digest[:])
-			keyRef = blob.ParseRef(key)
+			keyRef = blob.NewRef(c.domain, key)
 			out    io.ReadCloser
 		)
 		if err := c.Cache.Resolve(ctx, key, func() (int64, error) {
@@ -66,7 +66,8 @@ func (c *Cache) Resolve(ctx context.Context, key string, b blob.Blob) blob.Blob 
 }
 
 type backend struct {
-	s blob.SortedStorage
+	s      blob.SortedStorage
+	domain blob.Domain
 }
 
 func (b *backend) Has(ctx context.Context, key string) (bool, error) {
@@ -83,7 +84,7 @@ func (b *backend) Delete(ctx context.Context, key string) error {
 }
 
 func (b *backend) Keys(ctx context.Context) rx.Iter[rx.Pair[string, int64]] {
-	return rx.Map(b.s.Iter(ctx, blob.Ref{}), func(br blob.RefBlob) rx.Pair[string, int64] {
+	return rx.Map(b.s.Iter(ctx, b.domain, blob.Ref{}), func(br blob.RefBlob) rx.Pair[string, int64] {
 		return rx.NewPair(br.Ref.String(), int64(0)) // TODO: resolve blob sizes
 	})
 }
