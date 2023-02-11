@@ -12,9 +12,7 @@ type Table[T any] interface {
 	Delete(ctx context.Context) func(key T) error
 }
 
-/*
 type SortedTable[T any] interface {
 	Table[T]
-	Iter(ctx context.Context) // TODO: ???
+	Iter(ctx context.Context, after T) rx.Iter[T]
 }
-*/
