@@ -75,16 +75,20 @@ func (s Storage) Set(_ context.Context, ref blob.Ref, r io.Reader) error {
 	return localfile.WriteReader(path, r, s.filePerm)
 }
 
-func (s Storage) Iter(_ context.Context, after blob.Ref) rx.Iter[blob.RefBlob] {
+func (s Storage) Iter(_ context.Context, d blob.Domain, after blob.Ref) rx.Iter[blob.RefBlob] {
 	if len(after) != 0 {
 		panic("localdisk.Iter: after not supported") // TODO: implement "after"
 	}
-	d := diriter.New(os.DirFS(s.root), ".")
-	return rx.Map(d, (func(e diriter.Entry) blob.RefBlob {
-		ref := blob.ParseRef(e.Path())
+	var prefix string
+	if d != blob.Default {
+		prefix = string(d) + "/"
+	}
+	it := diriter.New(os.DirFS(s.root), string(d))
+	return rx.Map(it, (func(e diriter.Entry) blob.RefBlob {
+		ref := blob.NewRef(d, strings.TrimPrefix(e.Path(), prefix))
 		return blob.RefBlob{
 			Ref:  ref,
-			Blob: localfile.New(s.refPath(ref)),
+			Blob: localfile.New(filepath.Join(s.root, ref.String())),
 		}
 	}))
 }
@@ -99,10 +103,10 @@ func (s Storage) Delete(_ context.Context, refs ...blob.Ref) error {
 }
 
 func (s Storage) refPath(ref blob.Ref) string {
-	refStr := ref.String()
+	refStr := ref.Ref().String()
 	if len(s.bucketLevels) > 0 {
 		parts := make([]string, 0, len(s.bucketLevels)+2)
-		parts = append(parts, s.root)
+		parts = append(parts, s.root, string(ref.Domain()))
 		var (
 			bucketRef = refStr
 			start     int
@@ -126,5 +130,5 @@ func (s Storage) refPath(ref blob.Ref) string {
 		parts = append(parts, refStr)
 		return filepath.Join(parts...)
 	}
-	return filepath.Join(s.root, refStr)
+	return filepath.Join(s.root, string(ref.Domain()), refStr)
 }
