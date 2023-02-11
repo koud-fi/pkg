@@ -13,8 +13,15 @@ type (
 	Ref    []string
 )
 
-func NewRef(s string) Ref {
-	return Ref(strings.Split(s, refDomainSeparator))
+func NewRef(d Domain, ref string) Ref {
+	if d == Default {
+		return ParseRef(ref)
+	}
+	return append(Ref{string(d)}, ParseRef(ref)...)
+}
+
+func ParseRef(ref string) Ref {
+	return Ref(strings.Split(ref, refDomainSeparator))
 }
 
 func (r Ref) Domain() Domain {
