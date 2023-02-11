@@ -28,8 +28,8 @@ func Test(t *testing.T, s blob.Storage) {
 	s.Set(ctx, blob.NewRef(testDomain, "ccc"), strings.NewReader("cv"))
 	s.Set(ctx, blob.NewRef(testDomain, "eeeee"), strings.NewReader("ev"))
 	s.Set(ctx, blob.NewRef(testDomain, "ffffff"), strings.NewReader("fv"))
-	s.Set(ctx, blob.NewRef(testDomain, "ggggggg"), strings.NewReader("gv"))
-	s.Set(ctx, blob.NewRef(testDomain, "hhhhhhhh"), strings.NewReader("hv"))
+	s.Set(ctx, blob.NewRef(testDomain, "gggg/ggg"), strings.NewReader("gv"))
+	s.Set(ctx, blob.NewRef(testDomain, "hhhh/hhhh"), strings.NewReader("hv"))
 
 	s.Delete(ctx, blob.NewRef(testDomain, "bb"))
 	t.Log(blobStr(s.Get(ctx, blob.NewRef(testDomain, "a"))))
