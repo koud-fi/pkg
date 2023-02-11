@@ -1,18 +1,15 @@
 package sqlite
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 
-	"github.com/koud-fi/pkg/blob"
-	"github.com/koud-fi/pkg/rx"
-
 	_ "github.com/mattn/go-sqlite3"
 )
+
+// TODO: blob.Storage is a completely wrong level of abstraction for this, implement this as a data.Table
 
 func Open(path string) (*sql.DB, error) {
 	if err := os.MkdirAll(filepath.Dir(path), os.FileMode(0700)); err != nil {
@@ -21,6 +18,7 @@ func Open(path string) (*sql.DB, error) {
 	return sql.Open("sqlite3", fmt.Sprintf("file:%s", path))
 }
 
+/*
 type Storage struct {
 	db    *sql.DB
 	table string
@@ -46,7 +44,7 @@ func (s *Storage) Get(ctx context.Context, ref blob.Ref) blob.Blob {
 		var buf []byte
 		if err := s.db.QueryRowContext(ctx, fmt.Sprintf(`
 			SELECT data FROM %s
-			WHERE ref = ? 
+			WHERE ref = ?
 		`, s.table), ref).Scan(&buf); err != nil {
 			if err == sql.ErrNoRows {
 				return nil, os.ErrNotExist
@@ -89,7 +87,7 @@ type iter struct {
 func (it *iter) Next() bool {
 	if it.rows == nil {
 		if it.rows, it.err = it.s.db.QueryContext(it.ctx, fmt.Sprintf(`
-			SELECT ref, data FROM %s WHERE ref > ? 
+			SELECT ref, data FROM %s WHERE ref > ?
 			ORDER BY ref ASC
 		`, it.s.table), it.after); it.err != nil {
 			return false
@@ -133,3 +131,4 @@ func (s *Storage) Delete(ctx context.Context, refs ...blob.Ref) error {
 	}
 	return nil
 }
+*/
