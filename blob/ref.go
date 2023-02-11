@@ -14,10 +14,16 @@ type (
 )
 
 func NewRef(d Domain, ref ...string) Ref {
-	if d == Default {
-		return Ref(ref)
+	refs := make([]string, 0, len(ref)+1)
+	for _, ref := range ref {
+		refs = append(refs, strings.Split(ref, refDomainSeparator)...)
 	}
-	return append(Ref{string(d)}, ref...)
+	if d != Default {
+		if strings.Contains(string(d), refDomainSeparator) {
+			panic(`blob.NewRef: invalid domain, contains ":"`)
+		}
+	}
+	return Ref(refs)
 }
 
 func ParseRef(ref string) Ref {
