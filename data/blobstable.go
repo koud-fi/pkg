@@ -66,3 +66,29 @@ func (bt *blobsTable[T]) Delete(ctx context.Context) func(key T) error {
 		return bt.blobs.Delete(ctx, ref)
 	}
 }
+
+type sortedBlobsTable[T any] struct {
+	blobsTable[T]
+	sorted blob.SortedStorage
+}
+
+func SortedBlobsTable[T any](sbs blob.SortedStorage, refFn func(T) (blob.Ref, error)) SortedTable[T] {
+	return &sortedBlobsTable[T]{
+		blobsTable: blobsTable[T]{blobs: sbs, refFn: refFn},
+		sorted:     sbs,
+	}
+}
+
+func (sbt sortedBlobsTable[T]) Iter(ctx context.Context, after T) rx.Iter[T] {
+
+	// TODO: lazy iterator creation
+
+	afterRef, err := sbt.refFn(after)
+	if err != nil {
+		return rx.Error[T](err)
+	}
+	return rx.MapErr(sbt.sorted.Iter(ctx, afterRef), func(rb blob.RefBlob) (v T, err error) {
+		err = blob.Unmarshal(json.Unmarshal, rb.Blob, &v)
+		return
+	})
+}
