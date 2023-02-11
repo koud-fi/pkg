@@ -34,6 +34,7 @@ func Test(t *testing.T, s blob.Storage) {
 	s.Delete(ctx, blob.NewRef(testDomain, "bb"))
 	t.Log(blobStr(s.Get(ctx, blob.NewRef(testDomain, "a"))))
 	t.Log(blobStr(s.Get(ctx, blob.NewRef(testDomain, "bb"))))
+	t.Log(blobStr(s.Get(ctx, blob.NewRef(testDomain, "gggg/ggg"))))
 
 	testIter(ctx, t, s)
 }
