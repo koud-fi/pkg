@@ -17,13 +17,14 @@ type (
 
 func NewRef(d Domain, ref ...string) Ref {
 	refs := make([]string, 0, len(ref)+1)
-	for _, ref := range ref {
-		refs = append(refs, strings.Split(ref, refDomainSeparator)...)
-	}
 	if d != Default {
 		if strings.Contains(string(d), refDomainSeparator) {
 			panic(`blob.NewRef: invalid domain, contains ":"`)
 		}
+		refs = append(refs, string(d))
+	}
+	for _, ref := range ref {
+		refs = append(refs, strings.Split(ref, refDomainSeparator)...)
 	}
 	return Ref(refs)
 }
