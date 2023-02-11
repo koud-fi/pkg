@@ -29,6 +29,7 @@ use (
 	./shell
 	./sorted
 	./storage/bolt
+	./storage/hoard
 	./storage/localdisk
 	./storage/memory
 	./storage/redis
