@@ -40,7 +40,7 @@ type fileRef struct {
 	ID  pk.UID `json:"id"`
 }
 
-func New[T any](meta, data blob.Storage, opt ...Option) *Hoard[T] {
+func New[T any](meta blob.SortedStorage, data blob.Storage, opt ...Option) *Hoard[T] {
 	var c config
 	for _, opt := range opt {
 		opt(&c)
