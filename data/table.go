@@ -12,4 +12,9 @@ type Table[T any] interface {
 	Delete(ctx context.Context) func(key T) error
 }
 
-// TODO: SortedTable interface
+/*
+type SortedTable[T any] interface {
+	Table[T]
+	Iter(ctx context.Context) // TODO: ???
+}
+*/
