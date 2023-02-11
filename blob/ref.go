@@ -8,8 +8,6 @@ const (
 	refDomainSeparator = ":"
 )
 
-var ZeroRef = NewRef(Default)
-
 type (
 	Domain string
 	Ref    []string

@@ -43,7 +43,7 @@ func testIter(ctx context.Context, t *testing.T, s blob.Storage) {
 	if !ok {
 		return
 	}
-	if err := rx.ForEach(ss.Iter(ctx, testDomain, blob.ZeroRef), func(b blob.RefBlob) error {
+	if err := rx.ForEach(ss.Iter(ctx, testDomain, blob.Ref{}), func(b blob.RefBlob) error {
 		header, err := blob.Peek(s.Get(ctx, b.Ref), 1<<10)
 		if err != nil {
 			return fmt.Errorf("%v: %v", b.Ref, err)
