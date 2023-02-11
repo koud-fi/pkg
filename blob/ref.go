@@ -13,11 +13,11 @@ type (
 	Ref    []string
 )
 
-func NewRef(d Domain, ref string) Ref {
+func NewRef(d Domain, ref ...string) Ref {
 	if d == Default {
-		return ParseRef(ref)
+		return Ref(ref)
 	}
-	return append(Ref{string(d)}, ParseRef(ref)...)
+	return append(Ref{string(d)}, ref...)
 }
 
 func ParseRef(ref string) Ref {
