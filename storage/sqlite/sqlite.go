@@ -104,7 +104,7 @@ func (it *iter) Next() bool {
 
 func (it iter) Value() blob.RefBlob {
 	return blob.RefBlob{
-		Ref:  blob.NewRef(it.ref),
+		Ref:  blob.ParseRef(it.ref),
 		Blob: blob.FromBytes(it.data),
 	}
 }

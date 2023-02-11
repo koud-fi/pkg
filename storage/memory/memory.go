@@ -67,7 +67,7 @@ func (s *Storage) Iter(ctx context.Context, after blob.Ref) rx.Iter[blob.RefBlob
 			var out []blob.RefBlob // TODO: return larger batches of data
 			if i < len(s.data) {
 				out = append(out, blob.RefBlob{
-					Ref:  blob.NewRef(s.data[i].Key()),
+					Ref:  blob.ParseRef(s.data[i].Key()),
 					Blob: blob.FromBytes(s.data[i].Value()),
 				})
 				i++

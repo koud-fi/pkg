@@ -123,7 +123,7 @@ func (it *iter) Next() bool {
 }
 
 func (it iter) Value() blob.RefBlob {
-	ref := blob.NewRef(string(it.k))
+	ref := blob.ParseRef(string(it.k))
 	return blob.RefBlob{
 		Ref:  ref,
 		Blob: it.s.Get(it.ctx, ref),

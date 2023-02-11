@@ -21,7 +21,7 @@ func TestBlobsTable(t *testing.T) {
 		ctx = context.Background()
 		bt  = data.BlobsTable(
 			memory.NewStorage(),
-			func(v TestData) (blob.Ref, error) { return blob.NewRef(v.ID), nil })
+			func(v TestData) (blob.Ref, error) { return blob.ParseRef(v.ID), nil })
 	)
 	t.Log(rx.Slice(rx.MapErr(rx.SliceIter(
 		TestData{ID: "1", Value: 42},

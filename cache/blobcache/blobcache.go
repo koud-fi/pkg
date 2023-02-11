@@ -37,7 +37,7 @@ func (c *Cache) Resolve(ctx context.Context, key string, b blob.Blob) blob.Blob 
 		var (
 			digest = sha256.Sum256([]byte(key))
 			key    = hex.EncodeToString(digest[:])
-			keyRef = blob.NewRef(key)
+			keyRef = blob.ParseRef(key)
 			out    io.ReadCloser
 		)
 		if err := c.Cache.Resolve(ctx, key, func() (int64, error) {
@@ -70,7 +70,7 @@ type backend struct {
 }
 
 func (b *backend) Has(ctx context.Context, key string) (bool, error) {
-	if err := blob.Error(b.s.Get(ctx, blob.NewRef(key))); err == nil {
+	if err := blob.Error(b.s.Get(ctx, blob.ParseRef(key))); err == nil {
 		return true, nil
 	} else if !os.IsNotExist(err) {
 		return false, err
@@ -79,7 +79,7 @@ func (b *backend) Has(ctx context.Context, key string) (bool, error) {
 }
 
 func (b *backend) Delete(ctx context.Context, key string) error {
-	return b.s.Delete(ctx, blob.NewRef(key))
+	return b.s.Delete(ctx, blob.ParseRef(key))
 }
 
 func (b *backend) Keys(ctx context.Context) rx.Iter[rx.Pair[string, int64]] {
