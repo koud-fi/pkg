@@ -13,6 +13,8 @@ import (
 	"github.com/koud-fi/pkg/rx"
 )
 
+const testDomain = "__test"
+
 func Test(t *testing.T, s blob.Storage) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancel()
@@ -20,17 +22,17 @@ func Test(t *testing.T, s blob.Storage) {
 	// TODO: actually test things...
 
 	// TODO: log errors
-	s.Set(ctx, blob.ParseRef("a"), strings.NewReader("av"))
-	s.Set(ctx, blob.ParseRef("b"), strings.NewReader("bv"))
-	s.Set(ctx, blob.ParseRef("d"), strings.NewReader("dv"))
-	s.Set(ctx, blob.ParseRef("c"), strings.NewReader("cv"))
-	s.Set(ctx, blob.ParseRef("e"), strings.NewReader("ev"))
-	s.Set(ctx, blob.ParseRef("f"), strings.NewReader("fv"))
-	s.Set(ctx, blob.ParseRef("g"), strings.NewReader("gv"))
-	s.Set(ctx, blob.ParseRef("h"), strings.NewReader("hv"))
+	s.Set(ctx, blob.NewRef(testDomain, "a"), strings.NewReader("av"))
+	s.Set(ctx, blob.NewRef(testDomain, "b"), strings.NewReader("bv"))
+	s.Set(ctx, blob.NewRef(testDomain, "d"), strings.NewReader("dv"))
+	s.Set(ctx, blob.NewRef(testDomain, "c"), strings.NewReader("cv"))
+	s.Set(ctx, blob.NewRef(testDomain, "e"), strings.NewReader("ev"))
+	s.Set(ctx, blob.NewRef(testDomain, "f"), strings.NewReader("fv"))
+	s.Set(ctx, blob.NewRef(testDomain, "g"), strings.NewReader("gv"))
+	s.Set(ctx, blob.NewRef(testDomain, "h"), strings.NewReader("hv"))
 
-	s.Delete(ctx, blob.ParseRef("b"))
-	t.Log(blobStr(s.Get(ctx, blob.ParseRef("b"))))
+	s.Delete(ctx, blob.NewRef(testDomain, "b"))
+	t.Log(blobStr(s.Get(ctx, blob.NewRef(testDomain, "b"))))
 
 	testIter(ctx, t, s)
 }
@@ -40,7 +42,7 @@ func testIter(ctx context.Context, t *testing.T, s blob.Storage) {
 	if !ok {
 		return
 	}
-	if err := rx.ForEach(ss.Iter(ctx, blob.ParseRef("")), func(b blob.RefBlob) error {
+	if err := rx.ForEach(ss.Iter(ctx, testDomain, blob.ZeroRef), func(b blob.RefBlob) error {
 		header, err := blob.Peek(s.Get(ctx, b.Ref), 1<<10)
 		if err != nil {
 			return fmt.Errorf("%v: %v", b.Ref, err)
