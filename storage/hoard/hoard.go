@@ -25,6 +25,8 @@ type Hoard[T any] struct {
 	ref  datastore.Table[fileRef]
 	data blob.Storage
 	config
+
+	// TODO: synchronization to make concurrent access less dodgy
 }
 
 type File[T any] struct {
