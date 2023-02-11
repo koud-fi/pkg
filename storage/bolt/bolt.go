@@ -13,6 +13,11 @@ import (
 	bolt "go.etcd.io/bbolt"
 )
 
+var (
+	dataSuffix = []byte(":data")
+	statSuffix = []byte(":stat")
+)
+
 type DB = bolt.DB
 
 func Open(path string) (*DB, error) {
@@ -25,22 +30,17 @@ func Open(path string) (*DB, error) {
 var _ blob.SortedStorage = (*Storage)(nil)
 
 type Storage struct {
-	db         *DB
-	dataBucket []byte
-	statBucket []byte
+	db *DB
 }
 
-func NewStorage(db *DB, bucket string) *Storage {
-	return &Storage{db: db,
-		dataBucket: []byte(bucket + ":data"),
-		statBucket: []byte(bucket + ":stat"),
-	}
+func NewStorage(db *DB) *Storage {
+	return &Storage{db}
 }
 
 func (s Storage) Get(_ context.Context, ref blob.Ref) blob.Blob {
 	return blob.ByteFunc(func() (data []byte, err error) {
 		err = s.db.View(func(tx *bolt.Tx) error {
-			return wrapTx(tx).useBucket(s.dataBucket, false, func(b *bolt.Bucket) error {
+			return wrapTx(tx).useBucket(ref.Domain(), true, false, func(b *bolt.Bucket) error {
 				if b == nil {
 					return os.ErrNotExist
 				}
@@ -65,23 +65,24 @@ func (s Storage) Set(_ context.Context, ref blob.Ref, r io.Reader) error {
 	return s.db.Update(func(tx *bolt.Tx) error {
 		key := ref.Bytes()
 		return wrapTx(tx).
-			useBucket(s.dataBucket, false, func(b *bolt.Bucket) error {
+			useBucket(ref.Domain(), true, false, func(b *bolt.Bucket) error {
 				return b.Put(key, data)
 			}).
-			useBucket(s.statBucket, false, func(b *bolt.Bucket) error {
+			useBucket(ref.Domain(), false, false, func(b *bolt.Bucket) error {
 				return b.Put(key, []byte(strconv.Itoa(len(data))))
 			}).err
 	})
 }
 
-func (s *Storage) Iter(ctx context.Context, after blob.Ref) rx.Iter[blob.RefBlob] {
-	return &iter{s: s, ctx: ctx, after: after.Bytes()}
+func (s *Storage) Iter(ctx context.Context, d blob.Domain, after blob.Ref) rx.Iter[blob.RefBlob] {
+	return &iter{s: s, ctx: ctx, bucket: append([]byte(d), statSuffix...), after: after.Bytes()}
 }
 
 type iter struct {
-	s     *Storage
-	ctx   context.Context
-	after []byte
+	s      *Storage
+	ctx    context.Context
+	bucket []byte
+	after  []byte
 
 	tx  *bolt.Tx
 	c   *bolt.Cursor
@@ -96,7 +97,7 @@ func (it *iter) Next() bool {
 		if it.err != nil {
 			return false
 		}
-		if b := it.tx.Bucket(it.s.statBucket); b != nil {
+		if b := it.tx.Bucket(it.bucket); b != nil {
 			it.c = b.Cursor()
 
 			if len(it.after) == 0 {
@@ -146,10 +147,10 @@ func (s Storage) Delete(_ context.Context, refs ...blob.Ref) error {
 		for _, ref := range refs {
 			key := ref.Bytes()
 			return wrapTx(tx).
-				useBucket(s.statBucket, true, func(b *bolt.Bucket) error {
+				useBucket(ref.Domain(), false, true, func(b *bolt.Bucket) error {
 					return b.Delete(key)
 				}).
-				useBucket(s.dataBucket, true, func(b *bolt.Bucket) error {
+				useBucket(ref.Domain(), true, true, func(b *bolt.Bucket) error {
 					return b.Delete(key)
 				}).
 				err
@@ -165,7 +166,15 @@ type txWrapper struct {
 
 func wrapTx(tx *bolt.Tx) *txWrapper { return &txWrapper{tx: tx} }
 
-func (w *txWrapper) useBucket(name []byte, skipNil bool, fn func(b *bolt.Bucket) error) *txWrapper {
+func (w *txWrapper) useBucket(
+	d blob.Domain, isData bool, skipNil bool, fn func(b *bolt.Bucket) error,
+) *txWrapper {
+	var name []byte
+	if isData {
+		name = append([]byte(d), dataSuffix...)
+	} else {
+		name = append([]byte(d), statSuffix...)
+	}
 	if w.err != nil {
 		return w
 	}
