@@ -120,10 +120,10 @@ func (s *Storage) search(ref blob.Ref, readonly bool) (int, *refDataSlice, bool)
 		return 0, data, false
 	}
 	refStr := ref.String()
-	i := sort.Search(len(s.data), func(i int) bool {
+	i := sort.Search(len(*data), func(i int) bool {
 		return (*data)[i].Key() >= refStr
 	})
-	return i, data, i < len(s.data) && (*data)[i].Key() == refStr
+	return i, data, i < len(*data) && (*data)[i].Key() == refStr
 }
 
 type refDataSlice []rx.Pair[string, []byte]
