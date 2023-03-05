@@ -53,6 +53,18 @@ func FSGetter(fsys fs.FS) Getter {
 	})
 }
 
+func Mapper(g Getter, fn func(io.ReadCloser) (io.ReadCloser, error)) Getter {
+	return GetterFunc(func(ctx context.Context, ref Ref) Blob {
+		return Func(func() (io.ReadCloser, error) {
+			rc, err := g.Get(ctx, ref).Open()
+			if err != nil {
+				return nil, err
+			}
+			return fn(rc)
+		})
+	})
+}
+
 type Mux map[Domain]Getter
 
 func (m Mux) Get(ctx context.Context, ref Ref) Blob {
