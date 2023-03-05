@@ -47,12 +47,6 @@ type GetterFunc func(ctx context.Context, ref Ref) Blob
 
 func (f GetterFunc) Get(ctx context.Context, ref Ref) Blob { return f(ctx, ref) }
 
-func FSGetter(fsys fs.FS) Getter {
-	return GetterFunc(func(_ context.Context, ref Ref) Blob {
-		return FromFS(fsys, path.Clean(strings.Join(ref, "/")))
-	})
-}
-
 func Mapper(g Getter, fn func(io.ReadCloser) (io.ReadCloser, error)) Getter {
 	return GetterFunc(func(ctx context.Context, ref Ref) Blob {
 		return Func(func() (io.ReadCloser, error) {
@@ -62,6 +56,12 @@ func Mapper(g Getter, fn func(io.ReadCloser) (io.ReadCloser, error)) Getter {
 			}
 			return fn(rc)
 		})
+	})
+}
+
+func FSGetter(fsys fs.FS) Getter {
+	return GetterFunc(func(_ context.Context, ref Ref) Blob {
+		return FromFS(fsys, path.Clean(strings.Join(ref, "/")))
 	})
 }
 
