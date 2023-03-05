@@ -47,7 +47,7 @@ type GetterFunc func(ctx context.Context, ref Ref) Blob
 
 func (f GetterFunc) Get(ctx context.Context, ref Ref) Blob { return f(ctx, ref) }
 
-func Mapper(g Getter, fn func(io.ReadCloser) (io.ReadCloser, error)) Getter {
+func Map(g Getter, fn func(io.ReadCloser) (io.ReadCloser, error)) Getter {
 	return GetterFunc(func(ctx context.Context, ref Ref) Blob {
 		return Func(func() (io.ReadCloser, error) {
 			rc, err := g.Get(ctx, ref).Open()
