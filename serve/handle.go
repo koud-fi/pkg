@@ -9,9 +9,10 @@ import (
 func Handle(w http.ResponseWriter, r *http.Request, fn func() (*Info, error)) {
 	startTime := time.Now()
 
-	// TODO: log info about the request
 	// TODO: improve size logging (both incoming and outgoing)
 	// TODO: make all this shit configurable
+
+	w.Header().Set("Access-Control-Allow-Origin", "*") // TODO: proper CORS configs
 
 	info, err := fn()
 	if info == nil && err != nil {
