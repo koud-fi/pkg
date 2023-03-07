@@ -6,7 +6,9 @@ import (
 	"mime"
 	"net/http"
 	"os"
+	"path"
 	pathpkg "path"
+	"strings"
 
 	"github.com/koud-fi/pkg/blob"
 )
@@ -32,8 +34,8 @@ func App(opt ...AppOption) func(http.ResponseWriter, *http.Request, fs.FS, ...Op
 		if r.Method != http.MethodGet {
 			return nil, os.ErrInvalid
 		}
-		path := r.URL.Path
-		info, err := fs.Stat(fsys, path)
+		p := path.Clean(strings.TrimPrefix(r.URL.Path, "/"))
+		info, err := fs.Stat(fsys, p)
 		if err != nil {
 			if !os.IsNotExist(errors.Unwrap(err)) {
 				return nil, err
@@ -43,12 +45,12 @@ func App(opt ...AppOption) func(http.ResponseWriter, *http.Request, fs.FS, ...Op
 		case info != nil && !info.IsDir():
 			break
 		default:
-			path = c.index
+			p = c.index
 		}
-		if ext := pathpkg.Ext(path); ext != "" {
+		if ext := pathpkg.Ext(p); ext != "" {
 			opt = append(opt, ContentType(mime.TypeByExtension(ext)))
 		}
-		return Blob(w, r, blob.FromFS(fsys, path), opt...)
+		return Blob(w, r, blob.FromFS(fsys, p), opt...)
 	}
 }
 
