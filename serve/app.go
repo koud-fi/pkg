@@ -54,7 +54,7 @@ func App(opt ...AppOption) func(http.ResponseWriter, *http.Request, fs.FS, ...Op
 	}
 }
 
-func HandleApp(fsys fs.FS, opt ...AppOption) http.Handler {
+func NewAppHandler(fsys fs.FS, opt ...AppOption) http.Handler {
 	fn := App(opt...)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		Handle(w, r, func() (*Info, error) { return fn(w, r, fsys) })
