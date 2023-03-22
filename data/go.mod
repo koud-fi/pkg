@@ -6,7 +6,7 @@ require (
 	github.com/koud-fi/pkg/blob v0.0.0-20220327071929-73cdb37bce2a
 	github.com/koud-fi/pkg/rx v0.0.0-20230117164436-4f4692216384
 	github.com/koud-fi/pkg/storage/memory v0.0.0-20220704100549-03331ba1146e
-	golang.org/x/net v0.5.0
+	golang.org/x/net v0.8.0
 )
 
 require (

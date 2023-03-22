@@ -4,5 +4,5 @@ go 1.18
 
 require (
 	github.com/koud-fi/pkg/blob v0.0.0-20220328043645-6aa0aa2b9ac3
-	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
+	golang.org/x/sync v0.1.0
 )
