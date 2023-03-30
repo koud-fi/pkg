@@ -12,6 +12,11 @@ type Item map[string]any
 type Key = Item
 type Update = Item
 
+type ReadWriter interface {
+	Reader
+	Writer
+}
+
 type Reader interface {
 	Read() ReadTx
 }
