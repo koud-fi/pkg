@@ -17,7 +17,8 @@ type Reader interface {
 }
 
 type ReadTx interface {
-	// TODO: design
+	Get(Repository, Key)
+	Execute(ctx context.Context) (map[Repository][]Item, error)
 }
 
 type Writer interface {
