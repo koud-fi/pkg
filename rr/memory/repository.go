@@ -16,7 +16,7 @@ type memRW struct {
 
 type KeyFunc func(rr.Item) string
 
-func NewRW(repos map[rr.Repository]KeyFunc) rr.Writer {
+func NewRW(repos map[rr.Repository]KeyFunc) rr.ReadWriter {
 	m := memRW{
 		repos: make(map[rr.Repository]*memRepo, len(repos)),
 	}
@@ -31,12 +31,12 @@ func NewRW(repos map[rr.Repository]KeyFunc) rr.Writer {
 }
 
 func (m *memRW) Read() rr.ReadTx {
-	return &readTx{memRW: m}
+	return &readTx{memRW: m, req: make(map[rr.Repository][]rr.Item)}
 }
 
 type readTx struct {
-	req map[rr.Repository][]rr.Key
 	*memRW
+	req map[rr.Repository][]rr.Key
 }
 
 func (tx *readTx) Get(r rr.Repository, key rr.Key) {
@@ -51,7 +51,7 @@ func (tx *readTx) Execute(ctx context.Context) (map[rr.Repository][]rr.Item, err
 	tx.mu.RLock()
 	defer tx.mu.RUnlock()
 
-	out := make(map[rr.Repository][]rr.Item, len(repos))
+	res := make(map[rr.Repository][]rr.Item, len(repos))
 	for repo, keys := range repos {
 		items := make([]rr.Item, 0, len(keys))
 		for _, k := range keys {
@@ -59,9 +59,9 @@ func (tx *readTx) Execute(ctx context.Context) (map[rr.Repository][]rr.Item, err
 				items = append(items, item)
 			}
 		}
-		out[repo.r] = items
+		res[repo.r] = items
 	}
-	return out, nil
+	return res, nil
 }
 
 func (m *memRW) Write() rr.WriteTx {
