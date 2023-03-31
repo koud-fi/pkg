@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var connURL = flag.String("url", "mongodb://localhost:27017", "Mongodb connection URL")
+var connURL = flag.String("url", "mongodb://localhost:27017", "MongoDB connection URL")
 
 func TestRW(t *testing.T) {
 	client, err := mongo.NewClient(options.Client().ApplyURI(*connURL))
