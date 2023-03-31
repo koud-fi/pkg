@@ -10,3 +10,16 @@ package rr
 // TODO: null
 // TODO: string
 // TODO: string set
+
+type V struct {
+	data any
+}
+
+func Value(data any) V {
+
+	// TODO: normalization
+
+	return V{data}
+}
+
+func (v V) Any() any { return v.data }
