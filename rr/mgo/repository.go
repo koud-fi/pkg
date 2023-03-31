@@ -18,7 +18,7 @@ func NewRW(db *mongo.Database) rr.ReadWriter {
 }
 
 func (m *mongoRW) Read() rr.ReadTx {
-	return &readTx{db: m.db}
+	return &readTx{db: m.db, keys: make(map[rr.Repository][]rr.Item)}
 }
 
 type readTx struct {
@@ -58,15 +58,22 @@ type writeTx struct {
 }
 
 func (tx *writeTx) Put(r rr.Repository, item rr.Item) {
+
+	// TODO: support upsertion (once such option exists in the writer interface)
+
 	tx.models[r] = append(tx.models[r], mongo.NewInsertOneModel().SetDocument(item))
 }
 
 func (tx *writeTx) Update(r rr.Repository, key rr.Key, update rr.Update) {
-	ops := update
-
-	// TODO: create correct update ops
-
-	tx.models[r] = append(tx.models[r], mongo.NewUpdateOneModel().SetFilter(key).SetUpdate(ops))
+	set := make(bson.M, len(update))
+	for k, v := range update {
+		set[k] = v
+	}
+	if len(set) == 0 {
+		return
+	}
+	up := bson.M{"$set": set}
+	tx.models[r] = append(tx.models[r], mongo.NewUpdateOneModel().SetFilter(key).SetUpdate(up))
 }
 
 func (tx *writeTx) Delete(r rr.Repository, key rr.Key) {
