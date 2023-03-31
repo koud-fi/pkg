@@ -23,7 +23,7 @@ type Reader interface {
 
 type ReadTx interface {
 	Get(Repository, Key)
-	Execute(ctx context.Context) (map[Repository][]Item, error)
+	Execute(context.Context) (map[Repository][]Item, error)
 }
 
 type Writer interface {

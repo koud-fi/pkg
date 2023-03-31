@@ -8,6 +8,42 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type mongoRW struct {
+	db *mongo.Database
+}
+
+func NewRW(db *mongo.Database) rr.ReadWriter {
+	return &mongoRW{db: db}
+}
+
+func (m *mongoRW) Read() rr.ReadTx {
+	return &readTx{db: m.db}
+}
+
+type readTx struct {
+	db *mongo.Database
+
+	// TODO: ???
+}
+
+func (tx *readTx) Get(r rr.Repository, key rr.Key) {
+
+	// ???
+
+	panic("TODO")
+}
+
+func (tx *readTx) Execute(ctx context.Context) (map[rr.Repository][]rr.Item, error) {
+
+	// ???
+
+	panic("TODO")
+}
+
+func (m *mongoRW) Write() rr.WriteTx {
+	return &writeTx{db: m.db, models: make(map[rr.Repository][]mongo.WriteModel)}
+}
+
 type writeTx struct {
 	db     *mongo.Database
 	models map[rr.Repository][]mongo.WriteModel
