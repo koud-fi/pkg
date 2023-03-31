@@ -5,6 +5,7 @@ import (
 
 	"github.com/koud-fi/pkg/rr"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -21,23 +22,30 @@ func (m *mongoRW) Read() rr.ReadTx {
 }
 
 type readTx struct {
-	db *mongo.Database
-
-	// TODO: ???
+	db   *mongo.Database
+	keys map[rr.Repository][]rr.Key
 }
 
-func (tx *readTx) Get(r rr.Repository, key rr.Key) {
-
-	// ???
-
-	panic("TODO")
+func (tx *readTx) Get(r rr.Repository, keys ...rr.Key) {
+	tx.keys[r] = append(tx.keys[r], keys...)
 }
 
 func (tx *readTx) Execute(ctx context.Context) (map[rr.Repository][]rr.Item, error) {
-
-	// ???
-
-	panic("TODO")
+	res := make(map[rr.Repository][]rr.Item, len(tx.keys))
+	for r, keys := range tx.keys {
+		cur, err := tx.db.Collection(string(r)).Find(ctx, bson.M{
+			"_id": bson.M{"$in": keys},
+		})
+		if err != nil {
+			return nil, err
+		}
+		var items []rr.Item
+		if err := cur.All(ctx, &items); err != nil {
+			return nil, err
+		}
+		res[r] = items
+	}
+	return res, nil
 }
 
 func (m *mongoRW) Write() rr.WriteTx {
