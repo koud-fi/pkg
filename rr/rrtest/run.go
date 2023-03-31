@@ -54,8 +54,7 @@ func Run(t *testing.T, rw rr.ReadWriter) {
 	}
 
 	rtx := rw.Read()
-	rtx.Get(Repository, rr.Key{"id": 2})
-	rtx.Get(Repository, rr.Key{"id": 3})
+	rtx.Get(Repository, rr.Key{"id": 2}, rr.Key{"id": 3})
 	rtx.Get(Repository, rr.Key{"id": 4})
 	rtx.Get(Repository, rr.Key{"id": 10})
 

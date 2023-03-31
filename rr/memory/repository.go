@@ -39,8 +39,8 @@ type readTx struct {
 	req map[rr.Repository][]rr.Key
 }
 
-func (tx *readTx) Get(r rr.Repository, key rr.Key) {
-	tx.req[r] = append(tx.req[r], key)
+func (tx *readTx) Get(r rr.Repository, keys ...rr.Key) {
+	tx.req[r] = append(tx.req[r], keys...)
 }
 
 func (tx *readTx) Execute(ctx context.Context) (map[rr.Repository][]rr.Item, error) {
