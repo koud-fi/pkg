@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/koud-fi/pkg/rr"
 	"github.com/koud-fi/pkg/rr/mgo"
 	"github.com/koud-fi/pkg/rr/rrtest"
 
@@ -26,5 +27,7 @@ func TestRW(t *testing.T) {
 	if err := client.Connect(ctx); err != nil {
 		t.Fatal(err)
 	}
-	rrtest.Run(t, mgo.NewRW(client.Database("test")))
+	rrtest.Run(t, mgo.NewRW(client.Database("test"), map[rr.Repository][]string{
+		rrtest.Repository: {"id"},
+	}))
 }

@@ -2,6 +2,7 @@ package mgo
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/koud-fi/pkg/rr"
 
@@ -10,19 +11,29 @@ import (
 )
 
 type mongoRW struct {
-	db *mongo.Database
+	repos map[rr.Repository]*mgoRepo
 }
 
-func NewRW(db *mongo.Database) rr.ReadWriter {
-	return &mongoRW{db: db}
+func NewRW(db *mongo.Database, keys map[rr.Repository][]string) rr.ReadWriter {
+	repos := make(map[rr.Repository]*mgoRepo)
+	for r, key := range keys {
+		repos[r] = &mgoRepo{
+			r:    r,
+			coll: db.Collection(string(r)),
+
+			// TODO: key/id funcs
+
+		}
+	}
+	return &mongoRW{repos: repos}
 }
 
 func (m *mongoRW) Read() rr.ReadTx {
-	return &readTx{db: m.db, keys: make(map[rr.Repository][]rr.Item)}
+	return &readTx{mongoRW: m, keys: make(map[rr.Repository][]rr.Item)}
 }
 
 type readTx struct {
-	db   *mongo.Database
+	*mongoRW
 	keys map[rr.Repository][]rr.Key
 }
 
@@ -49,11 +60,11 @@ func (tx *readTx) Execute(ctx context.Context) (map[rr.Repository][]rr.Item, err
 }
 
 func (m *mongoRW) Write() rr.WriteTx {
-	return &writeTx{db: m.db, models: make(map[rr.Repository][]mongo.WriteModel)}
+	return &writeTx{mongoRW: m, models: make(map[rr.Repository][]mongo.WriteModel)}
 }
 
 type writeTx struct {
-	db     *mongo.Database
+	*mongoRW
 	models map[rr.Repository][]mongo.WriteModel
 }
 
@@ -90,4 +101,25 @@ func (tx *writeTx) Commit(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+type mgoRepo struct {
+	r     rr.Repository
+	idFn  func(rr.Key) bson.M
+	keyFn func(bson.M) rr.Key
+	coll  *mongo.Collection
+}
+
+func resolveRepos[T any](
+	repos map[rr.Repository]*mgoRepo, in map[rr.Repository]T,
+) (map[*mgoRepo]T, error) {
+	out := make(map[*mgoRepo]T, len(in))
+	for r, val := range in {
+		repo, ok := repos[r]
+		if !ok {
+			return nil, fmt.Errorf("repository not found: %s", r)
+		}
+		out[repo] = val
+	}
+	return out, nil
 }
