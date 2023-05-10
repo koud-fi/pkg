@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"io/fs"
 	"net/http"
 	"net/url"
 	"strings"
@@ -29,11 +28,6 @@ type Request struct {
 	body      blob.Blob
 	bodyMime  string
 	dirReader DirReader
-}
-
-type DirReader interface {
-	IsDir(h http.Header) bool
-	ReadDir(f fs.File, h http.Header, n int) ([]fs.DirEntry, error)
 }
 
 type pair struct {
