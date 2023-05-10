@@ -20,5 +20,5 @@ type TagIndex interface {
 	Query(tags []string, limit int) (QueryResult, error)
 	Put(e ...Entry)
 	Commit() error
-	Tags(prefix string, limit int) ([]TagInfo, error)
+	Tags(prefix string) ([]TagInfo, error)
 }

@@ -155,18 +155,12 @@ func (mti *memTagIdx) Commit() error {
 	return nil
 }
 
-func (mti *memTagIdx) Tags(prefix string, limit int) ([]TagInfo, error) {
+func (mti *memTagIdx) Tags(prefix string) ([]TagInfo, error) {
 	var res []TagInfo // TODO: smart pre-alloc
 	for tag, count := range mti.tagCounts {
 		if strings.HasPrefix(tag, prefix) {
 			res = append(res, TagInfo{Tag: tag, Count: count})
 		}
-	}
-	sort.SliceStable(res, func(i, j int) bool {
-		return res[i].Count > res[j].Count
-	})
-	if limit > 0 && len(res) > limit {
-		res = res[:limit]
 	}
 	return res, nil
 }
