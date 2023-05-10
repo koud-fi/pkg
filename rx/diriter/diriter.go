@@ -10,12 +10,7 @@ import (
 
 const defaultBatchSize = 1 << 6
 
-type Entry struct {
-	path string
-	fs.DirEntry
-}
-
-func (e Entry) Path() string { return e.path }
+type Entry = rx.Pair[string, fs.DirEntry]
 
 func New(fsys fs.FS, root string) rx.Iter[Entry] {
 	type dirInfo struct {
@@ -58,10 +53,7 @@ func New(fsys fs.FS, root string) rx.Iter[Entry] {
 						entries: dir,
 					})
 				} else {
-					out = append(out, Entry{
-						path:     topPath,
-						DirEntry: topEntry,
-					})
+					out = append(out, rx.NewPair(topPath, topEntry))
 				}
 				dirs[i].entries = dirs[i].entries[:len(dirs[i].entries)-1]
 			}
@@ -71,5 +63,5 @@ func New(fsys fs.FS, root string) rx.Iter[Entry] {
 }
 
 func IsHidden(e Entry) bool {
-	return strings.HasPrefix(e.Name(), ".") // TODO: check for other common hidden file patters
+	return strings.HasPrefix(e.Key(), ".") // TODO: check for other common hidden file patters
 }

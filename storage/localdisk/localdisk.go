@@ -70,7 +70,7 @@ func (s Storage) Iter(_ context.Context, d blob.Domain, after blob.Ref) rx.Iter[
 	it := diriter.New(os.DirFS(s.root), string(d))
 	return rx.Map(it, (func(e diriter.Entry) blob.RefBlob {
 		var (
-			p  = strings.TrimPrefix(e.Path(), prefix)
+			p  = strings.TrimPrefix(e.Key(), prefix)
 			bl = len(s.bucketLevels)
 		)
 		if bl > 0 {

@@ -10,5 +10,5 @@ import (
 
 func TestDirIter(t *testing.T) {
 	t.Log(rx.Drain(rx.Log(
-		rx.Map((diriter.New(os.DirFS("testdata"), "")), diriter.Entry.Path), "")))
+		rx.Map((diriter.New(os.DirFS("testdata"), "")), diriter.Entry.Key), "")))
 }
