@@ -26,12 +26,6 @@ func New(s blob.SortedStorage, d blob.Domain) *Cache {
 	return &Cache{cache.New(&b), b}
 }
 
-func Getter(c *Cache, g blob.Getter) blob.Getter {
-	return blob.GetterFunc(func(ctx context.Context, ref blob.Ref) blob.Blob {
-		return c.Resolve(ctx, ref.String(), g.Get(ctx, ref))
-	})
-}
-
 func (c *Cache) Resolve(ctx context.Context, key string, b blob.Blob) blob.Blob {
 	return blob.Func(func() (io.ReadCloser, error) {
 		var (
