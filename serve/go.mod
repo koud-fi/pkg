@@ -4,10 +4,10 @@ go 1.18
 
 require (
 	github.com/koud-fi/pkg/blob v0.0.0-20220328032554-b7ddd59d6b22
-	golang.org/x/crypto v0.7.0
+	golang.org/x/crypto v0.8.0
 )
 
 require (
-	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/net v0.9.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 )
