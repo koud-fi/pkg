@@ -69,7 +69,7 @@ type Client struct {
 	token     *fetch.OAuthToken
 }
 
-func NewClient(appID, appSecret, userAgent string) *Client {
+func New(appID, appSecret, userAgent string) *Client {
 	return &Client{
 		appID:       appID,
 		appSecret:   appSecret,
