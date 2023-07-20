@@ -1,10 +1,10 @@
 package reddit
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"sync"
 
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/fetch"
@@ -21,8 +21,6 @@ const (
 	Award     Kind = "t6"
 	Listing   Kind = "Listing"
 )
-
-var rateLimiter = rate.NewLimiter(0.5, 2)
 
 type Kind string
 
@@ -62,14 +60,25 @@ type APIResponse struct {
 }
 
 type Client struct {
-	AppID     string `json:"appId"`
-	AppSecret string `json:"appSecret"`
-	UserAgent string `json:"userAgent"`
+	appID       string
+	appSecret   string
+	userAgent   string
+	rateLimiter *rate.Limiter
 
-	token *fetch.OAuthToken
+	tokenLock sync.Mutex
+	token     *fetch.OAuthToken
 }
 
-func (c *Client) Subreddit(ctx context.Context, r, after string) (*APIResponse, error) {
+func New(appID, appSecret, userAgent string) *Client {
+	return &Client{
+		appID:       appID,
+		appSecret:   appSecret,
+		userAgent:   userAgent,
+		rateLimiter: rate.NewLimiter(2, 2),
+	}
+}
+
+func (c *Client) Subreddit(r, after string) (*APIResponse, error) {
 	authHeader, err := c.resolveAuthHeader()
 	if err != nil {
 		return nil, err
@@ -84,20 +93,23 @@ func (c *Client) Subreddit(ctx context.Context, r, after string) (*APIResponse, 
 		Query("t", "all"). // TODO: parameterize
 		Query("raw_json", 1).
 		Authorization(authHeader).
-		UserAgent(c.UserAgent).
-		Context(ctx).
-		Limit(rateLimiter), &res)
+		UserAgent(c.userAgent).
+		Limit(c.rateLimiter), &res)
 }
 
 func (c *Client) resolveAuthHeader() (string, error) {
+	c.tokenLock.Lock()
+	defer c.tokenLock.Unlock()
+
 	if c.token == nil {
 		if err := blob.Unmarshal(json.Unmarshal,
 			fetch.Post("https://www.reddit.com/api/v1/access_token").
 				Form(url.Values{
 					"grant_type": []string{"client_credentials"},
 				}).
-				User(url.UserPassword(c.AppID, c.AppSecret)).
-				UserAgent(c.UserAgent),
+				User(url.UserPassword(c.appID, c.appSecret)).
+				UserAgent(c.userAgent).
+				Limit(c.rateLimiter),
 			&c.token,
 		); err != nil {
 			return "", fmt.Errorf("reddit.resolveAuthHeader: %w", err)
