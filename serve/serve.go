@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"mime"
 	"net/http"
+	"path"
 	"regexp"
 	"strconv"
 	"strings"
@@ -46,6 +48,7 @@ func LastModified(t time.Time) Option { return func(c *config) { c.LastModified 
 func MaxAge(d time.Duration) Option   { return func(c *config) { c.MaxAge = d } }
 func Compress(b bool) Option          { return func(c *config) { c.Compress = b } }
 func Immutable(b bool) Option         { return func(c *config) { c.Immutable = b } }
+func NoOp() Option                    { return func(_ *config) {} }
 
 func Attachment(name string) Option {
 	return func(c *config) {
@@ -58,6 +61,13 @@ func Attachment(name string) Option {
 
 func Range(start, end int64) Option {
 	return func(c *config) { c.Range = &[2]int64{start, end} }
+}
+
+func ContentTypeFromPath(p string) Option {
+	if ext := path.Ext(p); ext != "" {
+		return ContentType(mime.TypeByExtension(ext))
+	}
+	return NoOp()
 }
 
 func Header(w http.ResponseWriter, opt ...Option) (*Info, error) {

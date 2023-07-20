@@ -3,11 +3,9 @@ package serve
 import (
 	"errors"
 	"io/fs"
-	"mime"
 	"net/http"
 	"os"
 	"path"
-	pathpkg "path"
 	"strings"
 
 	"github.com/koud-fi/pkg/blob"
@@ -47,9 +45,7 @@ func App(opt ...AppOption) func(http.ResponseWriter, *http.Request, fs.FS, ...Op
 		default:
 			p = c.index
 		}
-		if ext := pathpkg.Ext(p); ext != "" {
-			opt = append(opt, ContentType(mime.TypeByExtension(ext)))
-		}
+		opt = append(opt, ContentTypeFromPath(p))
 		return Blob(w, r, blob.FromFS(fsys, p), opt...)
 	}
 }
