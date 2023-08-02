@@ -8,14 +8,19 @@ import (
 )
 
 const (
-	String  TypeName = "string"
-	Number  TypeName = "number"
+	String TypeName = "string"
+	Number TypeName = "number"
+	// TODO: Integer TypeName = "integer"
 	Object  TypeName = "object"
 	Array   TypeName = "array"
 	Boolean TypeName = "boolean"
 	Null    TypeName = "null"
 
+	// TODO: Date     Format = "date"
 	DateTime Format = "date-time"
+	// TODO: Password Format = "password"
+	// TODO: Byte     Format = "byte" // base64-encoded characters
+	// TODO: Binary   Format = "binary"
 )
 
 type Type struct {
