@@ -100,7 +100,14 @@ func (p Properties) fromStructFields(c config, rt reflect.Type) {
 	}
 }
 
-func resolveType(c config, rt reflect.Type) (t Type) {
+func resolveType(c config, v any) (t Type) {
+	var rt reflect.Type
+	switch v := v.(type) {
+	case reflect.Type:
+		rt = v
+	default:
+		rt = reflect.TypeOf(v)
+	}
 	if ct, ok := c.customTypes[typeKey{rt.PkgPath(), strings.TrimLeft(rt.Name(), "*")}]; ok {
 		return ct(rt)
 	}
@@ -134,11 +141,4 @@ func resolveType(c config, rt reflect.Type) (t Type) {
 		panic("cannot resolve schema for type: " + rt.Kind().String())
 	}
 	return
-}
-
-func resolveTypeFromValue(c config, v any) Type {
-
-	// TODO: ???
-
-	return resolveType(c, reflect.TypeOf(v))
 }

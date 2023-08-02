@@ -12,7 +12,7 @@ import (
 //go:embed test.json
 var testJSON []byte
 
-func TestResolve(t *testing.T) {
+func TestResolveFromType(t *testing.T) {
 	t.Log(schema.Resolve[int]())
 	t.Log(schema.Resolve[struct {
 		Value   string    `json:"value"`
