@@ -100,10 +100,10 @@ func (p Properties) fromStructFields(c config, rt reflect.Type) {
 	}
 }
 
-func (p Properties) fromMap(c config, v map[string]any) {
-
-	// TODO
-
+func (p Properties) fromMap(c config, m map[string]any) {
+	for k, v := range m {
+		p[k] = resolveType(c, v)
+	}
 }
 
 func resolveType(c config, v any) (t Type) {
