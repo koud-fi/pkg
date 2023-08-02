@@ -1,0 +1,20 @@
+{
+	"type": "Listing",
+	"data": {
+		"childType": "Thing",
+		"children": [
+			{
+				"id": 1,
+				"a": "Hello"
+			},
+			{
+				"id": 2,
+				"b": "World!",
+				"refs": [3,4,5]
+			}
+		]
+	},
+	"metadata": {
+		"childCount": 2
+	}
+}

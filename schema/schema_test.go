@@ -1,10 +1,16 @@
 package schema_test
 
 import (
+	_ "embed"
+	"encoding/json"
 	"testing"
 
+	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/schema"
 )
+
+//go:embed test.json
+var testJSON []byte
 
 func TestResolve(t *testing.T) {
 	t.Log(schema.Resolve[int]())
@@ -16,4 +22,13 @@ func TestResolve(t *testing.T) {
 			Name string `json:"name,omitempty"`
 		} `json:"things"`
 	}]().ExampleJSON())
+
+}
+
+func TestResolveFromValue(t *testing.T) {
+	var v any
+	if err := blob.Unmarshal(json.Unmarshal, blob.FromBytes(testJSON), &v); err != nil {
+		t.Fatal(err)
+	}
+	t.Log(schema.ResolveFromValue(v).ExampleJSON())
 }
