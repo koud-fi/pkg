@@ -135,3 +135,10 @@ func resolveType(c config, rt reflect.Type) (t Type) {
 	}
 	return
 }
+
+func resolveTypeFromValue(c config, v any) Type {
+
+	// TODO: ???
+
+	return resolveType(c, reflect.TypeOf(v))
+}

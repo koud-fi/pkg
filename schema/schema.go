@@ -11,27 +11,24 @@ type Schema struct {
 }
 
 func Resolve[T any](opts ...Option) Schema {
-	c := baseConfig()
-	for _, opt := range opts {
-		opt(&c)
-	}
 	var v T
-	return Schema{Type: resolveType(c, reflect.TypeOf(v))}
+	return Schema{Type: resolveType(makeConfig(opts), reflect.TypeOf(v))}
 }
 
 func ResolveFromValue(v any, opts ...Option) Schema {
-
-	// ???
-
-	panic("TODO")
+	return Schema{Type: resolveTypeFromValue(makeConfig(opts), v)}
 }
 
-func baseConfig() config {
-	return config{
+func makeConfig(opts []Option) config {
+	c := config{
 		customTypes: map[typeKey]func(reflect.Type) Type{
 			{"time", "Time"}: func(_ reflect.Type) Type {
 				return Type{Type: String, Format: DateTime}
 			},
 		},
 	}
+	for _, opt := range opts {
+		opt(&c)
+	}
+	return c
 }
