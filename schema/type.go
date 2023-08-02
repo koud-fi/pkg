@@ -102,6 +102,9 @@ func (p Properties) fromStructFields(c config, rt reflect.Type) {
 
 func (p Properties) fromMap(c config, m map[string]any) {
 	for k, v := range m {
+
+		// TODO: handle possible mixed types for same field
+
 		p[k] = resolveType(c, v)
 	}
 }
