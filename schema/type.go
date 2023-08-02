@@ -32,6 +32,13 @@ type (
 	Format   string
 )
 
+func (t Type) JSONName(key string) string {
+	if jsonTag, ok := t.Tags["json"]; ok {
+		return strings.Split(jsonTag, ",")[0]
+	}
+	return key // TODO: proper JSON formatting
+}
+
 func (t Type) ExampleValue() any {
 	switch t.Type {
 	case String:
@@ -85,14 +92,7 @@ func (p Properties) fromStructFields(c config, rt reflect.Type) {
 			p.fromStructFields(c, sf.Type)
 			continue
 		}
-		name := sf.Name
-		if jsonTag, ok := sf.Tag.Lookup("json"); ok {
-			if name = strings.Split(jsonTag, ",")[0]; name == "-" {
-				continue
-			}
-		}
 		t := Type{}.resolve(c, sf.Type)
-
 		for _, tag := range c.tags {
 			if v, ok := sf.Tag.Lookup(tag); ok {
 				if t.Tags == nil {
@@ -102,7 +102,7 @@ func (p Properties) fromStructFields(c config, rt reflect.Type) {
 				}
 			}
 		}
-		p[name] = t
+		p[sf.Name] = t
 	}
 }
 
