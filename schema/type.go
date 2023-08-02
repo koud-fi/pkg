@@ -100,13 +100,36 @@ func (p Properties) fromStructFields(c config, rt reflect.Type) {
 	}
 }
 
+func (p Properties) fromMap(c config, v map[string]any) {
+
+	// TODO
+
+}
+
 func resolveType(c config, v any) (t Type) {
 	var rt reflect.Type
 	switch v := v.(type) {
 	case reflect.Type:
 		rt = v
+	case map[string]any:
+		t.Type = Object
+		t.Properties = make(map[string]Type, len(v))
+		t.Properties.fromMap(c, v)
+
+	case []any:
+		t.Type = Array
+
+		// TODO: make the items type resolution smarter
+
+		if len(v) > 0 {
+			it := resolveType(c, v[0])
+			t.Items = &it
+		}
 	default:
 		rt = reflect.TypeOf(v)
+	}
+	if rt == nil {
+		return
 	}
 	if ct, ok := c.customTypes[typeKey{rt.PkgPath(), strings.TrimLeft(rt.Name(), "*")}]; ok {
 		return ct(rt)
@@ -124,6 +147,9 @@ func resolveType(c config, v any) (t Type) {
 
 		t.Type = Number
 
+	case reflect.Bool:
+		t.Type = Boolean
+
 	case reflect.Struct:
 		t.Type = Object
 		t.Properties = make(map[string]Type, rt.NumField())
@@ -133,9 +159,6 @@ func resolveType(c config, v any) (t Type) {
 		t.Type = Array
 		it := resolveType(c, rt.Elem())
 		t.Items = &it
-
-	case reflect.Bool:
-		t.Type = Boolean
 
 	default:
 		panic("cannot resolve schema for type: " + rt.Kind().String())
