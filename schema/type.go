@@ -70,6 +70,12 @@ func (t Type) ExampleJSON() string {
 	return string(data)
 }
 
+func (t *Type) allocProps(lenHint int) {
+	if t.Properties == nil {
+		t.Properties = make(map[string]Type, lenHint)
+	}
+}
+
 type Properties map[string]Type
 
 func (p Properties) fromStructFields(c config, rt reflect.Type) {
@@ -85,7 +91,7 @@ func (p Properties) fromStructFields(c config, rt reflect.Type) {
 				continue
 			}
 		}
-		t := resolveType(c, sf.Type)
+		t := Type{}.resolve(c, sf.Type)
 
 		for _, tag := range c.tags {
 			if v, ok := sf.Tag.Lookup(tag); ok {
@@ -103,43 +109,46 @@ func (p Properties) fromStructFields(c config, rt reflect.Type) {
 func (p Properties) fromMap(c config, m map[string]any) {
 	for k, v := range m {
 
-		// TODO: handle possible mixed types for same field
+		// TODO: handle possible mixed types for a same field
 
-		p[k] = resolveType(c, v)
+		p[k] = Type{}.resolve(c, v)
 	}
 }
 
-func resolveType(c config, v any) (t Type) {
+func (t Type) resolve(c config, v any) Type {
 	var rt reflect.Type
 	switch v := v.(type) {
 	case reflect.Type:
 		rt = v
 	case map[string]any:
 		t.Type = Object
-		t.Properties = make(map[string]Type, len(v))
+		t.allocProps(len(v))
 		t.Properties.fromMap(c, v)
 
 	case []any:
 		t.Type = Array
+		for i := range v {
+			if t.Items == nil {
+				t.Items = new(Type)
+			}
 
-		// TODO: make the items type resolution smarter
+			// TODO: handle possible mixed types
 
-		if len(v) > 0 {
-			it := resolveType(c, v[0])
+			it := t.Items.resolve(c, v[i])
 			t.Items = &it
 		}
 	default:
 		rt = reflect.TypeOf(v)
 	}
 	if rt == nil {
-		return
+		return t
 	}
 	if ct, ok := c.customTypes[typeKey{rt.PkgPath(), strings.TrimLeft(rt.Name(), "*")}]; ok {
 		return ct(rt)
 	}
 	switch rt.Kind() {
 	case reflect.Ptr:
-		t = resolveType(c, rt.Elem())
+		t = Type{}.resolve(c, rt.Elem())
 
 	case reflect.String:
 		t.Type = String
@@ -155,16 +164,16 @@ func resolveType(c config, v any) (t Type) {
 
 	case reflect.Struct:
 		t.Type = Object
-		t.Properties = make(map[string]Type, rt.NumField())
+		t.allocProps(rt.NumField())
 		t.Properties.fromStructFields(c, rt)
 
 	case reflect.Slice:
 		t.Type = Array
-		it := resolveType(c, rt.Elem())
+		it := Type{}.resolve(c, rt.Elem())
 		t.Items = &it
 
 	default:
 		panic("cannot resolve schema for type: " + rt.Kind().String())
 	}
-	return
+	return t
 }

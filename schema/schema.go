@@ -26,5 +26,5 @@ func ResolveFromValue(v any, opts ...Option) Schema {
 	for _, opt := range opts {
 		opt(&c)
 	}
-	return Schema{Type: resolveType(c, v)}
+	return Schema{Type: Type{}.resolve(c, v)}
 }
