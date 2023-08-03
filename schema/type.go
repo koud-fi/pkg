@@ -37,6 +37,25 @@ type (
 	Format   string
 )
 
+func ResolveType[T any](opts ...Option) Type {
+	var v T
+	return ResolveTypeOf(v, opts...)
+}
+
+func ResolveTypeOf(v any, opts ...Option) Type {
+	c := config{
+		customTypes: map[typeKey]func(reflect.Type) Type{
+			{"time", "Time"}: func(_ reflect.Type) Type {
+				return Type{Type: String, Format: DateTime}
+			},
+		},
+	}
+	for _, opt := range opts {
+		opt(&c)
+	}
+	return Type{}.resolve(c, v)
+}
+
 func (t Type) JSONName(key string) string {
 	if jsonTag, ok := t.Tags["json"]; ok {
 		return strings.Split(jsonTag, ",")[0]

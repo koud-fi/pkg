@@ -13,8 +13,8 @@ import (
 var testJSON []byte
 
 func TestResolveFromType(t *testing.T) {
-	t.Log(schema.Resolve[int]())
-	t.Log(schema.Resolve[struct {
+	t.Log(schema.ResolveType[int]())
+	t.Log(schema.ResolveType[struct {
 		Value   string    `json:"value"`
 		Numbers []float64 `json:"nums"`
 		Things  []struct {
@@ -30,5 +30,5 @@ func TestResolveFromValue(t *testing.T) {
 	if err := blob.Unmarshal(json.Unmarshal, blob.FromBytes(testJSON), &v); err != nil {
 		t.Fatal(err)
 	}
-	t.Log(schema.ResolveFromValue(v).ExampleJSON())
+	t.Log(schema.ResolveTypeOf(v).ExampleJSON())
 }

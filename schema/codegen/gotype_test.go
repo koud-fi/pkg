@@ -11,12 +11,12 @@ import (
 
 func TestGoType(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
-	if err := codegen.GoType(buf, schema.Resolve[struct {
+	if err := codegen.GoType(buf, schema.ResolveType[struct {
 		A string
 		B int
 		C float64
 		D bool `json:"_d"`
-	}]().Type); err != nil {
+	}]()); err != nil {
 		log.Fatal(err)
 	}
 	t.Log(buf.String())
