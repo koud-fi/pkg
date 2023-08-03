@@ -38,7 +38,7 @@ package codegen
 // DO NOT EDIT BY HAND!
 
 {{range $typeName, $typeDef := .Definitions -}}
-type {{$typeName}}} struct {
+type {{$typeName}} struct {
 {{- range $fieldName, $fieldDef := .Properties}}
 	{{$fieldName}} {{typeOf $fieldDef -}}
 {{- end }}
