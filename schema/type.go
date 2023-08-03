@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	String TypeName = "string"
-	Number TypeName = "number"
-	// TODO: Integer TypeName = "integer"
+	String  TypeName = "string"
+	Number  TypeName = "number"
+	Integer TypeName = "integer"
 	Object  TypeName = "object"
 	Array   TypeName = "array"
 	Boolean TypeName = "boolean"
@@ -72,7 +72,7 @@ func (t Type) ExampleValue() any {
 		}
 		return ""
 
-	case Number:
+	case Number, Integer:
 		return 0
 
 	case Object:
@@ -140,9 +140,11 @@ func (t Type) resolve(c config, v any) Type {
 		t.Type = String
 
 	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8,
-		reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8,
-		reflect.Float64, reflect.Float32:
+		reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
 
+		t.Type = Integer
+
+	case reflect.Float64, reflect.Float32:
 		t.Type = Number
 
 	case reflect.Bool:
