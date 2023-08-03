@@ -18,6 +18,11 @@ func TestGoTypes(t *testing.T) {
 				B int
 				C float64
 				D bool `json:"_d"`
+				E []int
+				F struct {
+					F1 string
+					F2 int
+				}
 			}](),
 		},
 	}); err != nil {
