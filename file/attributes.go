@@ -41,7 +41,7 @@ func (a Attributes) IsStale(d fs.DirEntry) bool {
 		return true
 	}
 	info, err := d.Info()
-	if err == nil {
+	if err != nil {
 		return true
 	}
 	return info.ModTime().After(*a.ModTime) || info.Size() != a.Size
