@@ -46,11 +46,14 @@ func StdImagePreviewParamsList(attrs file.MediaAttributes) []Params {
 	} else {
 		ws = []int{300, 600}
 		for {
-			l := len(ws)
-			if ws[l-1] > int(float64(attrs.Width)*0.8) {
+			var (
+				l = len(ws)
+				w = ws[l-2] + ws[l-1]
+			)
+			if w > int(float64(attrs.Width)*0.8) {
 				break
 			}
-			ws = append(ws, ws[l-2]+ws[l-1])
+			ws = append(ws, w)
 		}
 	}
 	ps := make([]Params, 0, len(ws))
