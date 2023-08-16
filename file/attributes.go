@@ -36,6 +36,17 @@ func (a Attributes) Ext() string {
 	return ""
 }
 
+func (a Attributes) IsStale(d fs.DirEntry) bool {
+	if a.ModTime == nil {
+		return true
+	}
+	info, err := d.Info()
+	if err == nil {
+		return true
+	}
+	return info.ModTime().After(*a.ModTime) || info.Size() != a.Size
+}
+
 func (a1 Attributes) Equal(a2 Attributes) bool {
 	return (a1.Size == a2.Size) &&
 		((a1.ModTime == nil && a2.ModTime == nil) || a1.ModTime.Equal(*a2.ModTime))
