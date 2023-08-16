@@ -6,4 +6,4 @@ github.com/koud-fi/pkg/storage/memory v0.0.0-20230511041444-8d55e393caa8 h1:RtfJ
 github.com/koud-fi/pkg/storage/storagetest v0.0.0-20220505044251-401d235d2935 h1:YfliAHqisyj7eT2CYfurgaGMI+pppiHjvdxX4jLulNw=
 golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd h1:zVFyTKZN/Q7mNRWSs1GOYnHM9NiFSJ54YVRsD0rNWT4=
 golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd/go.mod h1:lgLbSvA5ygNOMpwM/9anMpWVlVJ7Z+cHWq/eFuinpGE=
-golang.org/x/net v0.9.0 h1:aWJ/m6xSmxWBx+V0XRHTlrYrPG56jKsLdTFmsSsCzOM=
+golang.org/x/net v0.12.0 h1:cfawfvKITfUsFCeJIHJrbSxpeu/E81khclypR0GVT50=
