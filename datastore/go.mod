@@ -1,4 +1,4 @@
-module github.com/koud-fi/pkg/data
+module github.com/koud-fi/pkg/datastore
 
 go 1.18
 

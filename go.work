@@ -11,7 +11,7 @@ use (
 	./bloom
 	./cache
 	./calendar
-	./data
+	./datastore
 	./endpoint
 	./fetch
 	./file

@@ -1,9 +1,9 @@
-package data_test
+package datastore_test
 
 import (
 	"testing"
 
-	"github.com/koud-fi/pkg/data"
+	"github.com/koud-fi/pkg/datastore"
 	"github.com/koud-fi/pkg/rx"
 	"github.com/koud-fi/pkg/storage/memory"
 
@@ -18,7 +18,7 @@ type TestData struct {
 func TestBlobsTable(t *testing.T) {
 	var (
 		ctx = context.Background()
-		bt  = data.BlobsTable(
+		bt  = datastore.BlobsTable(
 			memory.NewStorage(),
 			func(v TestData) (string, error) { return v.ID, nil })
 	)
