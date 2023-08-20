@@ -10,6 +10,8 @@ import (
 	"github.com/koud-fi/pkg/rx"
 )
 
+// TODO: make the (un)marshaler configurable
+
 type blobsTable[T any] struct {
 	blobs blob.Storage
 	keyFn func(T) (string, error)
