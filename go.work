@@ -23,8 +23,8 @@ use (
 	./proto/grf
 	./proto/router
 	./proto/rq
+	./proto/rr
 	./proto/serializable
-	./rr
 	./rx
 	./schema
 	./search

@@ -1,4 +1,4 @@
-module github.com/koud-fi/pkg/rr
+module github.com/koud-fi/pkg/proto/rr
 
 go 1.20
 
