@@ -30,21 +30,22 @@ func Open(path string) (*DB, error) {
 var _ blob.SortedStorage = (*Storage)(nil)
 
 type Storage struct {
-	db *DB
+	bucket []byte
+	db     *DB
 }
 
-func NewStorage(db *DB) *Storage {
-	return &Storage{db}
+func NewStorage(db *DB, bucket string) *Storage {
+	return &Storage{[]byte(bucket), db}
 }
 
-func (s Storage) Get(_ context.Context, ref blob.Ref) blob.Blob {
+func (s Storage) Get(_ context.Context, ref string) blob.Blob {
 	return blob.ByteFunc(func() (data []byte, err error) {
 		err = s.db.View(func(tx *bolt.Tx) error {
-			return wrapTx(tx).useBucket(ref.Domain(), true, false, func(b *bolt.Bucket) error {
+			return wrapTx(tx).useBucket(s.bucket, true, false, func(b *bolt.Bucket) error {
 				if b == nil {
 					return os.ErrNotExist
 				}
-				buf := b.Get(ref.Bytes())
+				buf := b.Get([]byte(ref))
 				if buf == nil {
 					return os.ErrNotExist
 				}
@@ -57,25 +58,47 @@ func (s Storage) Get(_ context.Context, ref blob.Ref) blob.Blob {
 	})
 }
 
-func (s Storage) Set(_ context.Context, ref blob.Ref, r io.Reader) error {
+func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
 	}
 	return s.db.Update(func(tx *bolt.Tx) error {
-		key := ref.Bytes()
+		key := []byte(ref)
 		return wrapTx(tx).
-			useBucket(ref.Domain(), true, false, func(b *bolt.Bucket) error {
+			useBucket(s.bucket, true, false, func(b *bolt.Bucket) error {
 				return b.Put(key, data)
 			}).
-			useBucket(ref.Domain(), false, false, func(b *bolt.Bucket) error {
+			useBucket(s.bucket, false, false, func(b *bolt.Bucket) error {
 				return b.Put(key, []byte(strconv.Itoa(len(data))))
 			}).err
 	})
 }
 
-func (s *Storage) Iter(ctx context.Context, d blob.Domain, after blob.Ref) rx.Iter[blob.RefBlob] {
-	return &iter{s: s, ctx: ctx, bucket: append([]byte(d), statSuffix...), after: after.Bytes()}
+func (s Storage) Delete(_ context.Context, refs ...string) error {
+	return s.db.Update(func(tx *bolt.Tx) error {
+		for _, ref := range refs {
+			key := []byte(ref)
+			return wrapTx(tx).
+				useBucket(s.bucket, false, true, func(b *bolt.Bucket) error {
+					return b.Delete(key)
+				}).
+				useBucket(s.bucket, true, true, func(b *bolt.Bucket) error {
+					return b.Delete(key)
+				}).
+				err
+		}
+		return nil
+	})
+}
+
+func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
+	return &iter{
+		s:      s,
+		ctx:    ctx,
+		bucket: append(s.bucket, statSuffix...),
+		after:  []byte(after),
+	}
 }
 
 type iter struct {
@@ -124,7 +147,7 @@ func (it *iter) Next() bool {
 }
 
 func (it iter) Value() blob.RefBlob {
-	ref := blob.ParseRef(string(it.k))
+	ref := string(it.k)
 	return blob.RefBlob{
 		Ref:  ref,
 		Blob: it.s.Get(it.ctx, ref),
@@ -142,23 +165,6 @@ func (it iter) Close() error {
 	return it.err
 }
 
-func (s Storage) Delete(_ context.Context, refs ...blob.Ref) error {
-	return s.db.Update(func(tx *bolt.Tx) error {
-		for _, ref := range refs {
-			key := ref.Bytes()
-			return wrapTx(tx).
-				useBucket(ref.Domain(), false, true, func(b *bolt.Bucket) error {
-					return b.Delete(key)
-				}).
-				useBucket(ref.Domain(), true, true, func(b *bolt.Bucket) error {
-					return b.Delete(key)
-				}).
-				err
-		}
-		return nil
-	})
-}
-
 type txWrapper struct {
 	tx  *bolt.Tx
 	err error
@@ -167,13 +173,13 @@ type txWrapper struct {
 func wrapTx(tx *bolt.Tx) *txWrapper { return &txWrapper{tx: tx} }
 
 func (w *txWrapper) useBucket(
-	d blob.Domain, isData bool, skipNil bool, fn func(b *bolt.Bucket) error,
+	bucket []byte, isData bool, skipNil bool, fn func(b *bolt.Bucket) error,
 ) *txWrapper {
 	var name []byte
 	if isData {
-		name = append([]byte(d), dataSuffix...)
+		name = append(bucket, dataSuffix...)
 	} else {
-		name = append([]byte(d), statSuffix...)
+		name = append(bucket, statSuffix...)
 	}
 	if w.err != nil {
 		return w

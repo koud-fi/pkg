@@ -16,5 +16,5 @@ func Test(t *testing.T) {
 	}
 	defer db.Close()
 
-	storagetest.Test(t, bolt.NewStorage(db))
+	storagetest.Test(t, bolt.NewStorage(db, "test-bucket"))
 }
