@@ -47,11 +47,11 @@ func NewStorage(root string, opt ...Option) (*Storage, error) {
 	return &s, nil
 }
 
-func (s Storage) Get(_ context.Context, ref blob.Ref) blob.Blob {
+func (s Storage) Get(_ context.Context, ref string) blob.Blob {
 	return localfile.New(s.refPath(ref))
 }
 
-func (s Storage) Set(_ context.Context, ref blob.Ref, r io.Reader) error {
+func (s Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	path := s.refPath(ref)
 	if err := os.MkdirAll(filepath.Dir(path), s.dirPerm); err != nil {
 		return err
@@ -59,32 +59,7 @@ func (s Storage) Set(_ context.Context, ref blob.Ref, r io.Reader) error {
 	return localfile.WriteReader(path, r, s.filePerm)
 }
 
-func (s Storage) Iter(_ context.Context, d blob.Domain, after blob.Ref) rx.Iter[blob.RefBlob] {
-	if len(after) != 0 {
-		panic("localdisk.Iter: after not supported") // TODO: implement "after"
-	}
-	var prefix string
-	if d != blob.Default {
-		prefix = string(d) + "/"
-	}
-	it := diriter.New(os.DirFS(s.root), string(d))
-	return rx.Map(it, (func(e diriter.Entry) blob.RefBlob {
-		var (
-			p  = strings.TrimPrefix(e.Key(), prefix)
-			bl = len(s.bucketLevels)
-		)
-		if bl > 0 {
-			p = strings.SplitN(p, "/", bl+1)[bl]
-		}
-		ref := blob.NewRef(d, p)
-		return blob.RefBlob{
-			Ref:  ref,
-			Blob: localfile.New(filepath.Join(s.root, ref.String())),
-		}
-	}))
-}
-
-func (s Storage) Delete(_ context.Context, refs ...blob.Ref) error {
+func (s Storage) Delete(_ context.Context, refs ...string) error {
 	for _, ref := range refs {
 		if err := os.Remove(s.refPath(ref)); err != nil {
 			return err
@@ -93,13 +68,32 @@ func (s Storage) Delete(_ context.Context, refs ...blob.Ref) error {
 	return nil
 }
 
-func (s Storage) refPath(ref blob.Ref) string {
-	refStr := ref.Ref().String()
+func (s Storage) Iter(_ context.Context, after string) rx.Iter[blob.RefBlob] {
+	if len(after) != 0 {
+		panic("localdisk.Iter: after not supported") // TODO: implement "after"
+	}
+	it := diriter.New(os.DirFS(s.root), ".")
+	return rx.Map(it, (func(e diriter.Entry) blob.RefBlob {
+		var (
+			p  = e.Key()
+			bl = len(s.bucketLevels)
+		)
+		if bl > 0 {
+			p = strings.SplitN(p, "/", bl+1)[bl]
+		}
+		return blob.RefBlob{
+			Ref:  p,
+			Blob: localfile.New(filepath.Join(s.root, p)),
+		}
+	}))
+}
+
+func (s Storage) refPath(ref string) string {
 	if len(s.bucketLevels) > 0 {
 		parts := make([]string, 0, len(s.bucketLevels)+2)
-		parts = append(parts, s.root, string(ref.Domain()))
+		parts = append(parts, s.root)
 		var (
-			bucketRef = refStr
+			bucketRef = ref
 			start     int
 		)
 		if s.bucketHash != nil {
@@ -118,8 +112,8 @@ func (s Storage) refPath(ref blob.Ref) string {
 			parts = append(parts, part)
 			start = end
 		}
-		parts = append(parts, refStr)
+		parts = append(parts, ref)
 		return filepath.Join(parts...)
 	}
-	return filepath.Join(s.root, string(ref.Domain()), refStr)
+	return filepath.Join(s.root, ref)
 }
