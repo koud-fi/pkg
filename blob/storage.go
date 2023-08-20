@@ -3,10 +3,6 @@ package blob
 import (
 	"context"
 	"io"
-	"io/fs"
-	"os"
-	"path"
-	"strings"
 
 	"github.com/koud-fi/pkg/rx"
 )
@@ -23,54 +19,22 @@ type SortedStorage interface {
 }
 
 type Getter interface {
-	Get(ctx context.Context, ref Ref) Blob
+	Get(ctx context.Context, ref string) Blob
 }
 
 type Setter interface {
-	Set(ctx context.Context, ref Ref, r io.Reader) error
+	Set(ctx context.Context, ref string, r io.Reader) error
 }
 
 type Deleter interface {
-	Delete(ctx context.Context, refs ...Ref) error
+	Delete(ctx context.Context, refs ...string) error
 }
 
 type RefBlob struct {
-	Ref Ref
+	Ref string
 	Blob
 }
 
 type Iterator interface {
-	Iter(ctx context.Context, d Domain, after Ref) rx.Iter[RefBlob]
-}
-
-type GetterFunc func(ctx context.Context, ref Ref) Blob
-
-func (f GetterFunc) Get(ctx context.Context, ref Ref) Blob { return f(ctx, ref) }
-
-func FSGetter(fsys fs.FS) Getter {
-	return GetterFunc(func(_ context.Context, ref Ref) Blob {
-		return FromFS(fsys, path.Clean(strings.Join(ref, "/")))
-	})
-}
-
-type Mux map[Domain]Getter
-
-func (m Mux) Get(ctx context.Context, ref Ref) Blob {
-	return Func(func() (io.ReadCloser, error) {
-		g, err := m.Lookup(ref)
-		if err != nil {
-			return nil, err
-		}
-		return g.Get(ctx, ref).Open()
-	})
-}
-
-func (m Mux) Lookup(ref Ref) (Getter, error) {
-	g, ok := m[ref.Domain()]
-	if !ok {
-		if g, ok = m[Default]; !ok {
-			return nil, os.ErrNotExist
-		}
-	}
-	return g, nil
+	Iter(ctx context.Context, after string) rx.Iter[RefBlob]
 }
