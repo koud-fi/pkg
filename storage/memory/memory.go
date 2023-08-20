@@ -16,28 +16,28 @@ type Storage struct {
 
 	// TODO: optimize storage format to make insert/delete faster, use blob.Ref as pair key
 
-	data map[blob.Domain]*refDataSlice
+	data refDataSlice
 }
 
 var _ blob.SortedStorage = (*Storage)(nil)
 
 func NewStorage() *Storage {
-	return &Storage{data: make(map[blob.Domain]*refDataSlice)}
+	return &Storage{data: make(refDataSlice, 0)}
 }
 
-func (s *Storage) Get(_ context.Context, ref blob.Ref) blob.Blob {
+func (s *Storage) Get(_ context.Context, ref string) blob.Blob {
 	return blob.ByteFunc(func() ([]byte, error) {
 		s.mu.RLock()
 		defer s.mu.RUnlock()
 
-		if i, data, ok := s.search(ref, true); ok {
-			return (*data)[i].Value(), nil
+		if i, ok := s.search(ref, true); ok {
+			return s.data[i].Value(), nil
 		}
 		return nil, os.ErrNotExist
 	})
 }
 
-func (s *Storage) Set(_ context.Context, ref blob.Ref, r io.Reader) error {
+func (s *Storage) Set(_ context.Context, ref string, r io.Reader) error {
 	data, err := io.ReadAll(r)
 	if err != nil {
 		return err
@@ -45,57 +45,52 @@ func (s *Storage) Set(_ context.Context, ref blob.Ref, r io.Reader) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	p := rx.NewPair(ref.String(), data)
-	if i, data, ok := s.search(ref, false); ok {
-		(*data)[i] = p
+	p := rx.NewPair(ref, data)
+	if i, ok := s.search(ref, false); ok {
+		s.data[i] = p
 	} else {
-		(*data) = append((*data)[:i], append(refDataSlice{p}, (*data)[i:]...)...)
+		s.data = append(s.data[:i], append(refDataSlice{p}, s.data[i:]...)...)
 	}
 	return nil
 }
 
-func (s *Storage) Iter(ctx context.Context, d blob.Domain, after blob.Ref) rx.Iter[blob.RefBlob] {
-	var (
-		i    = -1
-		data *refDataSlice
-	)
+func (s *Storage) Delete(_ context.Context, refs ...string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for _, ref := range refs {
+		if i, ok := s.search(ref, true); ok {
+			s.data = append(s.data[:i], s.data[i+1:]...)
+		}
+	}
+	return nil
+}
+
+func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
+	var i = -1
+
 	return rx.FuncIter(func(rx.Done) ([]blob.RefBlob, rx.Done, error) {
 		s.mu.RLock()
 		defer s.mu.RUnlock()
 
 		if i < 0 {
-			i, data, _ = s.search(blob.NewRef(d, after.Ref()...), true)
-		}
-		if data == nil {
-			return nil, true, nil
+			i, _ = s.search(after, true)
 		}
 		select {
 		case <-ctx.Done():
 			return nil, true, ctx.Err()
 		default:
 			var out []blob.RefBlob // TODO: return larger batches of data
-			if i < len(*data) {
+			if i < len(s.data) {
 				out = append(out, blob.RefBlob{
-					Ref:  blob.ParseRef((*data)[i].Key()),
-					Blob: blob.FromBytes((*data)[i].Value()),
+					Ref:  s.data[i].Key(),
+					Blob: blob.FromBytes(s.data[i].Value()),
 				})
 				i++
 			}
-			return out, i == len(*data), nil
+			return out, i == len(s.data), nil
 		}
 	})
-}
-
-func (s *Storage) Delete(_ context.Context, refs ...blob.Ref) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	for _, ref := range refs {
-		if i, data, ok := s.search(ref, true); ok {
-			(*data) = append((*data)[:i], (*data)[i+1:]...)
-		}
-	}
-	return nil
 }
 
 func (s *Storage) Clear() {
@@ -105,25 +100,11 @@ func (s *Storage) Clear() {
 	s.data = nil
 }
 
-func (s *Storage) search(ref blob.Ref, readonly bool) (int, *refDataSlice, bool) {
-	d := ref.Domain()
-	if d == "" {
-		d = blob.Domain(ref.String())
-	}
-	data, ok := s.data[d]
-	if !ok {
-		if readonly {
-			return 0, nil, false
-		}
-		data = &refDataSlice{}
-		s.data[ref.Domain()] = data
-		return 0, data, false
-	}
-	refStr := ref.String()
-	i := sort.Search(len(*data), func(i int) bool {
-		return (*data)[i].Key() >= refStr
+func (s *Storage) search(ref string, readonly bool) (int, bool) {
+	i := sort.Search(len(s.data), func(i int) bool {
+		return s.data[i].Key() >= ref
 	})
-	return i, data, i < len(*data) && (*data)[i].Key() == refStr
+	return i, i < len(s.data) && (s.data)[i].Key() == ref
 }
 
 type refDataSlice []rx.Pair[string, []byte]
