@@ -21,8 +21,8 @@ type Cache struct {
 	backend
 }
 
-func New(s blob.SortedStorage, d blob.Domain) *Cache {
-	b := backend{s, d}
+func New(s blob.SortedStorage) *Cache {
+	b := backend{s}
 	return &Cache{cache.New(&b), b}
 }
 
@@ -31,7 +31,6 @@ func (c *Cache) Resolve(ctx context.Context, key string, b blob.Blob) blob.Blob 
 		var (
 			digest = sha256.Sum256([]byte(key))
 			key    = hex.EncodeToString(digest[:])
-			keyRef = blob.NewRef(c.domain, key)
 			out    io.ReadCloser
 		)
 		if err := c.Cache.Resolve(ctx, key, func() (int64, error) {
@@ -47,7 +46,7 @@ func (c *Cache) Resolve(ctx context.Context, key string, b blob.Blob) blob.Blob 
 
 			// TODO: resolve size correctly
 
-			return 0, c.s.Set(ctx, keyRef, rc)
+			return 0, c.s.Set(ctx, key, rc)
 
 		}); err != nil {
 			return nil, err
@@ -55,17 +54,16 @@ func (c *Cache) Resolve(ctx context.Context, key string, b blob.Blob) blob.Blob 
 		if out != nil {
 			return out, nil
 		}
-		return c.s.Get(ctx, keyRef).Open()
+		return c.s.Get(ctx, key).Open()
 	})
 }
 
 type backend struct {
-	s      blob.SortedStorage
-	domain blob.Domain
+	s blob.SortedStorage
 }
 
 func (b *backend) Has(ctx context.Context, key string) (bool, error) {
-	if err := blob.Error(b.s.Get(ctx, blob.ParseRef(key))); err == nil {
+	if err := blob.Error(b.s.Get(ctx, key)); err == nil {
 		return true, nil
 	} else if !os.IsNotExist(err) {
 		return false, err
@@ -74,11 +72,11 @@ func (b *backend) Has(ctx context.Context, key string) (bool, error) {
 }
 
 func (b *backend) Delete(ctx context.Context, key string) error {
-	return b.s.Delete(ctx, blob.ParseRef(key))
+	return b.s.Delete(ctx, key)
 }
 
 func (b *backend) Keys(ctx context.Context) rx.Iter[rx.Pair[string, int64]] {
-	return rx.Map(b.s.Iter(ctx, b.domain, blob.Ref{}), func(br blob.RefBlob) rx.Pair[string, int64] {
-		return rx.NewPair(br.Ref.String(), int64(0)) // TODO: resolve blob sizes
+	return rx.Map(b.s.Iter(ctx, ""), func(br blob.RefBlob) rx.Pair[string, int64] {
+		return rx.NewPair(br.Ref, int64(0)) // TODO: resolve blob sizes
 	})
 }
