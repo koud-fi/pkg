@@ -22,9 +22,15 @@ func (qr QueryResult) Page(cursor string, limit int) ([]Entry, string) {
 		end        int64
 		nextCursor string
 	)
+	if start < 0 {
+		start = 0
+	}
 	if limit <= 0 {
 		end = dataLen
 	} else {
+		if start > dataLen {
+			start = dataLen
+		}
 		end = start + int64(limit)
 		if end >= dataLen {
 			end = dataLen
