@@ -2,7 +2,6 @@ package mgo
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/koud-fi/pkg/proto/rr"
 
@@ -110,12 +109,13 @@ func (tx *writeTx) Commit(ctx context.Context) error {
 }
 
 type mgoRepo struct {
-	r     rr.Repository
-	idFn  func(rr.Key) bson.M
-	keyFn func(bson.M) rr.Key
-	coll  *mongo.Collection
+	r rr.Repository
+	//idFn  func(rr.Key) bson.M
+	//keyFn func(bson.M) rr.Key
+	coll *mongo.Collection
 }
 
+/*
 func resolveRepos[T any](
 	repos map[rr.Repository]*mgoRepo, in map[rr.Repository]T,
 ) (map[*mgoRepo]T, error) {
@@ -129,3 +129,4 @@ func resolveRepos[T any](
 	}
 	return out, nil
 }
+*/
