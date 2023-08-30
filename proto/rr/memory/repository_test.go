@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/koud-fi/pkg/rr"
-	"github.com/koud-fi/pkg/rr/memory"
-	"github.com/koud-fi/pkg/rr/rrtest"
+	"github.com/koud-fi/pkg/proto/rr"
+	"github.com/koud-fi/pkg/proto/rr/memory"
+	"github.com/koud-fi/pkg/proto/rr/rrtest"
 )
 
 func TestRW(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/koud-fi/pkg/rr"
+	"github.com/koud-fi/pkg/proto/rr"
 )
 
 const Repository = "test"

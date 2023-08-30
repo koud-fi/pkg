@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/koud-fi/pkg/rr"
-	"github.com/koud-fi/pkg/rr/mgo"
-	"github.com/koud-fi/pkg/rr/rrtest"
+	"github.com/koud-fi/pkg/proto/rr"
+	"github.com/koud-fi/pkg/proto/rr/mgo"
+	"github.com/koud-fi/pkg/proto/rr/rrtest"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/koud-fi/pkg/rr"
+	"github.com/koud-fi/pkg/proto/rr"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,7 +16,7 @@ type mongoRW struct {
 
 func NewRW(db *mongo.Database, keys map[rr.Repository][]string) rr.ReadWriter {
 	repos := make(map[rr.Repository]*mgoRepo)
-	for r, key := range keys {
+	for r := range keys {
 		repos[r] = &mgoRepo{
 			r:    r,
 			coll: db.Collection(string(r)),
@@ -42,21 +42,24 @@ func (tx *readTx) Get(r rr.Repository, keys ...rr.Key) {
 }
 
 func (tx *readTx) Execute(ctx context.Context) (map[rr.Repository][]rr.Item, error) {
-	res := make(map[rr.Repository][]rr.Item, len(tx.keys))
-	for r, keys := range tx.keys {
-		cur, err := tx.db.Collection(string(r)).Find(ctx, bson.M{
-			"_id": bson.M{"$in": keys},
-		})
-		if err != nil {
-			return nil, err
+	/*
+		res := make(map[rr.Repository][]rr.Item, len(tx.keys))
+		for r, keys := range tx.keys {
+			cur, err := tx.db.Collection(string(r)).Find(ctx, bson.M{
+				"_id": bson.M{"$in": keys},
+			})
+			if err != nil {
+				return nil, err
+			}
+			var items []rr.Item
+			if err := cur.All(ctx, &items); err != nil {
+				return nil, err
+			}
+			res[r] = items
 		}
-		var items []rr.Item
-		if err := cur.All(ctx, &items); err != nil {
-			return nil, err
-		}
-		res[r] = items
-	}
-	return res, nil
+		return res, nil
+	*/
+	panic("TODO")
 }
 
 func (m *mongoRW) Write() rr.WriteTx {
@@ -95,12 +98,15 @@ func (tx *writeTx) Commit(ctx context.Context) error {
 
 	// TODO: look into possible multi collection transactions?
 
-	for r, models := range tx.models {
-		if _, err := tx.db.Collection(string(r)).BulkWrite(ctx, models); err != nil {
-			return err
+	/*
+		for r, models := range tx.models {
+			if _, err := tx.db.Collection(string(r)).BulkWrite(ctx, models); err != nil {
+				return err
+			}
 		}
-	}
-	return nil
+		return nil
+	*/
+	panic("TODO")
 }
 
 type mgoRepo struct {

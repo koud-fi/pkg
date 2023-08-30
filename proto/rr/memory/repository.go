@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/koud-fi/pkg/rr"
+	"github.com/koud-fi/pkg/proto/rr"
 )
 
 type memRW struct {
