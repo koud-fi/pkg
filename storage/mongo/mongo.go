@@ -6,6 +6,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -24,10 +25,15 @@ func (kv *KV[T]) Get(ctx context.Context, key string) (T, error) {
 }
 
 func (kv *KV[T]) Put(ctx context.Context, key string, value T) error {
-
-	// ???
-
-	panic("TODO")
+	_, err := kv.coll.UpdateOne(ctx, bson.M{
+		"_id": key,
+	}, bson.M{
+		"$set": doc[T]{
+			Data:      value,
+			UpdatedAt: time.Now(),
+		},
+	}, options.Update().SetUpsert(true))
+	return err
 }
 
 func (kv *KV[T]) Delete(ctx context.Context, keys ...string) error {
@@ -38,8 +44,7 @@ func (kv *KV[T]) Delete(ctx context.Context, keys ...string) error {
 }
 
 type doc[T any] struct {
-	ID        string     `bson:"_id"`
-	Data      T          `bson:"data"`
-	CreatedAt time.Time  `bson:"createdAt"`
-	UpdatedAt *time.Time `bson:"updatedAt,omitempty"`
+	ID        string    `bson:"_id"`
+	Data      T         `bson:"data"`
+	UpdatedAt time.Time `bson:"updated_at"`
 }
