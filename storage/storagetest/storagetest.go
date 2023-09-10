@@ -4,36 +4,21 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
-	"unicode"
 
 	"github.com/koud-fi/pkg/blob"
+	"github.com/koud-fi/pkg/datastore"
 	"github.com/koud-fi/pkg/rx"
 )
+
+// TODO: actually test things... (needs some sort of assertion)
 
 func Test(t *testing.T, s blob.Storage) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancel()
 
-	// TODO: actually test things...
-
-	// TODO: log errors
-	s.Set(ctx, "a", strings.NewReader("av"))
-	s.Set(ctx, "bb", strings.NewReader("bv"))
-	s.Set(ctx, "dddd", strings.NewReader("dv"))
-	s.Set(ctx, "ccc", strings.NewReader("cv"))
-	s.Set(ctx, "eeeee", strings.NewReader("ev"))
-	s.Set(ctx, "ffffff", strings.NewReader("fv"))
-	s.Set(ctx, "gggg/ggg", strings.NewReader("gv"))
-	s.Set(ctx, "hhhh/hhhh", strings.NewReader("hv"))
-
-	s.Delete(ctx, "bb")
-	t.Log(blobStr(s.Get(ctx, "a")))
-	t.Log(blobStr(s.Get(ctx, "bb")))
-	t.Log(blobStr(s.Get(ctx, "gggg/ggg")))
-
+	testKV(t, ctx, datastore.BlobsKV[string](s))
 	testIter(ctx, t, s)
 }
 
@@ -55,15 +40,31 @@ func testIter(ctx context.Context, t *testing.T, s blob.Storage) {
 	}
 }
 
-func blobStr(b blob.Blob) string {
-	data, err := blob.Peek(b, 50)
-	if err != nil {
-		return fmt.Sprintf("ERROR: %v", err)
-	}
-	for i := range data {
-		if unicode.IsControl(rune(data[i])) {
-			data[i] = ' '
-		}
-	}
-	return string(data)
+func TestKV(t *testing.T, kv datastore.KV[string]) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+	defer cancel()
+
+	testKV(t, ctx, kv)
+}
+
+func testKV(t *testing.T, ctx context.Context, kv datastore.KV[string]) {
+
+	// TODO: don't log nil errors
+
+	t.Log(kv.Put(ctx, "a", "av"))
+	t.Log(kv.Put(ctx, "bb", "bv"))
+	t.Log(kv.Put(ctx, "dddd", "dv"))
+	t.Log(kv.Put(ctx, "ccc", "cv"))
+	t.Log(kv.Put(ctx, "eeeee", "ev"))
+	t.Log(kv.Put(ctx, "ffffff", "fv"))
+	t.Log(kv.Put(ctx, "gggg/ggg", "gv"))
+	t.Log(kv.Put(ctx, "hhhh/hhhh", "hv"))
+
+	t.Log(kv.Delete(ctx, "bb"))
+
+	t.Log(kv.Get(ctx, "a"))
+	t.Log(kv.Get(ctx, "bb"))
+	t.Log(kv.Get(ctx, "gggg/ggg"))
+
+	// TODO: iterator test (deprecates testIter)
 }
