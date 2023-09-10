@@ -1,4 +1,4 @@
-package mongo
+package mgo
 
 import (
 	"context"
@@ -43,7 +43,7 @@ func (kv *KV[T]) Delete(ctx context.Context, keys ...string) error {
 }
 
 type doc[T any] struct {
-	ID        string    `bson:"_id"`
+	ID        string    `bson:"_id,omitempty"`
 	Data      T         `bson:"data"`
 	UpdatedAt time.Time `bson:"updated_at"`
 }

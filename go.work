@@ -32,7 +32,7 @@ use (
 	./storage/bolt
 	./storage/localdisk
 	./storage/memory
-	./storage/mongo
+	./storage/mgo
 	./storage/redis
 	./storage/sqlite
 	./storage/storagetest

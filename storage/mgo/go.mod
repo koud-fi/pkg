@@ -1,4 +1,4 @@
-module github.com/koud-fi/pkg/storage/mongo
+module github.com/koud-fi/pkg/storage/mgo
 
 go 1.21.0
 
