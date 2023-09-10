@@ -2,6 +2,8 @@ package mgo
 
 import (
 	"context"
+	"errors"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,6 +22,9 @@ func NewKV[T any](c *mongo.Collection) *KV[T] {
 func (kv *KV[T]) Get(ctx context.Context, key string) (T, error) {
 	var d doc[T]
 	err := kv.coll.FindOne(ctx, bson.M{"_id": key}).Decode(&d)
+	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
+		err = os.ErrNotExist
+	}
 	return d.Data, err
 }
 
