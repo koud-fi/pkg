@@ -72,7 +72,7 @@ func (it *iter[T]) Next() bool {
 	if it.cur == nil {
 		filter := make(bson.M)
 		if it.after != "" {
-			filter["_id"] = bson.M{"$lt": it.after}
+			filter["_id"] = bson.M{"$gt": it.after}
 		}
 		opts := options.Find().SetSort(bson.M{"_id": 1})
 		it.cur, it.err = it.coll.Find(it.ctx, filter, opts)
