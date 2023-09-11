@@ -69,7 +69,7 @@ type iter[T any] struct {
 }
 
 func (it *iter[T]) Next() bool {
-	if it.coll == nil {
+	if it.cur == nil {
 		filter := make(bson.M)
 		if it.after != "" {
 			filter["_id"] = bson.M{"$lt": it.after}
