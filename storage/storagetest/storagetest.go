@@ -19,16 +19,16 @@ func Test(t *testing.T, s blob.Storage) {
 	defer cancel()
 
 	testKV(t, ctx, datastore.BlobsKV[string](s))
-	testIter(ctx, t, s)
+	testIter(t, ctx, s)
 }
 
-func testIter(ctx context.Context, t *testing.T, s blob.Storage) {
+func testIter(t *testing.T, ctx context.Context, s blob.Storage) {
 	ss, ok := s.(blob.SortedStorage)
 	if !ok {
 		return
 	}
 	if err := rx.ForEach(ss.Iter(ctx, ""), func(b blob.RefBlob) error {
-		header, err := blob.Peek(s.Get(ctx, b.Ref), 1<<10)
+		header, err := blob.Peek(ss.Get(ctx, b.Ref), 1<<10)
 		if err != nil {
 			return fmt.Errorf("%v: %v", b.Ref, err)
 		}
@@ -45,6 +45,21 @@ func TestKV(t *testing.T, kv datastore.KV[string]) {
 	defer cancel()
 
 	testKV(t, ctx, kv)
+	testKVIter(t, ctx, kv)
+}
+
+func testKVIter(t *testing.T, ctx context.Context, kv datastore.KV[string]) {
+	skv, ok := kv.(datastore.SortedKV[string])
+	if !ok {
+		return
+	}
+	if err := rx.ForEach(skv.Iter(ctx, ""), func(p rx.Pair[string, string]) error {
+		t.Log(p.Key(), p.Value())
+		return nil
+
+	}); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func testKV(t *testing.T, ctx context.Context, kv datastore.KV[string]) {
