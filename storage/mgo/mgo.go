@@ -6,10 +6,17 @@ import (
 	"os"
 	"time"
 
+	"github.com/koud-fi/pkg/rx"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+type doc[T any] struct {
+	ID        string    `bson:"_id,omitempty"`
+	Data      T         `bson:"data"`
+	UpdatedAt time.Time `bson:"updated_at"`
+}
 
 type KV[T any] struct {
 	coll *mongo.Collection
@@ -47,8 +54,46 @@ func (kv *KV[T]) Delete(ctx context.Context, keys ...string) error {
 	return err
 }
 
-type doc[T any] struct {
-	ID        string    `bson:"_id,omitempty"`
-	Data      T         `bson:"data"`
-	UpdatedAt time.Time `bson:"updated_at"`
+func (kv *KV[T]) Iter(ctx context.Context, after string) rx.Iter[rx.Pair[string, T]] {
+	return &iter[T]{ctx: ctx, coll: kv.coll, after: after}
+}
+
+type iter[T any] struct {
+	ctx   context.Context
+	coll  *mongo.Collection
+	after string
+
+	cur *mongo.Cursor
+	err error
+	d   doc[T]
+}
+
+func (it *iter[T]) Next() bool {
+	if it.coll == nil {
+		filter := make(bson.M)
+		if it.after != "" {
+			filter["_id"] = bson.M{"$lt": it.after}
+		}
+		opts := options.Find().SetSort(bson.M{"_id": 1})
+		it.cur, it.err = it.coll.Find(it.ctx, filter, opts)
+	}
+	if it.err != nil {
+		return false
+	}
+	if !it.cur.Next(it.ctx) {
+		return false
+	}
+	it.err = it.cur.Decode(&it.d)
+	return it.err == nil
+}
+
+func (it *iter[T]) Value() rx.Pair[string, T] {
+	return rx.NewPair[string, T](it.d.ID, it.d.Data)
+}
+
+func (it *iter[_]) Close() error {
+	if err := it.cur.Close(it.ctx); err != nil {
+		return err
+	}
+	return it.err
 }
