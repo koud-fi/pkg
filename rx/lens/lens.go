@@ -1,23 +1,20 @@
-package rx
+package lens
 
 import (
 	"sync"
-)
 
-type Lens[T any] interface {
-	Get() (T, error)
-	Set(T) error
-}
+	"github.com/koud-fi/pkg/rx"
+)
 
 type valueLens[T any] struct{ v T }
 
 func (vl valueLens[T]) Get() (T, error) { return vl.v, nil }
 func (vl *valueLens[T]) Set(v T) error  { vl.v = v; return nil }
 
-func Value[T any](v T) Lens[T] { return &valueLens[T]{v} }
+func Value[T any](v T) rx.Lens[T] { return &valueLens[T]{v} }
 
 type atomicLens[T any] struct {
-	l  Lens[T]
+	l  rx.Lens[T]
 	mu sync.RWMutex
 }
 
@@ -33,7 +30,7 @@ func (al *atomicLens[T]) Set(v T) error {
 	return al.l.Set(v)
 }
 
-func Atomic[T any](l Lens[T]) Lens[T] { return &atomicLens[T]{l: l} }
+func Atomic[T any](l rx.Lens[T]) rx.Lens[T] { return &atomicLens[T]{l: l} }
 
 type onceLens[T any] struct {
 	fn   func() (T, error)
@@ -42,7 +39,7 @@ type onceLens[T any] struct {
 	err  error
 }
 
-func Once[T any](fn func() (T, error)) Lens[T] { return &onceLens[T]{fn: fn} }
+func Once[T any](fn func() (T, error)) rx.Lens[T] { return &onceLens[T]{fn: fn} }
 
 func (ol *onceLens[T]) Get() (T, error) {
 	if !ol.init {
