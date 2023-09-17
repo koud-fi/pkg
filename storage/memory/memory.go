@@ -66,32 +66,63 @@ func (s *Storage) Delete(_ context.Context, refs ...string) error {
 	return nil
 }
 
-func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
-	var i = -1
-
-	return rx.FuncIter(func(rx.Done) ([]blob.RefBlob, rx.Done, error) {
-		s.mu.RLock()
-		defer s.mu.RUnlock()
-
-		if i < 0 {
-			i, _ = s.search(after, true)
-		}
-		select {
-		case <-ctx.Done():
-			return nil, true, ctx.Err()
-		default:
-			var out []blob.RefBlob // TODO: return larger batches of data
-			if i < len(s.data) {
-				out = append(out, blob.RefBlob{
-					Ref:  s.data[i].Key(),
-					Blob: blob.FromBytes(s.data[i].Value()),
-				})
-				i++
-			}
-			return out, i == len(s.data), nil
-		}
-	})
+func (s *Storage) Iter(ctx context.Context, state rx.Lens[string]) rx.Iter[blob.RefBlob] {
+	return &iter{s: s, ctx: ctx, state: state, i: -1}
 }
+
+type iter struct {
+	s     *Storage
+	ctx   context.Context
+	state rx.Lens[string]
+
+	init bool
+	i    int
+	err  error
+}
+
+func (it *iter) Next() bool {
+	it.s.mu.RLock()
+	defer it.s.mu.RUnlock()
+
+	select {
+	case <-it.ctx.Done():
+		it.err = it.ctx.Err()
+		return false
+	default:
+		if !it.init {
+			after, err := it.state.Get()
+			if err != nil {
+				it.err = err
+				return false
+			}
+			it.i, _ = it.s.search(after, true)
+			it.init = true
+		} else {
+			if it.i < len(it.s.data) {
+				if it.err = it.state.Set(it.s.data[it.i].Key()); it.err == nil {
+					it.i++
+				}
+			}
+		}
+		return it.err == nil && it.i < len(it.s.data)
+	}
+}
+
+func (it *iter) Value() blob.RefBlob {
+	it.s.mu.RLock()
+	defer it.s.mu.RUnlock()
+
+	if it.i >= len(it.s.data) {
+		return blob.RefBlob{Blob: blob.Empty()}
+	}
+	p := it.s.data[it.i]
+	return blob.RefBlob{
+		Ref:  p.Key(),
+		Blob: blob.FromBytes(p.Value()),
+	}
+}
+
+func (it *iter) Close() error { return it.err }
 
 func (s *Storage) Clear() {
 	s.mu.Lock()
