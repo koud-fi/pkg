@@ -10,6 +10,7 @@ import (
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/datastore"
 	"github.com/koud-fi/pkg/rx"
+	"github.com/koud-fi/pkg/rx/lens"
 )
 
 // TODO: actually test things... (needs some sort of assertion)
@@ -27,7 +28,8 @@ func testIter(t *testing.T, ctx context.Context, s blob.Storage) {
 	if !ok {
 		return
 	}
-	if err := rx.ForEach(ss.Iter(ctx, ""), func(b blob.RefBlob) error {
+	state := lens.Value("")
+	if err := rx.ForEach(ss.Iter(ctx, state), func(b blob.RefBlob) error {
 		header, err := blob.Peek(ss.Get(ctx, b.Ref), 1<<10)
 		if err != nil {
 			return fmt.Errorf("%v: %v", b.Ref, err)
@@ -38,6 +40,7 @@ func testIter(t *testing.T, ctx context.Context, s blob.Storage) {
 	}); err != nil {
 		t.Fatal(err)
 	}
+	t.Log(state.Get())
 }
 
 func TestKV(t *testing.T, kv datastore.KV[string]) {
@@ -53,13 +56,15 @@ func testKVIter(t *testing.T, ctx context.Context, kv datastore.KV[string]) {
 	if !ok {
 		return
 	}
-	if err := rx.ForEach(skv.Iter(ctx, ""), func(p rx.Pair[string, string]) error {
+	state := lens.Value("")
+	if err := rx.ForEach(skv.Iter(ctx, state), func(p rx.Pair[string, string]) error {
 		t.Log(p.Key(), p.Value())
 		return nil
 
 	}); err != nil {
 		t.Fatal(err)
 	}
+	t.Log(state.Get())
 }
 
 func testKV(t *testing.T, ctx context.Context, kv datastore.KV[string]) {

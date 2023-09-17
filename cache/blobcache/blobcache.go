@@ -11,6 +11,7 @@ import (
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/cache"
 	"github.com/koud-fi/pkg/rx"
+	"github.com/koud-fi/pkg/rx/lens"
 )
 
 //lint:ignore ST1012 if returned from resolve; data is not written to storage.
@@ -76,7 +77,7 @@ func (b *backend) Delete(ctx context.Context, key string) error {
 }
 
 func (b *backend) Keys(ctx context.Context) rx.Iter[rx.Pair[string, int64]] {
-	return rx.Map(b.s.Iter(ctx, ""), func(br blob.RefBlob) rx.Pair[string, int64] {
+	return rx.Map(b.s.Iter(ctx, lens.Value("")), func(br blob.RefBlob) rx.Pair[string, int64] {
 		return rx.NewPair(br.Ref, int64(0)) // TODO: resolve blob sizes
 	})
 }

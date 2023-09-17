@@ -14,5 +14,5 @@ type KV[T any] interface {
 
 type SortedKV[T any] interface {
 	KV[T]
-	Iter(ctx context.Context, after string) rx.Iter[rx.Pair[string, T]]
+	Iter(ctx context.Context, state rx.Lens[string]) rx.Iter[rx.Pair[string, T]]
 }

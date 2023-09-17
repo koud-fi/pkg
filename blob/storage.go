@@ -36,5 +36,5 @@ type RefBlob struct {
 }
 
 type Iterator interface {
-	Iter(ctx context.Context, after string) rx.Iter[RefBlob]
+	Iter(ctx context.Context, state rx.Lens[string]) rx.Iter[RefBlob]
 }

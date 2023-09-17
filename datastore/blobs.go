@@ -58,11 +58,13 @@ func SortedBlobsKV[T any](
 	}
 }
 
-func (sbkv sortedBlobsKV[T]) Iter(ctx context.Context, after string) rx.Iter[rx.Pair[string, T]] {
+func (sbkv sortedBlobsKV[T]) Iter(
+	ctx context.Context, state rx.Lens[string],
+) rx.Iter[rx.Pair[string, T]] {
 
 	// TODO: lazy iterator creation
 
-	it := sbkv.sorted.Iter(ctx, after)
+	it := sbkv.sorted.Iter(ctx, state)
 	return rx.MapErr(it, func(rb blob.RefBlob) (rx.Pair[string, T], error) {
 		var v T
 		err := blob.Unmarshal(json.Unmarshal, rb.Blob, &v)

@@ -68,10 +68,10 @@ func (s Storage) Delete(_ context.Context, refs ...string) error {
 	return nil
 }
 
-func (s Storage) Iter(_ context.Context, after string) rx.Iter[blob.RefBlob] {
-	if len(after) != 0 {
-		panic("localdisk.Iter: after not supported") // TODO: implement "after"
-	}
+func (s Storage) Iter(_ context.Context, state rx.Lens[string]) rx.Iter[blob.RefBlob] {
+
+	// TODO: implement proper state logic
+
 	it := diriter.New(os.DirFS(s.root), ".")
 	return rx.Map(it, (func(e diriter.Entry) blob.RefBlob {
 		var (

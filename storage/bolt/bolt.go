@@ -92,12 +92,12 @@ func (s Storage) Delete(_ context.Context, refs ...string) error {
 	})
 }
 
-func (s *Storage) Iter(ctx context.Context, after string) rx.Iter[blob.RefBlob] {
+func (s *Storage) Iter(ctx context.Context, state rx.Lens[string]) rx.Iter[blob.RefBlob] {
 	return &iter{
 		s:      s,
 		ctx:    ctx,
 		bucket: append(s.bucket, statSuffix...),
-		after:  []byte(after),
+		state:  state,
 	}
 }
 
@@ -105,7 +105,7 @@ type iter struct {
 	s      *Storage
 	ctx    context.Context
 	bucket []byte
-	after  []byte
+	state  rx.Lens[string]
 
 	tx  *bolt.Tx
 	c   *bolt.Cursor
@@ -121,12 +121,16 @@ func (it *iter) Next() bool {
 			return false
 		}
 		if b := it.tx.Bucket(it.bucket); b != nil {
+			after, err := it.state.Get()
+			if err != nil {
+				it.err = err
+				return false
+			}
 			it.c = b.Cursor()
-
-			if len(it.after) == 0 {
+			if len(after) == 0 {
 				it.k, _ = it.c.First()
 			} else {
-				it.c.Seek(it.after)
+				it.c.Seek([]byte(after))
 			}
 		}
 		init = true
@@ -140,6 +144,9 @@ func (it *iter) Next() bool {
 		return false
 	default:
 		if !init {
+			if it.err = it.state.Set(string(it.k)); it.err != nil {
+				return false
+			}
 			it.k, _ = it.c.Next()
 		}
 		return it.k != nil
