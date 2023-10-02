@@ -1,5 +1,5 @@
 # pkg
-Collection of Go modules.
+Collection of mostly prototype Go modules.
 
 ### blob
 Common binary object interface.
