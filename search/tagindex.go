@@ -2,20 +2,23 @@ package search
 
 import "strconv"
 
-const cursorBase = 36
-
-type Entry struct {
-	ID    string
-	Order int64
-	Tags  []string
+type Entry interface {
+	ID() string
+	Tags() []string
 }
 
-type QueryResult struct {
-	Data       []Entry
+type OrderedEntry interface {
+	Entry
+	Order() int64
+}
+
+type QueryResult[T any] struct {
+	Data       []T
 	TotalCount int
 }
 
-func (qr QueryResult) Page(cursor string, limit int) ([]Entry, string) {
+func (qr QueryResult[T]) Page(cursor string, limit int) ([]T, string) {
+	const cursorBase = 36
 	var (
 		dataLen    = int64(len(qr.Data))
 		start, _   = strconv.ParseInt(cursor, cursorBase, 64)
@@ -46,9 +49,9 @@ type TagInfo struct {
 	Count int
 }
 
-type TagIndex interface {
-	Query(tags []string, limit int) (QueryResult, error)
-	Put(e ...Entry)
+type TagIndex[T Entry] interface {
+	Query(tags []string, limit int) (QueryResult[T], error)
+	Put(e ...T)
 	Commit() error
 	Tags(prefix string) ([]TagInfo, error)
 }

@@ -11,9 +11,9 @@ import (
 
 const bloomFilterK = 9
 
-type memTagIdx struct {
+type memTagIdx[T Entry] struct {
 	mu           sync.RWMutex
-	data         []memEntry
+	data         []memEntry[T]
 	dataIndex    map[string]int
 	tagIDs       map[string]uint32
 	tagCounts    map[string]int // TODO: more optimal tag store (prefix map?)
@@ -21,22 +21,23 @@ type memTagIdx struct {
 	orderCounter int64
 }
 
-type memEntry struct {
-	Entry     // TODO: avoid storing the full entry with all the tags etc.
+type memEntry[T any] struct {
+	entry     T
 	tagIDs    *sorted.Set[uint32]
+	order     int64
 	bloom     bloom.Filter
 	isDeleted bool
 }
 
-func NewMemoryTagIndex() TagIndex {
-	return &memTagIdx{
+func NewMemoryTagIndex[T Entry]() TagIndex[T] {
+	return &memTagIdx[T]{
 		dataIndex: make(map[string]int, 1<<8),
 		tagIDs:    make(map[string]uint32, 1<<8),
 		tagCounts: make(map[string]int, 1<<8),
 	}
 }
 
-func (mti *memTagIdx) Query(tags []string, limit int) (QueryResult, error) {
+func (mti *memTagIdx[T]) Query(tags []string, limit int) (QueryResult[T], error) {
 	mti.Commit()
 
 	mti.mu.RLock()
@@ -44,14 +45,14 @@ func (mti *memTagIdx) Query(tags []string, limit int) (QueryResult, error) {
 
 	qTagIDs, ok := mti.resolveTagIDs(tags, false)
 	if !ok {
-		return QueryResult{Data: []Entry{}}, nil
+		return QueryResult[T]{Data: []T{}}, nil
 	}
 	preAlloc := limit
 	if preAlloc > 1<<10 {
 		preAlloc = 1 << 10
 	}
 	var (
-		qRes   = QueryResult{Data: make([]Entry, 0, preAlloc)}
+		qRes   = QueryResult[T]{Data: make([]T, 0, preAlloc)}
 		qBloom = bloom.New32(qTagIDs.Data(), bloomFilterK)
 	)
 	for _, me := range mti.data {
@@ -68,12 +69,12 @@ func (mti *memTagIdx) Query(tags []string, limit int) (QueryResult, error) {
 		if limit > 0 && len(qRes.Data) == limit {
 			continue
 		}
-		qRes.Data = append(qRes.Data, me.Entry)
+		qRes.Data = append(qRes.Data, me.entry)
 	}
 	return qRes, nil
 }
 
-func (mti *memTagIdx) Put(e ...Entry) {
+func (mti *memTagIdx[T]) Put(e ...T) {
 	mti.mu.Lock()
 	defer mti.mu.Unlock()
 
@@ -82,38 +83,44 @@ func (mti *memTagIdx) Put(e ...Entry) {
 		// TODO: compare to existing entry to avoid pointless commits
 
 		var (
-			tagIDs, _ = mti.resolveTagIDs(e.Tags, true)
-			me        = memEntry{
-				Entry:  e,
+			tagIDs, _ = mti.resolveTagIDs(e.Tags(), true)
+			me        = memEntry[T]{
+				entry:  e,
 				tagIDs: tagIDs,
 				bloom:  bloom.New32(tagIDs.Data(), bloomFilterK),
 			}
 		)
-		if i, ok := mti.dataIndex[e.ID]; ok {
-			if me.Order <= 0 {
-				me.isDeleted = me.Order < 0
-				me.Order = mti.data[i].Order
+		if ord, ok := any(e).(OrderedEntry); ok {
+			me.order = ord.Order()
+		}
+		if i, ok := mti.dataIndex[e.ID()]; ok {
+			if me.order <= 0 {
+				me.isDeleted = me.order < 0
+				me.order = mti.data[i].order
 			}
 
 			// TODO: update tag counts
 
 			mti.data[i] = me
 		} else {
-			if me.Order == 0 {
-				mti.orderCounter++
-				me.Order = -mti.orderCounter
+			if ord, ok := any(e).(OrderedEntry); ok {
+				me.order = ord.Order()
 			}
-			for _, tag := range me.Tags {
+			if me.order == 0 {
+				mti.orderCounter++
+				me.order = -mti.orderCounter
+			}
+			for _, tag := range e.Tags() {
 				mti.tagCounts[tag]++
 			}
-			mti.dataIndex[e.ID] = len(mti.data)
+			mti.dataIndex[e.ID()] = len(mti.data)
 			mti.data = append(mti.data, me)
 		}
 		mti.isDirty = true
 	}
 }
 
-func (mti *memTagIdx) resolveTagIDs(tags []string, create bool) (*sorted.Set[uint32], bool) {
+func (mti *memTagIdx[_]) resolveTagIDs(tags []string, create bool) (*sorted.Set[uint32], bool) {
 	ids := make([]uint32, 0, len(tags))
 	for _, tag := range tags {
 		if len(tag) == 0 {
@@ -132,7 +139,7 @@ func (mti *memTagIdx) resolveTagIDs(tags []string, create bool) (*sorted.Set[uin
 	return sorted.NewSet(ids...), true
 }
 
-func (mti *memTagIdx) Commit() error {
+func (mti *memTagIdx[_]) Commit() error {
 	mti.mu.Lock()
 	defer mti.mu.Unlock()
 
@@ -140,22 +147,22 @@ func (mti *memTagIdx) Commit() error {
 		return nil
 	}
 	sort.Slice(mti.data, func(i, j int) bool {
-		if mti.data[i].Order == mti.data[j].Order {
-			return mti.data[i].ID < mti.data[j].ID
+		if mti.data[i].order == mti.data[j].order {
+			return mti.data[i].entry.ID() < mti.data[j].entry.ID()
 		}
-		return mti.data[i].Order > mti.data[j].Order
+		return mti.data[i].order > mti.data[j].order
 	})
 	if len(mti.dataIndex) > len(mti.data)*2 {
 		mti.dataIndex = make(map[string]int, len(mti.data))
 	}
 	for i, e := range mti.data {
-		mti.dataIndex[e.ID] = i
+		mti.dataIndex[e.entry.ID()] = i
 	}
 	mti.isDirty = false
 	return nil
 }
 
-func (mti *memTagIdx) Tags(prefix string) ([]TagInfo, error) {
+func (mti *memTagIdx[_]) Tags(prefix string) ([]TagInfo, error) {
 	var res []TagInfo // TODO: smart pre-alloc
 	for tag, count := range mti.tagCounts {
 		if strings.HasPrefix(tag, prefix) {

@@ -1,14 +1,14 @@
 package search
 
-type Autocompleter struct {
-	idx TagIndex
+type Autocompleter[T Entry] struct {
+	idx TagIndex[T]
 }
 
-func NewAutocompleter(idx TagIndex) *Autocompleter {
-	return &Autocompleter{idx: idx}
+func NewAutocompleter[T Entry](idx TagIndex[T]) *Autocompleter[T] {
+	return &Autocompleter[T]{idx: idx}
 }
 
-func (a Autocompleter) Autocomplete(tags []string, limit int) ([][]TagInfo, error) {
+func (a Autocompleter[_]) Autocomplete(tags []string, limit int) ([][]TagInfo, error) {
 
 	// ???
 
