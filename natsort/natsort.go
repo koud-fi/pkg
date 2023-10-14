@@ -1,3 +1,5 @@
+// Package natsort implement "natural sorting" functions
+// https://en.wikipedia.org/wiki/Natural_sort_order
 package natsort
 
 import (
@@ -5,10 +7,13 @@ import (
 	"strconv"
 )
 
+// Strings sorts a list of string to natural order
 func Strings(ss []string) {
 	Values[string](ss, func(s string) string { return s })
 }
 
+// Values sorts a list of arbitary values to natural order,
+// strFn is used to determine the strings used for sorting for each value
 func Values[T any](vs []T, strFn func(v T) string) {
 	srts := make([]sortable[T], 0, len(vs))
 	for _, v := range vs {
