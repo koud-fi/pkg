@@ -15,6 +15,7 @@ use (
 	./file
 	./fingerprint
 	./merge
+	./natsort
 	./noise
 	./num
 	./pk
