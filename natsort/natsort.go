@@ -6,15 +6,19 @@ import (
 )
 
 func Strings(ss []string) {
-	srts := make([]sortable, 0, len(ss))
-	for _, s := range ss {
-		srts = append(srts, toSortable(s))
+	Values[string](ss, func(s string) string { return s })
+}
+
+func Values[T any](vs []T, strFn func(v T) string) {
+	srts := make([]sortable[T], 0, len(vs))
+	for _, v := range vs {
+		srts = append(srts, toSortable(v, strFn(v)))
 	}
 	sort.Slice(srts, func(i, j int) bool {
 		return srts[i].compare(srts[j])
 	})
 	for i, srt := range srts {
-		ss[i] = srt.s
+		vs[i] = srt.v
 	}
 }
 
@@ -24,14 +28,15 @@ type chunk struct {
 	n     int
 }
 
-type sortable struct {
+type sortable[T any] struct {
+	v      T
 	s      string
 	chunks []chunk
 }
 
-func toSortable(s string) sortable {
+func toSortable[T any](v T, s string) sortable[T] {
 	var (
-		srt   = sortable{s: s}
+		srt   = sortable[T]{v: v, s: s}
 		start int
 		isNum bool
 	)
@@ -59,7 +64,7 @@ func isNumber(b byte) bool {
 	return b >= 48 && b <= 57
 }
 
-func (s sortable) compare(to sortable) bool {
+func (s sortable[T]) compare(to sortable[T]) bool {
 	for i := range s.chunks {
 		if i >= len(to.chunks) {
 			return false
