@@ -37,9 +37,21 @@ func (sti *shardedTagIdx[T]) Get(id ...string) ([]T, error) {
 
 func (sti *shardedTagIdx[T]) Query(tags []string, limit int) (QueryResult[T], error) {
 
-	// ???
+	// this implementation is an extremely naive proof of concept
 
-	panic("TODO")
+	var res QueryResult[T]
+	for _, shard := range sti.shards {
+		if err := shard.Commit(); err != nil {
+			return res, err
+		}
+		subRes, err := shard.Query(tags, limit)
+		if err != nil {
+			return res, err
+		}
+		res.Data = append(res.Data, subRes.Data...)
+		res.TotalCount += subRes.TotalCount
+	}
+	return res, nil
 }
 
 func (sti *shardedTagIdx[T]) Put(e ...T) {

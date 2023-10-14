@@ -20,7 +20,9 @@ func TestTagIndex(t *testing.T) {
 
 	// TODO: proper test with actual assertion
 
-	idx := search.NewMemoryTagIndex[testEntry]()
+	idx := search.NewShardedTagIndex[testEntry](32, func(n int) search.TagIndex[testEntry] {
+		return search.NewMemoryTagIndex[testEntry]()
+	})
 	idx.Put(testEntry{"1", []string{"a"}, 4})
 	idx.Put(testEntry{"4", []string{"b", "d"}, 1})
 	idx.Put(testEntry{"2", []string{"a", "b", "c"}, 3})
