@@ -51,8 +51,6 @@ func (mti *memTagIdx[T]) Get(id ...string) ([]T, error) {
 }
 
 func (mti *memTagIdx[T]) Query(tags []string, limit int) (QueryResult[T], error) {
-	mti.Commit()
-
 	mti.mu.RLock()
 	defer mti.mu.RUnlock()
 
