@@ -8,4 +8,4 @@ require (
 	github.com/koud-fi/pkg/storage/storagetest v0.0.0-20220505044251-401d235d2935
 )
 
-require golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd // indirect
+require golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect

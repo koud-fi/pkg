@@ -6,5 +6,4 @@ github.com/koud-fi/pkg/rx v0.0.0-20220617062645-d7d71be010cb h1:rKZAf1BkYyYmg5uD
 github.com/koud-fi/pkg/rx v0.0.0-20220617062645-d7d71be010cb/go.mod h1:11A6myvPh4NirnJHTCf/utpYN9FH8w5DJbWzqjX/QAQ=
 github.com/koud-fi/pkg/serve v0.0.0-20220728144657-c6f4d528b26a h1:QGysZtIjVRLP9Lti4hRiNmvGqkZwZNJYufNItR0eAjA=
 github.com/koud-fi/pkg/serve v0.0.0-20220728144657-c6f4d528b26a/go.mod h1:+JVdYV+bNSu2Ch4eQFILGemv4rcotRVtf8y7QzwCe4U=
-golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd h1:zVFyTKZN/Q7mNRWSs1GOYnHM9NiFSJ54YVRsD0rNWT4=
-golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd/go.mod h1:lgLbSvA5ygNOMpwM/9anMpWVlVJ7Z+cHWq/eFuinpGE=
+golang.org/x/exp v0.0.0-20231006140011-7918f672742d h1:jtJma62tbqLibJ5sFQz8bKtEM8rJBtfilJ2qTU199MI=
