@@ -43,10 +43,14 @@ func (sti *shardedTagIdx[T]) Query(tags []string, limit int) (QueryResult[T], er
 }
 
 func (sti *shardedTagIdx[T]) Put(e ...T) {
-
-	// ???
-
-	panic("TODO")
+	shardEnts := make(map[int][]T)
+	for _, e := range e {
+		n := shardByID(e.ID(), len(sti.shards))
+		shardEnts[n] = append(shardEnts[n], e)
+	}
+	for n, es := range shardEnts {
+		sti.shards[n].Put(es...)
+	}
 }
 
 // Commit does nothing at the moment, sub-index commit is called lazily when querying
