@@ -7,19 +7,21 @@ import (
 	"github.com/koud-fi/pkg/jump"
 )
 
-type shardedTagIdx[T Entry] struct {
+type ShardedTagIndex[T Entry] struct {
 	shards []TagIndex[T]
 }
 
-func NewShardedTagIndex[T Entry](numShards int, shardInitFn func(n int) TagIndex[T]) TagIndex[T] {
+func NewShardedTagIndex[T Entry](
+	numShards int, shardInitFn func(n int) TagIndex[T],
+) *ShardedTagIndex[T] {
 	shards := make([]TagIndex[T], numShards)
 	for n := 0; n < numShards; n++ {
 		shards[n] = shardInitFn(n)
 	}
-	return &shardedTagIdx[T]{shards: shards}
+	return &ShardedTagIndex[T]{shards: shards}
 }
 
-func (sti *shardedTagIdx[T]) Get(id ...string) ([]T, error) {
+func (sti *ShardedTagIndex[T]) Get(id ...string) ([]T, error) {
 	shardIDs := make(map[int][]string)
 	for _, id := range id {
 		n := shardByID(id, len(sti.shards))
@@ -36,7 +38,7 @@ func (sti *shardedTagIdx[T]) Get(id ...string) ([]T, error) {
 	return out, nil
 }
 
-func (sti *shardedTagIdx[T]) Query(tags []string, limit int) (QueryResult[T], error) {
+func (sti *ShardedTagIndex[T]) Query(tags []string, limit int) (QueryResult[T], error) {
 
 	// this implementation is an extremely naive proof of concept
 
@@ -55,7 +57,7 @@ func (sti *shardedTagIdx[T]) Query(tags []string, limit int) (QueryResult[T], er
 	return res, nil
 }
 
-func (sti *shardedTagIdx[T]) Put(e ...T) {
+func (sti *ShardedTagIndex[T]) Put(e ...T) {
 	shardEnts := make(map[int][]T)
 	for _, e := range e {
 		n := shardByID(e.ID(), len(sti.shards))
@@ -67,9 +69,9 @@ func (sti *shardedTagIdx[T]) Put(e ...T) {
 }
 
 // Commit does nothing at the moment, sub-index commit is called lazily when querying
-func (sti *shardedTagIdx[_]) Commit() error { return nil }
+func (sti *ShardedTagIndex[_]) Commit() error { return nil }
 
-func (sti *shardedTagIdx[_]) Tags(prefix string) ([]TagInfo, error) {
+func (sti *ShardedTagIndex[_]) Tags(prefix string) ([]TagInfo, error) {
 
 	// TODO
 
