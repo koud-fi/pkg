@@ -10,12 +10,12 @@ type shardedTagIdx[T Entry] struct {
 	shards []TagIndex[T]
 }
 
-func NewShardedTagIndex[T Entry](
-	numShards int, shardInitFn func(n int) (TagIndex[T], error),
-) TagIndex[T] {
-	return &shardedTagIdx[T]{
-		shards: make([]TagIndex[T], numShards),
+func NewShardedTagIndex[T Entry](numShards int, shardInitFn func(n int) TagIndex[T]) TagIndex[T] {
+	shards := make([]TagIndex[T], numShards)
+	for n := 0; n < numShards; n++ {
+		shards[n] = shardInitFn(n)
 	}
+	return &shardedTagIdx[T]{shards: shards}
 }
 
 func (sti *shardedTagIdx[T]) Get(id ...string) ([]T, error) {
