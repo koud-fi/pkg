@@ -1,4 +1,4 @@
-// Package natsort implement "natural sorting" functions
+// Package natsort implements somewhat optimized "natural sorting" functions
 // https://en.wikipedia.org/wiki/Natural_sort_order
 package natsort
 
