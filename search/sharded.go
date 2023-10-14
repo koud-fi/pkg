@@ -19,10 +19,20 @@ func NewShardedTagIndex[T Entry](numShards int, shardInitFn func(n int) TagIndex
 }
 
 func (sti *shardedTagIdx[T]) Get(id ...string) ([]T, error) {
-
-	// ???
-
-	panic("TODO")
+	shardIDs := make(map[int][]string)
+	for _, id := range id {
+		n := shardByID(id, len(sti.shards))
+		shardIDs[n] = append(shardIDs[n], id)
+	}
+	var out []T
+	for n, ids := range shardIDs {
+		es, err := sti.shards[n].Get(ids...)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, es...)
+	}
+	return out, nil
 }
 
 func (sti *shardedTagIdx[T]) Query(tags []string, limit int) (QueryResult[T], error) {
@@ -39,12 +49,8 @@ func (sti *shardedTagIdx[T]) Put(e ...T) {
 	panic("TODO")
 }
 
-func (sti *shardedTagIdx[_]) Commit() error {
-
-	// ???
-
-	panic("TODO")
-}
+// Commit does nothing at the moment, sub-index commit is called lazily when querying
+func (sti *shardedTagIdx[_]) Commit() error { return nil }
 
 func (sti *shardedTagIdx[_]) Tags(prefix string) ([]TagInfo, error) {
 
