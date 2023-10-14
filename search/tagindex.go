@@ -50,6 +50,7 @@ type TagInfo struct {
 }
 
 type TagIndex[T Entry] interface {
+	Get(id ...string) ([]T, error)
 	Query(tags []string, limit int) (QueryResult[T], error)
 	Put(e ...T)
 	Commit() error

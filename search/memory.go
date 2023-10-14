@@ -37,6 +37,19 @@ func NewMemoryTagIndex[T Entry]() TagIndex[T] {
 	}
 }
 
+func (mti *memTagIdx[T]) Get(id ...string) ([]T, error) {
+	mti.mu.RLock()
+	defer mti.mu.RUnlock()
+
+	out := make([]T, 0, len(id))
+	for _, id := range id {
+		if idx, ok := mti.dataIndex[id]; ok {
+			out = append(out, mti.data[idx].entry)
+		}
+	}
+	return out, nil
+}
+
 func (mti *memTagIdx[T]) Query(tags []string, limit int) (QueryResult[T], error) {
 	mti.Commit()
 
