@@ -35,17 +35,13 @@ func toSortable(s string) sortable {
 		start int
 		isNum bool
 	)
-	for i := range s {
+	for i := 0; i <= len(s); i++ {
 		if i == 0 {
 			isNum = isNumber(s[i])
 		} else {
-			nextIsNum := isNumber(s[i])
-			if nextIsNum != isNum || i == len(s)-1 {
-				end := i
-				if i == len(s)-1 {
-					end++
-				}
-				c := chunk{s: s[start:end]}
+			nextIsNum := i < len(s) && isNumber(s[i])
+			if nextIsNum != isNum || i == len(s) {
+				c := chunk{s: s[start:i]}
 				if isNum {
 					n, err := strconv.Atoi(c.s)
 					c.n, c.isNum = n, err == nil
