@@ -2,6 +2,7 @@ package search
 
 import (
 	"hash/crc64"
+	"strings"
 
 	"github.com/koud-fi/pkg/jump"
 )
@@ -78,6 +79,10 @@ func (sti *shardedTagIdx[_]) Tags(prefix string) ([]TagInfo, error) {
 var shardHashKeyTable = crc64.MakeTable(crc64.ISO)
 
 func shardByID(id string, numShards int) int {
+	key := id
+	if i := strings.LastIndexByte(key, '.'); i > 0 {
+		key = key[:i]
+	}
 	h := crc64.New(shardHashKeyTable)
-	return int(jump.HashString(id, int32(numShards), h))
+	return int(jump.HashString(key, int32(numShards), h))
 }
