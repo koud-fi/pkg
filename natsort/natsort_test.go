@@ -21,8 +21,11 @@ func TestSort(t *testing.T) {
 		"a4_v2.txt",
 		"a40.txt",
 		"a9.txt",
+		"a0.txt",
+		"aa.txt",
 	}
 	dataOK := []string{
+		"a0.txt",
 		"a1.txt",
 		"a2.txt",
 		"a3 xyz.txt",
@@ -35,6 +38,7 @@ func TestSort(t *testing.T) {
 		"a40.txt",
 		"a100.txt",
 		"a200.txt",
+		"aa.txt",
 	}
 	natsort.Strings(data)
 	if !reflect.DeepEqual(data, dataOK) {
