@@ -13,7 +13,7 @@ func Strings(ss []string) {
 }
 
 // Values sorts a list of arbitary values to natural order,
-// strFn is used to determine the strings used for sorting for each value
+// strFn is used to determine the string used for sorting for each value
 func Values[T any](vs []T, strFn func(v T) string) {
 	srts := make([]sortable[T], 0, len(vs))
 	for _, v := range vs {
