@@ -69,6 +69,7 @@ func (sti ShardedTagIndex[T]) Get(id ...string) ([]T, error) {
 func (sti ShardedTagIndex[T]) Query(dst *QueryResult[T], tags []string, limit int) error {
 	dst.Reset()
 
+	// TODO: fix result pooling (results into duplicate entries when using > 0 tags)
 	// TODO: do another pass if total limit is not reached and shards hit their individual limits
 	// TODO: do some form of magic for better ordering, don't blindly sort to retain seed variance
 
@@ -87,13 +88,14 @@ func (sti ShardedTagIndex[T]) Query(dst *QueryResult[T], tags []string, limit in
 			subLimit = max(0, limit-len(dst.Data))
 		}
 		var (
-			res = sti.resPool.Get().(*QueryResult[T])
-			err = shard.Query(res, tags, subLimit)
+			//res = sti.resPool.Get().(*QueryResult[T])
+			res QueryResult[T] // !
+			err = shard.Query(&res, tags, subLimit)
 		)
 		dst.Data = append(dst.Data, res.Data...)
 		dst.TotalCount += res.TotalCount
 
-		sti.resPool.Put(res)
+		//sti.resPool.Put(res)
 		if err != nil {
 			return err
 		}
