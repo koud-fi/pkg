@@ -66,6 +66,11 @@ func (sti ShardedTagIndex[T]) Get(id ...string) ([]T, error) {
 func (sti ShardedTagIndex[T]) Query(dst *QueryResult[T], tags []string, limit int) error {
 	dst.Reset()
 
+	preAlloc := limit/8 + 1
+	if cap(dst.Data) < preAlloc/2 {
+		dst.Data = append(dst.Data, make([]T, 0, preAlloc-cap(dst.Data))...)
+	}
+
 	// this implementation is an extremely naive proof of concept
 
 	for _, i := range sti.queryOrder {
