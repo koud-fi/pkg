@@ -4,6 +4,7 @@ import (
 	"hash/crc64"
 	"math/rand"
 	"strings"
+	"sync"
 
 	"github.com/koud-fi/pkg/jump"
 )
@@ -11,6 +12,7 @@ import (
 type ShardedTagIndex[T Entry] struct {
 	shards     []TagIndex[T]
 	queryOrder []int
+	resPool    *sync.Pool
 }
 
 func NewShardedTagIndex[T Entry](
@@ -23,14 +25,15 @@ func NewShardedTagIndex[T Entry](
 	return ShardedTagIndex[T]{
 		shards:     shards,
 		queryOrder: queryOrder(len(shards), 0),
+		resPool: &sync.Pool{
+			New: func() any { return &QueryResult[T]{Data: make([]T, 0, 1<<10)} },
+		},
 	}
 }
 
 func (sti ShardedTagIndex[T]) WithSeed(seed int64) ShardedTagIndex[T] {
-	return ShardedTagIndex[T]{
-		shards:     sti.shards,
-		queryOrder: queryOrder(len(sti.shards), seed),
-	}
+	sti.queryOrder = queryOrder(len(sti.shards), seed)
+	return sti
 }
 
 func queryOrder(numShards int, seed int64) []int {
@@ -78,12 +81,17 @@ func (sti ShardedTagIndex[T]) Query(dst *QueryResult[T], tags []string, limit in
 		if err := shard.Commit(); err != nil {
 			return err
 		}
-		var res QueryResult[T]
-		if err := shard.Query(&res, tags, limit); err != nil {
-			return err
-		}
+		var (
+			res = sti.resPool.Get().(*QueryResult[T])
+			err = shard.Query(res, tags, limit)
+		)
 		dst.Data = append(dst.Data, res.Data...)
 		dst.TotalCount += res.TotalCount
+
+		sti.resPool.Put(res)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
