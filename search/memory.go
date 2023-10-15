@@ -50,22 +50,17 @@ func (mti *memTagIdx[T]) Get(id ...string) ([]T, error) {
 	return out, nil
 }
 
-func (mti *memTagIdx[T]) Query(tags []string, limit int) (QueryResult[T], error) {
+func (mti *memTagIdx[T]) Query(dst *QueryResult[T], tags []string, limit int) error {
 	mti.mu.RLock()
 	defer mti.mu.RUnlock()
 
 	qTagIDs, ok := mti.resolveTagIDs(tags, false)
 	if !ok {
-		return QueryResult[T]{Data: []T{}}, nil
+		return nil
 	}
-	preAlloc := limit
-	if preAlloc > 1<<10 {
-		preAlloc = 1 << 10
-	}
-	var (
-		qRes   = QueryResult[T]{Data: make([]T, 0, preAlloc)}
-		qBloom = bloom.New32(qTagIDs.Data(), bloomFilterK)
-	)
+	dst.Reset()
+
+	qBloom := bloom.New32(qTagIDs.Data(), bloomFilterK)
 	for _, me := range mti.data {
 		if me.isDeleted {
 			continue
@@ -76,13 +71,13 @@ func (mti *memTagIdx[T]) Query(tags []string, limit int) (QueryResult[T], error)
 		if !me.tagIDs.HasSubset(qTagIDs) {
 			continue
 		}
-		qRes.TotalCount++
-		if limit > 0 && len(qRes.Data) == limit {
+		dst.TotalCount++
+		if limit > 0 && len(dst.Data) == limit {
 			continue
 		}
-		qRes.Data = append(qRes.Data, me.entry)
+		dst.Data = append(dst.Data, me.entry)
 	}
-	return qRes, nil
+	return nil
 }
 
 func (mti *memTagIdx[T]) Put(e ...T) {

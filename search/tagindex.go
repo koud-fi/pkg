@@ -17,6 +17,11 @@ type QueryResult[T any] struct {
 	TotalCount int
 }
 
+func (qr *QueryResult[_]) Reset() {
+	qr.Data = qr.Data[:0]
+	qr.TotalCount = 0
+}
+
 func (qr QueryResult[T]) Page(cursor string, limit int) ([]T, string) {
 	const cursorBase = 36
 	var (
@@ -51,7 +56,7 @@ type TagInfo struct {
 
 type TagIndex[T Entry] interface {
 	Get(id ...string) ([]T, error)
-	Query(tags []string, limit int) (QueryResult[T], error)
+	Query(dst *QueryResult[T], tags []string, limit int) error
 	Put(e ...T)
 	Commit() error
 	Tags(prefix string) ([]TagInfo, error)

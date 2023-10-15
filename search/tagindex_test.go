@@ -28,8 +28,11 @@ func TestTagIndex(t *testing.T) {
 	idx.Put(testEntry{"2", []string{"a", "b", "c"}, 3})
 	idx.Put(testEntry{"3", []string{"b", "c"}, 2})
 
-	t.Log(idx.Query([]string{"a"}, 10))
-	t.Log(idx.Query([]string{"b"}, 10))
+	var res search.QueryResult[testEntry]
+	t.Log(idx.Query(&res, []string{"a"}, 10))
+	t.Log(res)
+	t.Log(idx.Query(&res, []string{"b"}, 10))
+	t.Log(res)
 
 	t.Log(idx.Get("0", "1", "2"))
 }

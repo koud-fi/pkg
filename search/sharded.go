@@ -63,24 +63,24 @@ func (sti ShardedTagIndex[T]) Get(id ...string) ([]T, error) {
 	return out, nil
 }
 
-func (sti ShardedTagIndex[T]) Query(tags []string, limit int) (QueryResult[T], error) {
+func (sti ShardedTagIndex[T]) Query(dst *QueryResult[T], tags []string, limit int) error {
+	dst.Reset()
 
 	// this implementation is an extremely naive proof of concept
 
-	var res QueryResult[T]
 	for _, i := range sti.queryOrder {
 		shard := sti.shards[i]
 		if err := shard.Commit(); err != nil {
-			return res, err
+			return err
 		}
-		subRes, err := shard.Query(tags, limit)
-		if err != nil {
-			return res, err
+		var res QueryResult[T]
+		if err := shard.Query(&res, tags, limit); err != nil {
+			return err
 		}
-		res.Data = append(res.Data, subRes.Data...)
-		res.TotalCount += subRes.TotalCount
+		dst.Data = append(dst.Data, res.Data...)
+		dst.TotalCount += res.TotalCount
 	}
-	return res, nil
+	return nil
 }
 
 func (sti ShardedTagIndex[T]) Put(e ...T) {
