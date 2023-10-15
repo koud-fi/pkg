@@ -69,12 +69,14 @@ func (sti ShardedTagIndex[T]) Get(id ...string) ([]T, error) {
 func (sti ShardedTagIndex[T]) Query(dst *QueryResult[T], tags []string, limit int) error {
 	dst.Reset()
 
+	// TODO: stop if total limit is reached
+	// TODO: do another pass if total limit is not reached and shards hit their individual limits
+
 	preAlloc := limit/8 + 1
 	if cap(dst.Data) < preAlloc/2 {
 		dst.Data = append(dst.Data, make([]T, 0, preAlloc-cap(dst.Data))...)
 	}
-
-	// this implementation is an extremely naive proof of concept
+	subLimit := limit / len(sti.shards) * 4
 
 	for _, i := range sti.queryOrder {
 		shard := sti.shards[i]
@@ -83,7 +85,7 @@ func (sti ShardedTagIndex[T]) Query(dst *QueryResult[T], tags []string, limit in
 		}
 		var (
 			res = sti.resPool.Get().(*QueryResult[T])
-			err = shard.Query(res, tags, limit)
+			err = shard.Query(res, tags, subLimit)
 		)
 		dst.Data = append(dst.Data, res.Data...)
 		dst.TotalCount += res.TotalCount
