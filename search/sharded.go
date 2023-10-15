@@ -71,6 +71,7 @@ func (sti ShardedTagIndex[T]) Query(dst *QueryResult[T], tags []string, limit in
 
 	// TODO: stop if total limit is reached
 	// TODO: do another pass if total limit is not reached and shards hit their individual limits
+	// TODO: do some form of magic for better ordering, don't blindly sort to retain seed variance
 
 	preAlloc := limit/8 + 1
 	if cap(dst.Data) < preAlloc/2 {
