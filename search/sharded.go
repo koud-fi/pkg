@@ -69,7 +69,6 @@ func (sti ShardedTagIndex[T]) Get(id ...string) ([]T, error) {
 func (sti ShardedTagIndex[T]) Query(dst *QueryResult[T], tags []string, limit int) error {
 	dst.Reset()
 
-	// TODO: stop if total limit is reached
 	// TODO: do another pass if total limit is not reached and shards hit their individual limits
 	// TODO: do some form of magic for better ordering, don't blindly sort to retain seed variance
 
@@ -83,6 +82,9 @@ func (sti ShardedTagIndex[T]) Query(dst *QueryResult[T], tags []string, limit in
 		shard := sti.shards[i]
 		if err := shard.Commit(); err != nil {
 			return err
+		}
+		if len(dst.Data)+subLimit > limit {
+			subLimit = max(0, limit-len(dst.Data))
 		}
 		var (
 			res = sti.resPool.Get().(*QueryResult[T])

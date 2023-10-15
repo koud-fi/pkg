@@ -59,6 +59,7 @@ func (mti *memTagIdx[T]) Query(dst *QueryResult[T], tags []string, limit int) er
 		return nil
 	}
 	dst.Reset()
+	limit = max(0, limit)
 
 	qBloom := bloom.New32(qTagIDs.Data(), bloomFilterK)
 	for _, me := range mti.data {
@@ -72,7 +73,7 @@ func (mti *memTagIdx[T]) Query(dst *QueryResult[T], tags []string, limit int) er
 			continue
 		}
 		dst.TotalCount++
-		if limit > 0 && len(dst.Data) == limit {
+		if len(dst.Data) == limit {
 			continue
 		}
 		dst.Data = append(dst.Data, me.entry)
