@@ -8,18 +8,18 @@ import (
 
 type store struct {
 	locker
-	Data map[grf.NodeType]nodeList `json:"data"`
+	Data map[grf.NodeType]nodeList
 }
 
 type nodeList struct {
-	LastInsertID grf.LocalID `json:"lastInsertId,omitempty"`
-	Nodes        []node      `json:"nodes"`
+	LastInsertID grf.LocalID
+	Nodes        []node
 }
 
 type node struct {
 	grf.NodeData
-	Edges     map[grf.EdgeType][]grf.EdgeData `json:"edges"`
-	IsDeleted bool                            `json:"isDeleted,omitempty"`
+	Edges     map[grf.EdgeType][]grf.EdgeData
+	IsDeleted bool
 }
 
 func NewStore() grf.Store {

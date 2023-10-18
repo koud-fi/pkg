@@ -11,8 +11,8 @@ import (
 )
 
 type TestData struct {
-	ID    string `json:"id"`
-	Value int    `json:"value"`
+	ID    string
+	Value int
 }
 
 func TestBlobsTable(t *testing.T) {

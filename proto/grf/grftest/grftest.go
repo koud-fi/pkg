@@ -13,7 +13,7 @@ type setter interface {
 }
 
 type intSlice struct {
-	Data []int `json:"data"`
+	Data []int
 }
 
 func (s intSlice) set(i, n int) {

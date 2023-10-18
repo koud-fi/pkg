@@ -4,7 +4,7 @@ import "github.com/koud-fi/pkg/proto/grf"
 
 type mapper struct {
 	locker
-	Data map[grf.NodeType]map[string]grf.ID `json:"data"`
+	Data map[grf.NodeType]map[string]grf.ID
 }
 
 func NewMapper() grf.Mapper {

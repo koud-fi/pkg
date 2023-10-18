@@ -16,8 +16,8 @@ type Edge[T any] struct {
 type EdgeType string
 
 type EdgeInfo struct {
-	Count   int   `json:"count"`
-	Version int64 `json:"version"`
+	Count   int
+	Version int64
 }
 
 func (e Edge[T]) String() string {

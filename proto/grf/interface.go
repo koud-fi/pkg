@@ -1,19 +1,19 @@
 package grf
 
 type NodeData struct {
-	ID      LocalID `json:"id"`
-	Data    []byte  `json:"data"`
-	Version int64   `json:"version"`
+	ID      LocalID
+	Data    []byte
+	Version int64
 }
 
 type LocalID int32
 
 type EdgeData struct {
-	From     LocalID    `json:"from"`
-	TypeID   EdgeTypeID `json:"typeId"`
-	To       ID         `json:"to"`
-	Sequence int64      `json:"seq,omitempty"`
-	Data     []byte     `json:"data,omitempty"`
+	From     LocalID
+	TypeID   EdgeTypeID
+	To       ID
+	Sequence int64
+	Data     []byte
 }
 
 type EdgeTypeID int32
