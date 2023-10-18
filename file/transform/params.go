@@ -8,32 +8,56 @@ import (
 	"github.com/koud-fi/pkg/file"
 )
 
-var (
-	paramsParser = regexp.MustCompile("([a-zA-Z]*)([0-9]*)*")
-	paramKeys    = []string{"", "x", "t"}
-)
+var paramsParser = regexp.MustCompile("([a-zA-Z]*)([0-9]*)*")
 
-type Params map[string]int
+type Params struct {
+	Width       int
+	Height      int
+	AtTimestamp float64
+}
 
 func ParseParams(params string) (Params, error) {
-	var (
-		grps = paramsParser.FindAllStringSubmatch(params, -1)
-		p    = make(Params, len(grps))
-	)
+	var p Params
+	err := processParams(params, func(key, value string) (err error) {
+		switch key {
+		case "":
+			p.Width, err = strconv.Atoi(value)
+		case "x":
+			p.Height, err = strconv.Atoi(value)
+		case "t":
+			p.AtTimestamp, err = strconv.ParseFloat(value, 64)
+		}
+		return
+	})
+	return p, err
+}
+
+func processParams(params string, process func(key, value string) error) error {
+	grps := paramsParser.FindAllStringSubmatch(params, -1)
 	for _, g := range grps {
 		switch len(g) {
 		case 0, 1:
 		case 2:
-			if v, err := strconv.Atoi(g[1]); err == nil {
-				p[""] = v
-			}
-			p[g[1]] = 0
+			process("", g[1])
 		default:
-			v, _ := strconv.Atoi(g[2])
-			p[g[1]] = v
+			process(g[1], g[2])
 		}
 	}
-	return p, nil
+	return nil
+}
+
+func (p Params) String() string {
+	var sb strings.Builder
+	if p.Width > 0 {
+		sb.WriteString(strconv.Itoa(p.Width))
+	}
+	if p.Height > 0 {
+		sb.WriteString("x" + strconv.Itoa(p.Height))
+	}
+	if p.AtTimestamp > 0 {
+		sb.WriteString("t" + strconv.FormatFloat(p.AtTimestamp, 'f', -1, 64))
+	}
+	return sb.String()
 }
 
 func StdImagePreviewParamsList(attrs file.MediaAttributes) []Params {
@@ -58,28 +82,7 @@ func StdImagePreviewParamsList(attrs file.MediaAttributes) []Params {
 	}
 	ps := make([]Params, 0, len(ws))
 	for _, w := range ws {
-		ps = append(ps, Params{"": w, "x": 0})
+		ps = append(ps, Params{Width: w})
 	}
 	return ps
-}
-
-func (p Params) String() string {
-	var (
-		sb    strings.Builder
-		lastV *int
-	)
-	for _, k := range paramKeys {
-		v, ok := p[k]
-		if !ok {
-			continue
-		}
-		sb.WriteString(k)
-		if v > 0 {
-			sb.WriteString(strconv.Itoa(v))
-		} else if lastV != nil && *lastV == 0 {
-			sb.WriteString("_")
-		}
-		lastV = &v
-	}
-	return sb.String()
 }
