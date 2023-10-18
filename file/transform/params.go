@@ -13,7 +13,7 @@ var paramsParser = regexp.MustCompile("([a-zA-Z]*)([0-9]*)*")
 type Params struct {
 	Width       int
 	Height      int
-	AtTimestamp float64
+	AtTimestamp int
 }
 
 func ParseParams(params string) (Params, error) {
@@ -25,7 +25,7 @@ func ParseParams(params string) (Params, error) {
 		case "x":
 			p.Height, err = strconv.Atoi(value)
 		case "t":
-			p.AtTimestamp, err = strconv.ParseFloat(value, 64)
+			p.AtTimestamp, err = strconv.Atoi(value)
 		}
 		return
 	})
@@ -55,7 +55,7 @@ func (p Params) String() string {
 		sb.WriteString("x" + strconv.Itoa(p.Height))
 	}
 	if p.AtTimestamp > 0 {
-		sb.WriteString("t" + strconv.FormatFloat(p.AtTimestamp, 'f', -1, 64))
+		sb.WriteString("t" + strconv.Itoa(p.AtTimestamp))
 	}
 	return sb.String()
 }

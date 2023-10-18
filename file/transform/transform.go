@@ -85,21 +85,19 @@ func toImage(src string, p Params) (io.ReadCloser, error) {
 		return nil, errors.New("non-local blobs not supported")
 	}
 	var (
-		args   []any
-		w, wOk = p[""]
-		h, hOk = p["x"]
-		s      string
+		args []any
+		s    string
 	)
-	if !hOk || (w > 0 && h > 0) {
+	if p.Width > 0 && p.Height > 0 {
 		args = []any{"--smartcrop", "attention"}
 	}
-	if wOk && w > 0 {
-		s = strconv.Itoa(w)
+	if p.Width > 0 {
+		s = strconv.Itoa(p.Width)
 	}
-	if hOk {
+	if p.Height >= 0 {
 		s += "x"
-		if h > 0 {
-			s += strconv.Itoa(h)
+		if p.Height > 0 {
+			s += strconv.Itoa(p.Height)
 		}
 	}
 	if s != "" {
@@ -116,7 +114,7 @@ func videoToImage(src string, p Params) (io.ReadCloser, error) {
 		return nil, errors.New("non-local blobs not supported")
 	}
 	args := []any{"-hide_banner", "-v", "fatal"}
-	if seek := p["t"]; seek > 0 {
+	if seek := p.AtTimestamp; seek > 0 {
 		var (
 			t  = time.Duration(seek) * time.Second
 			ts = fmt.Sprintf("%02d:%02d:%02d", int(t.Hours()), int(t.Minutes()), int(t.Seconds()))
@@ -126,17 +124,13 @@ func videoToImage(src string, p Params) (io.ReadCloser, error) {
 		args = append(args, "-ss", "00:00:00")
 	}
 	args = append(args, "-i", src, "-vframes", "1", "-q:v", "5")
-	var (
-		w, _ = p[""]
-		h, _ = p["x"]
-	)
 	switch {
-	case w > 0 && h > 0:
-		args = append(args, "-vf", fmt.Sprintf("crop=%d:%d", w, h))
-	case w > 0:
-		args = append(args, "-vf", fmt.Sprintf("scale=%d:-1", w))
-	case h > 0:
-		args = append(args, "-vf", fmt.Sprintf("scale=-1:%d", h))
+	case p.Width > 0 && p.Height > 0:
+		args = append(args, "-vf", fmt.Sprintf("crop=%d:%d", p.Width, p.Height))
+	case p.Width > 0:
+		args = append(args, "-vf", fmt.Sprintf("scale=%d:-1", p.Width))
+	case p.Height > 0:
+		args = append(args, "-vf", fmt.Sprintf("scale=-1:%d", p.Height))
 	}
 	return shell.Run(context.TODO(), "ffmpeg", append(args, "-f", "mjpeg", "-")...).Open()
 }
