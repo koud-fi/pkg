@@ -30,7 +30,7 @@ func TestToImage(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		for _, params := range transform.StdImagePreviewParamsList(attrs.MediaAttributes) {
+		for params := range transform.StdImagePreviewParamsList(attrs.MediaAttributes) {
 			var (
 				outPath = filepath.Join("temp", fmt.Sprintf("%s.%s.jpg", d.Name(), params))
 				out     = transform.ToImage(in, params)

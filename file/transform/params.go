@@ -60,7 +60,7 @@ func (p Params) String() string {
 	return sb.String()
 }
 
-func StdImagePreviewParamsList(attrs file.MediaAttributes) []Params {
+func StdImagePreviewParamsList(attrs file.MediaAttributes) map[Params]file.MediaAttributes {
 	if attrs.Width < 300/0.8 {
 		return nil
 	}
@@ -84,9 +84,13 @@ func StdImagePreviewParamsList(attrs file.MediaAttributes) []Params {
 	for _, w := range ws {
 		ps = append(ps, Params{Width: w})
 	}
-	for i := range ps {
-		mod := float64(ps[i].Width) / float64(attrs.Width)
-		ps[i].Height = int(float64(attrs.Height) * mod)
+	out := make(map[Params]file.MediaAttributes, len(ps))
+	for _, p := range ps {
+		mod := float64(p.Width) / float64(attrs.Width)
+		out[p] = file.MediaAttributes{
+			Width:  p.Width,
+			Height: int(float64(attrs.Height) * mod),
+		}
 	}
-	return ps
+	return out
 }
