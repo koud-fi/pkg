@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"image"
+	"image/jpeg"
 	"io"
 
 	"github.com/koud-fi/pkg/blob"
@@ -23,6 +25,7 @@ var rafMagic = []byte("FUJIFILMCCD-RAW ")
 
 type RAF struct {
 	Header      RAFHeader
+	JPEGConfig  image.Config
 	JPEG        []byte
 	MetaHeader  RAFMetaHeader
 	MetaRecords []RAFMetaRecord
@@ -91,8 +94,12 @@ func DecodeRAF(b blob.Blob) (raf RAF, _ error) {
 	if raf.JPEG, err = readRAFData(buf, raf.Header.Dir.JPEG); err != nil {
 		return raf, fmt.Errorf("read jpg: %w", err)
 	}
+	if raf.JPEGConfig, err = jpeg.DecodeConfig(bytes.NewReader(raf.JPEG)); err != nil {
+		return raf, fmt.Errorf("decode jpg config: %w", err)
+	}
 
-	// TODO: extract exif data from JPEG
+	// TODO: extract exif data from the JPEG
+
 	// TODO: parse metadata records
 
 	if raf.CFA, err = readRAFData(buf, raf.Header.Dir.CFA); err != nil {
