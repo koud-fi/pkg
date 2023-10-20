@@ -22,6 +22,8 @@ import (
 )
 
 var (
+	DefaultImageOutputExt = ".jpg"
+
 	defaultImageOnce sync.Once
 	defaultImage     []byte
 )
@@ -103,7 +105,8 @@ func toImage(src string, p Params) (io.ReadCloser, error) {
 	if s != "" {
 		args = append(args, "--size", s)
 	}
-	return shell.Run(context.TODO(), "vipsthumbnail", append(args, src, "-o", ".jpg")...).Open()
+	out := DefaultImageOutputExt
+	return shell.Run(context.TODO(), "vipsthumbnail", append(args, src, "-o", out)...).Open()
 }
 
 func videoToImage(src string, p Params) (io.ReadCloser, error) {
