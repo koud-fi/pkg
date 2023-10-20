@@ -84,5 +84,9 @@ func StdImagePreviewParamsList(attrs file.MediaAttributes) []Params {
 	for _, w := range ws {
 		ps = append(ps, Params{Width: w})
 	}
+	for i := range ps {
+		mod := float64(ps[i].Width) / float64(attrs.Width)
+		ps[i].Height = int(float64(attrs.Height) * mod)
+	}
 	return ps
 }
