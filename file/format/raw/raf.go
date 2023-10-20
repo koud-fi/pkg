@@ -14,6 +14,8 @@ import (
 // based on https://libopenraw.freedesktop.org/formats/raf/
 
 const (
+	RAFMime = "image/x-fuji-raf"
+
 	RAFMetaSensorDimensions      RAFMetaTag = 0x100
 	RAFMetaActiveAreaTopLeft     RAFMetaTag = 0x110
 	RAFMetaActiveAreaHeightWidth RAFMetaTag = 0x111
