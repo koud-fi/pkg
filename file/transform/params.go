@@ -60,7 +60,7 @@ func (p Params) String() string {
 	return sb.String()
 }
 
-func StdImagePreviewParamsList(attrs file.MediaAttributes) map[Params]file.MediaAttributes {
+func StdImagePreviewParams(attrs file.MediaAttributes) map[Params]file.MediaAttributes {
 	if attrs.Width < 300/0.8 {
 		return nil
 	}
