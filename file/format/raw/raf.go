@@ -90,8 +90,10 @@ func DecodeRAF(b blob.Blob) (raf RAF, _ error) {
 
 	// TODO: extract exif data from JPEG
 	// TODO: parse metadata records
-	// TODO: read CFA data
 
+	if raf.CFA, err = readRAFData(buf, raf.Header.Dir.CFA); err != nil {
+		return raf, fmt.Errorf("read cfa: %w", err)
+	}
 	return
 }
 
