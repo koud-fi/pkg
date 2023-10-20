@@ -12,7 +12,11 @@ import (
 // based on https://libopenraw.freedesktop.org/formats/raf/
 
 const (
-	RAFMetaSensorDimensions RAFMetaTag = 0x100
+	RAFMetaSensorDimensions      RAFMetaTag = 0x100
+	RAFMetaActiveAreaTopLeft     RAFMetaTag = 0x110
+	RAFMetaActiveAreaHeightWidth RAFMetaTag = 0x111
+	RAFMetaOutputHeightWidth     RAFMetaTag = 0x121
+	RAFMetaRawInfo               RAFMetaTag = 0x130
 )
 
 var rafMagic = []byte("FUJIFILMCCD-RAW ")
