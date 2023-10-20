@@ -7,6 +7,7 @@ import (
 	"image"
 	"image/jpeg"
 	"io"
+	"mime"
 
 	"github.com/koud-fi/pkg/blob"
 )
@@ -14,6 +15,7 @@ import (
 // based on https://libopenraw.freedesktop.org/formats/raf/
 
 const (
+	RAFExt  = ".raf"
 	RAFMime = "image/x-fuji-raf"
 
 	RAFMetaSensorDimensions      RAFMetaTag = 0x100
@@ -24,6 +26,10 @@ const (
 )
 
 var rafMagic = []byte("FUJIFILMCCD-RAW ")
+
+func init() {
+	mime.AddExtensionType(RAFExt, RAFMime)
+}
 
 type RAF struct {
 	Header      RAFHeader

@@ -7,13 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-
-	"github.com/koud-fi/pkg/file/format/raw"
 )
-
-func init() {
-	mime.AddExtensionType(".raf", raw.RAFMime)
-}
 
 func resolveContentType(br *bufio.Reader, info os.FileInfo) (string, error) {
 	if info != nil {
