@@ -52,6 +52,9 @@ func MediaAttrs() Option {
 		case raw.RAFMime:
 			return resolveRAFAttrs(&a.MediaAttributes, b)
 		}
+
+		// TODO: more raw image formats
+
 		return nil
 	}
 }
@@ -92,9 +95,12 @@ func resolveGIFAttrs(a *MediaAttributes, b blob.Blob) error {
 }
 
 func resolveRAFAttrs(a *MediaAttributes, b blob.Blob) error {
-
-	// TODO
-
+	raf, err := raw.DecodeRAF(b)
+	if err != nil {
+		return err
+	}
+	a.Width = raf.JPEGConfig.Width
+	a.Height = raf.JPEGConfig.Height
 	return nil
 }
 
