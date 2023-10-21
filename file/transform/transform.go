@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/koud-fi/pkg/blob"
+	"github.com/koud-fi/pkg/file/format/raw"
 	"github.com/koud-fi/pkg/shell"
 )
 
@@ -50,7 +51,12 @@ func ToImage(b blob.Blob, p Params, opt ...Option) blob.Blob {
 		}
 		switch strings.SplitN(contentType, "/", 2)[0] {
 		case "image":
-			return toImage(src, p)
+			switch contentType {
+			case raw.RAFMime:
+				return rafToImage(src, p)
+			default:
+				return toImage(src, p)
+			}
 		case "video":
 			return videoToImage(src, p)
 		default:
@@ -107,6 +113,13 @@ func toImage(src string, p Params) (io.ReadCloser, error) {
 	}
 	out := DefaultImageOutputExt
 	return shell.Run(context.TODO(), "vipsthumbnail", append(args, src, "-o", out)...).Open()
+}
+
+func rafToImage(src string, p Params) (io.ReadCloser, error) {
+
+	// TODO
+
+	return nil, errors.New("rafToImage: not implemented")
 }
 
 func videoToImage(src string, p Params) (io.ReadCloser, error) {
