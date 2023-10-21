@@ -2,8 +2,6 @@ package blobcache
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"io"
 	"os"
@@ -29,11 +27,7 @@ func New(s blob.SortedStorage) *Cache {
 
 func (c *Cache) Resolve(ctx context.Context, key string, b blob.Blob) blob.Blob {
 	return blob.Func(func() (io.ReadCloser, error) {
-		var (
-			digest = sha256.Sum256([]byte(key))
-			key    = hex.EncodeToString(digest[:])
-			out    io.ReadCloser
-		)
+		var out io.ReadCloser
 		if err := c.Cache.Resolve(ctx, key, func() (int64, error) {
 			rc, err := b.Open()
 			if err != nil {
