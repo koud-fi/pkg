@@ -78,7 +78,7 @@ func srcAndType(b blob.Blob, contentType string) (path, typ string, err error) {
 	if f, ok := rc.(*os.File); ok {
 		path, _ = filepath.Abs(f.Name())
 	}
-	if contentType == "" {
+	if typ = contentType; typ == "" {
 		peek, _ := bufio.NewReaderSize(rc, 512).Peek(512)
 		typ = http.DetectContentType(peek)
 	}
