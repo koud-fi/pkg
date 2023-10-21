@@ -69,6 +69,7 @@ func Run(ctx context.Context, cmd string, args ...any) blob.Blob {
 				switch err := err.(type) {
 				case *exec.ExitError:
 					msg, _ := errBuf.ReadString('\n')
+					//msg := errBuf.String()
 
 					// TODO: support multi-line error output
 
