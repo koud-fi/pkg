@@ -111,10 +111,15 @@ func toImage(b blob.Blob, p Params) (io.ReadCloser, error) {
 }
 
 func rafToImage(b blob.Blob, p Params) (io.ReadCloser, error) {
-
-	// TODO
-
-	return nil, errors.New("rafToImage: not implemented")
+	raf, err := raw.DecodeRAF(b)
+	if err != nil {
+		return nil, err
+	}
+	jpegData, err := raf.JPEG(b)
+	if err != nil {
+		return nil, err
+	}
+	return toImage(blob.FromBytes(jpegData), p)
 }
 
 func videoToImage(src string, p Params) (io.ReadCloser, error) {
