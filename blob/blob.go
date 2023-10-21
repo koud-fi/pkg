@@ -66,6 +66,32 @@ func Bytes(b Blob) ([]byte, error) {
 	return io.ReadAll(rc)
 }
 
+func ReadAt(p []byte, b Blob, n int64) (int, error) {
+	rc, err := b.Open()
+	if err != nil {
+		return 0, err
+	}
+	defer rc.Close()
+
+	switch r := rc.(type) {
+	case io.ReaderAt:
+		return r.ReadAt(p, n)
+
+	case io.ReadSeeker:
+		if _, err := r.Seek(n, io.SeekStart); err != nil {
+			return 0, err
+		}
+		return r.Read(p)
+
+	default:
+		br := bufio.NewReader(r)
+		if _, err := br.Discard(int(n)); err != nil {
+			return 0, err
+		}
+		return br.Read(p)
+	}
+}
+
 func Peek(b Blob, n int) ([]byte, error) {
 	rc, err := b.Open()
 	if err != nil {
