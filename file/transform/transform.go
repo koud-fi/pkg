@@ -53,9 +53,9 @@ func ToImage(b blob.Blob, p Params, opt ...Option) blob.Blob {
 		case "image":
 			switch contentType {
 			case raw.RAFMime:
-				return rafToImage(src, p)
+				return rafToImage(b, p)
 			default:
-				return toImage(src, p)
+				return toImage(b, p)
 			}
 		case "video":
 			return videoToImage(src, p)
@@ -68,13 +68,13 @@ func ToImage(b blob.Blob, p Params, opt ...Option) blob.Blob {
 	})
 }
 
-func srcAndType(b blob.Blob, contentType string) (path, typ string, err error) {
-	var rc io.ReadCloser
-	if rc, err = b.Open(); err != nil {
-		return
+func srcAndType(
+	b blob.Blob, contentType string,
+) (path, typ string, _ error) {
+	rc, err := b.Open()
+	if err != nil {
+		return "", "", err
 	}
-	defer rc.Close()
-
 	if f, ok := rc.(*os.File); ok {
 		path, _ = filepath.Abs(f.Name())
 	}
@@ -85,13 +85,7 @@ func srcAndType(b blob.Blob, contentType string) (path, typ string, err error) {
 	return
 }
 
-func toImage(src string, p Params) (io.ReadCloser, error) {
-	if src == "" {
-
-		// TODO: native implementation
-
-		return nil, errors.New("non-local blobs not supported")
-	}
+func toImage(b blob.Blob, p Params) (io.ReadCloser, error) {
 	var (
 		args []any
 		s    string
@@ -111,11 +105,12 @@ func toImage(src string, p Params) (io.ReadCloser, error) {
 	if s != "" {
 		args = append(args, "--size", s)
 	}
-	out := DefaultImageOutputExt
-	return shell.Run(context.TODO(), "vipsthumbnail", append(args, src, "-o", out)...).Open()
+	args = append(args, "-o", DefaultImageOutputExt) // output
+	args = append(args, "stdin", b)                  // input
+	return shell.Run(context.TODO(), "vipsthumbnail", args...).Open()
 }
 
-func rafToImage(src string, p Params) (io.ReadCloser, error) {
+func rafToImage(b blob.Blob, p Params) (io.ReadCloser, error) {
 
 	// TODO
 
