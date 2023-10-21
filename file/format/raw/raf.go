@@ -7,7 +7,6 @@ import (
 	"image"
 	"image/jpeg"
 	"io"
-	"mime"
 
 	"github.com/koud-fi/pkg/blob"
 )
@@ -26,10 +25,6 @@ const (
 )
 
 var rafMagic = []byte("FUJIFILMCCD-RAW ")
-
-func init() {
-	mime.AddExtensionType(RAFExt, RAFMime)
-}
 
 type RAF struct {
 	Header      RAFHeader
