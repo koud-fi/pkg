@@ -70,7 +70,6 @@ func DecodeRAF(b blob.Blob) (raf RAF, _ error) {
 		return raf, fmt.Errorf("open: %w", err)
 	}
 	type bufType interface {
-		io.Reader
 		io.ReadSeeker
 		io.ReaderAt
 	}
