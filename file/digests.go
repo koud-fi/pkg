@@ -7,6 +7,8 @@ import (
 	"github.com/koud-fi/pkg/blob"
 )
 
+// TODO: support custom hash functions
+
 func Digests(h ...crypto.Hash) Option {
 	return func(a *Attributes, b blob.Blob, contentType string) error {
 		if a.IsDir {
