@@ -29,10 +29,8 @@ var rafMagic = []byte("FUJIFILMCCD-RAW ")
 type RAF struct {
 	Header      RAFHeader
 	JPEGConfig  image.Config
-	JPEG        []byte
 	MetaHeader  RAFMetaHeader
 	MetaRecords []RAFMetaRecord
-	CFA         []byte
 }
 
 type RAFHeader struct {
@@ -73,6 +71,7 @@ func DecodeRAF(b blob.Blob) (raf RAF, _ error) {
 	}
 	type bufType interface {
 		io.Reader
+		io.ReadSeeker
 		io.ReaderAt
 	}
 	var buf bufType
@@ -94,10 +93,10 @@ func DecodeRAF(b blob.Blob) (raf RAF, _ error) {
 	if !bytes.Equal(raf.Header.Magic[:], rafMagic) {
 		return raf, fmt.Errorf("bad magic: %s", string(raf.Header.Magic[:]))
 	}
-	if raf.JPEG, err = readRAFData(buf, raf.Header.Dir.JPEG); err != nil {
-		return raf, fmt.Errorf("read jpg: %w", err)
+	if _, err := buf.Seek(int64(raf.Header.Dir.JPEG.Offset), io.SeekStart); err != nil {
+		return raf, fmt.Errorf("seek jpg offset: %w", err)
 	}
-	if raf.JPEGConfig, err = jpeg.DecodeConfig(bytes.NewReader(raf.JPEG)); err != nil {
+	if raf.JPEGConfig, err = jpeg.DecodeConfig(buf); err != nil {
 		return raf, fmt.Errorf("decode jpg config: %w", err)
 	}
 
@@ -105,14 +104,19 @@ func DecodeRAF(b blob.Blob) (raf RAF, _ error) {
 
 	// TODO: parse metadata records
 
-	if raf.CFA, err = readRAFData(buf, raf.Header.Dir.CFA); err != nil {
-		return raf, fmt.Errorf("read cfa: %w", err)
-	}
 	return
 }
 
-func readRAFData(buf io.ReaderAt, ro RAFOffset) ([]byte, error) {
+func (raf RAF) JPEG(b blob.Blob) ([]byte, error) {
+	return readRAFData(b, raf.Header.Dir.JPEG)
+}
+
+func (raf RAF) CAF(b blob.Blob) ([]byte, error) {
+	return readRAFData(b, raf.Header.Dir.JPEG)
+}
+
+func readRAFData(b blob.Blob, ro RAFOffset) ([]byte, error) {
 	data := make([]byte, ro.Len)
-	_, err := buf.ReadAt(data, int64(ro.Offset))
+	_, err := blob.ReadAt(data, b, int64(ro.Offset))
 	return data, err
 }

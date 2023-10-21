@@ -14,6 +14,7 @@ import (
 	_ "golang.org/x/image/webp"
 
 	"github.com/koud-fi/pkg/blob"
+	"github.com/koud-fi/pkg/file/format/raw"
 	"github.com/koud-fi/pkg/shell"
 )
 
@@ -45,10 +46,12 @@ func MediaAttrs() Option {
 			return resolveGIFAttrs(&a.MediaAttributes, b)
 		case "video/mp4", "video/webm":
 			return resolveVideoAttrs(&a.MediaAttributes, b)
-		}
 
 		// TODO: common audio formats
 
+		case raw.RAFMime:
+			return resolveRAFAttrs(&a.MediaAttributes, b)
+		}
 		return nil
 	}
 }
@@ -86,6 +89,13 @@ func resolveGIFAttrs(a *MediaAttributes, b blob.Blob) error {
 		a.FrameCount = len(g.Image)
 		return nil
 	})
+}
+
+func resolveRAFAttrs(a *MediaAttributes, b blob.Blob) error {
+
+	// TODO
+
+	return nil
 }
 
 func resolveVideoAttrs(a *MediaAttributes, b blob.Blob) error {
