@@ -1,5 +1,5 @@
 github.com/koud-fi/pkg/blob v0.0.0-20220328032554-b7ddd59d6b22 h1:6zgmx4r+h1lYJSRmqEC82SDEQR96hzYeXfpsP5Np8Hc=
 github.com/koud-fi/pkg/blob v0.0.0-20220328032554-b7ddd59d6b22/go.mod h1:xwDSe3gb9+vdmjuVnpRlPW1TA2gJhkt7oDs9s9vLtYo=
-golang.org/x/crypto v0.14.0 h1:wBqGXzWJW6m1XrIKlAH0Hs1JJ7+9KBwnIO8v66Q9cHc=
-golang.org/x/net v0.16.0 h1:7eBu7KsSvFDtSXUIDbh3aqlK4DPsZ1rByC8PFfBThos=
-golang.org/x/text v0.13.0 h1:ablQoSUd0tRdKxZewP80B+BaqeKJuVhuRxj/dkrun3k=
+golang.org/x/crypto v0.15.0 h1:frVn1TEaCEaZcn3Tmd7Y2b5KKPaZ+I32Q2OA3kYp5TA=
+golang.org/x/net v0.18.0 h1:mIYleuAkSbHh0tCv7RvjL3F6ZVbLjq4+R7zbOn3Kokg=
+golang.org/x/text v0.14.0 h1:ScX5w1eTa3QqT8oi6+ziP7dTV1S2+ALU0bI+0zXKWiQ=
