@@ -3,6 +3,7 @@ package fetch
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -106,6 +107,12 @@ func (r Request) User(u *url.Userinfo) *Request {
 func (r Request) Body(b blob.Blob, mime string) *Request {
 	r.body = b
 	r.bodyMime = mime
+	return &r
+}
+
+func (r Request) JSON(v any) *Request {
+	r.body = blob.Marshal(json.Marshal, v)
+	r.bodyMime = "application/json"
 	return &r
 }
 
