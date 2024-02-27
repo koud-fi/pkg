@@ -91,6 +91,10 @@ func (r Request) Authorization(authHeader string) *Request {
 	return r.Header("Authorization", authHeader)
 }
 
+func (r Request) BearerAuth(token string) *Request {
+	return r.Header("Authorization", "Bearer "+token)
+}
+
 func (r Request) BasicAuth(username, password string) *Request {
 	auth := username + ":" + password
 	return r.Authorization("Basic " + base64.StdEncoding.EncodeToString([]byte(auth)))
