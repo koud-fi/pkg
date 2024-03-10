@@ -33,6 +33,11 @@ func (r *Request) Stat() (fs.FileInfo, error) {
 	return &fileInfo{url: req.URL, header: res.Header, dr: r.dirReader}, nil
 }
 
+func (r *Request) Do() (*http.Response, error) {
+	res, _, err := r.do()
+	return res, err
+}
+
 func (r *Request) do() (*http.Response, *http.Request, error) {
 	req, err := r.HttpRequest()
 	if err != nil {
