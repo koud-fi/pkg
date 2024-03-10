@@ -2,4 +2,4 @@ module github.com/koud-fi/pkg/sorted
 
 go 1.18
 
-require golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
+require golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa

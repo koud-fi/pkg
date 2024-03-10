@@ -4,4 +4,4 @@ github.com/koud-fi/pkg/calendar v0.0.0-20220324063507-69e3ed40579e h1:q3oFMKW1rk
 github.com/koud-fi/pkg/calendar v0.0.0-20220324063507-69e3ed40579e/go.mod h1:GL3/a2gZGe8hIkdW5eTXe2PREnAwU+4yS8H5EBl/3ug=
 github.com/koud-fi/pkg/fetch v0.0.0-20220324064510-4720bb485366 h1:vMs6ox+ZglLIkJqBdwsOltqedWmsXBDXJ58VOZF6ZXA=
 github.com/koud-fi/pkg/fetch v0.0.0-20220324064510-4720bb485366/go.mod h1:Rx4uKarQmaevA5LcD4RApYNJZAwDPbCbB99z2/4cbWE=
-golang.org/x/time v0.3.0 h1:rg5rLMjNzMS1RkNLzCG38eapWhnYLFYXDXj2gOlr8j4=
+golang.org/x/time v0.5.0 h1:o7cqy6amK/52YcAKIPlM3a+Fpj35zvRj2TP+e1xFSfk=

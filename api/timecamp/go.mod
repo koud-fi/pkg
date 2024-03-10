@@ -8,4 +8,4 @@ require (
 	github.com/koud-fi/pkg/fetch v0.0.0-20220324064510-4720bb485366
 )
 
-require golang.org/x/time v0.3.0 // indirect
+require golang.org/x/time v0.5.0 // indirect
