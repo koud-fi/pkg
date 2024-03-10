@@ -53,7 +53,7 @@ func (r *Request) do() (*http.Response, *http.Request, error) {
 	return res, req, nil
 }
 
-func processErrorResponse(req *http.Request, res *http.Response) error {
+func processErrorResponse(_ *http.Request, res *http.Response) error {
 	defer res.Body.Close()
 
 	buf, err := io.ReadAll(res.Body)
