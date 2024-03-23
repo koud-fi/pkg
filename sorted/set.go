@@ -48,6 +48,9 @@ func HasSubset[T constraints.Ordered](a, b []T) bool {
 		return false
 	}
 	for i < bl {
+
+		// TODO: use binary search to find the next value?
+
 		if b[i] == a[j] {
 			i++
 		} else if b[i] < a[j] {
