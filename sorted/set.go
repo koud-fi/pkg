@@ -30,6 +30,23 @@ func (a *Set[T]) HasSubset(b *Set[T]) bool {
 	return HasSubset(a.data, b.data)
 }
 
+func (s *Set[T]) clean() {
+	if s.isDirty {
+
+		// TODO: use "generic" sort?
+
+		sort.Slice(s.data, func(i, j int) bool {
+			return s.data[i] < s.data[j]
+		})
+		s.isDirty = false
+	}
+}
+
+func (s *Set[T]) Data() []T {
+	s.clean()
+	return s.data
+}
+
 // HasSubset return true if b is a subset of a.
 // a and b MUST BE sorted in ascending order.
 func HasSubset[T constraints.Ordered](a, b []T) bool {
@@ -60,19 +77,5 @@ func HasSubset[T constraints.Ordered](a, b []T) bool {
 	}
 	return true
 }
-
-func (s *Set[T]) clean() {
-	if s.isDirty {
-
-		// TODO: use "generic" sort?
-
-		sort.Slice(s.data, func(i, j int) bool {
-			return s.data[i] < s.data[j]
-		})
-		s.isDirty = false
-	}
-}
-
-func (s Set[T]) Data() []T { return s.data }
 
 // TODO: common set operations
