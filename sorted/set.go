@@ -26,9 +26,15 @@ func (s *Set[T]) Add(v ...T) {
 func (a *Set[T]) HasSubset(b *Set[T]) bool {
 	a.clean()
 	b.clean()
+
+	return HasSubset(a.data, b.data)
+}
+
+// HasSubset return true if b is a subset of a.
+func HasSubset[T constraints.Ordered](a, b []T) bool {
 	var (
-		al = len(a.data)
-		bl = len(b.data)
+		al = len(a)
+		bl = len(b)
 	)
 	if al == 0 {
 		return bl == 0
@@ -37,13 +43,13 @@ func (a *Set[T]) HasSubset(b *Set[T]) bool {
 		return true
 	}
 	var i, j int
-	if b.data[bl-1] > a.data[al-1] {
+	if b[bl-1] > a[al-1] {
 		return false
 	}
 	for i < bl {
-		if b.data[i] == a.data[j] {
+		if b[i] == a[j] {
 			i++
-		} else if b.data[i] < a.data[j] {
+		} else if b[i] < a[j] {
 			return false
 		}
 		j++
