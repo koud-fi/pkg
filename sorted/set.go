@@ -31,6 +31,7 @@ func (a *Set[T]) HasSubset(b *Set[T]) bool {
 }
 
 // HasSubset return true if b is a subset of a.
+// a and b MUST BE sorted in ascending order.
 func HasSubset[T constraints.Ordered](a, b []T) bool {
 	var (
 		al = len(a)
