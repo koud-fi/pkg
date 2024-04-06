@@ -17,42 +17,45 @@ func Parse(s string) (d Dice) {
 	return
 }
 
-func (t Dice) Roll(mod, advantage int) []int {
-	rolls := make([]int, t.N)
+func (d Dice) Roll(mod, advantage int) Result {
+	rolls := make([]int, d.N)
 	for i := range rolls {
-		rolls[i] = t.Die.Roll(mod, advantage)
+		rolls[i] = d.Die.Roll(mod, advantage)
 	}
-	return rolls
+	return Result{
+		Die:   d.Die,
+		Rolls: rolls,
+	}
 }
 
-func (t Dice) Average(mod int) int {
-	return int(math.Round(float64(t.Max(mod)+t.N) / 2))
+func (d Dice) Average(mod int) int {
+	return int(math.Round(float64(d.Max(mod)+d.N) / 2))
 }
 
-func (t Dice) Max(mod int) int {
+func (d Dice) Max(mod int) int {
 	sum := 0
-	for i := 0; i < t.N; i++ {
-		sum += t.Die.Max(mod)
+	for i := 0; i < d.N; i++ {
+		sum += d.Die.Max(mod)
 	}
 	return sum
 }
 
-func (t Dice) String() string { return fmt.Sprintf(`"%dd%d"`, t.N, t.Die) }
+func (d Dice) String() string { return fmt.Sprintf(`"%dd%d"`, d.N, d.Die) }
 
-func (t Dice) MarshalJSON() ([]byte, error) { return []byte(t.String()), nil }
+func (d Dice) MarshalJSON() ([]byte, error) { return []byte(d.String()), nil }
 
-func (t *Dice) UnmarshalJSON(data []byte) error {
+func (d *Dice) UnmarshalJSON(data []byte) error {
 	parts := strings.Split(strings.Trim(string(data), `"`), "d")
 	if len(parts) == 1 {
 		die, _ := strconv.Atoi(parts[0])
-		t.Die = Die(die)
+		d.Die = Die(die)
 	} else {
-		t.N, _ = strconv.Atoi(parts[0])
+		d.N, _ = strconv.Atoi(parts[0])
 		die, _ := strconv.Atoi(parts[1])
-		t.Die = Die(die)
+		d.Die = Die(die)
 	}
-	if t.N <= 0 {
-		t.N = 1
+	if d.N <= 0 {
+		d.N = 1
 	}
 	return nil
 }

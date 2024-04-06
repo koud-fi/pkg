@@ -18,22 +18,22 @@ const (
 
 type Die int
 
-func (t Die) Roll(mod, advantage int) int {
+func (d Die) Roll(mod, advantage int) int {
 	switch {
 	case advantage < 0:
-		return num.Min((Dice{1 + -advantage, t}.Roll(mod, 0))...)
+		return num.Min((Dice{1 + -advantage, d}.Roll(mod, 0)).Rolls...)
 	case advantage > 0:
-		return num.Max((Dice{1 + advantage, t}.Roll(mod, 0))...)
+		return num.Max((Dice{1 + advantage, d}.Roll(mod, 0)).Rolls...)
 	default:
-		return t.roll(mod)
+		return d.roll(mod)
 	}
 }
 
-func (t Die) roll(mod int) int {
-	if t <= 0 {
-		return t.Max(mod)
+func (d Die) roll(mod int) int {
+	if d <= 0 {
+		return d.Max(mod)
 	}
-	return 1 + rand.Intn(int(t)) + mod
+	return 1 + rand.Intn(int(d)) + mod
 }
 
-func (t Die) Max(mod int) int { return int(t) + mod }
+func (d Die) Max(mod int) int { return int(d) + mod }
