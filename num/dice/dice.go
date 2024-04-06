@@ -12,8 +12,8 @@ type Dice struct {
 	Die Die
 }
 
-func Parse(s string) (d Dice) {
-	d.UnmarshalJSON([]byte(s))
+func Parse(s string) (d Dice, err error) {
+	err = d.UnmarshalJSON([]byte(s))
 	return
 }
 
