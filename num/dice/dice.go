@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+var alias = map[string]Dice{
+	"fireball": {N: 8, Die: D6},
+}
+
 type Dice struct {
 	N   int
 	Die Die
@@ -45,7 +49,13 @@ func (d Dice) String() string { return fmt.Sprintf(`"%dd%d"`, d.N, d.Die) }
 func (d Dice) MarshalJSON() ([]byte, error) { return []byte(d.String()), nil }
 
 func (d *Dice) UnmarshalJSON(data []byte) error {
-	parts := strings.Split(strings.Trim(string(data), `"`), "d")
+	s := string(data)
+
+	if dice, ok := alias[strings.ToLower(s)]; ok {
+		*d = dice
+		return nil
+	}
+	parts := strings.Split(strings.Trim(s, `"`), "d")
 	if len(parts) == 1 {
 		die, _ := strconv.Atoi(parts[0])
 		d.Die = Die(die)
