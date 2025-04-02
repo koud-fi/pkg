@@ -15,7 +15,6 @@ use (
 	./file
 	./fingerprint
 	./jump
-	./merge
 	./natsort
 	./netx
 	./noise
