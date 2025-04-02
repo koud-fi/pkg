@@ -17,6 +17,7 @@ use (
 	./jump
 	./merge
 	./natsort
+	./netx
 	./noise
 	./num
 	./pk
