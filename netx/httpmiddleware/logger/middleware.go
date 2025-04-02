@@ -55,6 +55,10 @@ func (l *Logger) Wrap(next http.Handler) http.Handler {
 	})
 }
 
+func Wrap(next http.Handler) http.Handler {
+	return New().Wrap(next)
+}
+
 type LogFunc func(RequestInfo)
 
 func DefaultLogFunc(ri RequestInfo) {
