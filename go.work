@@ -1,4 +1,4 @@
-go 1.22.0
+go 1.23.2
 
 use (
 	./api/reddit
@@ -25,6 +25,7 @@ use (
 	./proto/rq
 	./proto/rr
 	./proto/serializable
+	./qrcode
 	./rx
 	./schema
 	./search
