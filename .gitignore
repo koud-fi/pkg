@@ -17,3 +17,6 @@
 # Temporary files and folders
 *.temp
 temp/
+
+# OS files and directories
+.DS_Store
