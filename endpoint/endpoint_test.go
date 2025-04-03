@@ -39,7 +39,7 @@ func TestEndpoint(t *testing.T) {
 
 	// url query arguments
 	rrec = httptest.NewRecorder()
-	req, err = fetch.Get("/hello?name=Seppo").HttpRequest()
+	req, err = fetch.Get("/hello").Query("name", "Seppo").HttpRequest()
 	if err != nil {
 		t.Fatalf("failed to create request: %s", err)
 	}
