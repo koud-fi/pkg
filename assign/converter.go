@@ -151,7 +151,7 @@ func ConvertStruct(conv *Converter) ConverterFunc {
 			return reflect.Value{}, ErrUnsupportedConversion
 		}
 		out := reflect.New(target).Elem()
-		for i := 0; i < target.NumField(); i++ {
+		for i := range target.NumField() {
 			f := target.Field(i)
 			if val, exists := m[f.Name]; exists {
 				conv, err := conv.Convert(val, f.Type)
