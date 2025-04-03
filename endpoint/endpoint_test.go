@@ -13,9 +13,11 @@ import (
 
 type HelloInput struct {
 	Name  string
-	Inner struct {
-		OverrideName string
-	}
+	Inner Inner
+}
+
+type Inner struct {
+	OverrideName string
 }
 
 func Hello(_ context.Context, in HelloInput) (string, error) {
@@ -56,7 +58,12 @@ func TestEndpoint(t *testing.T) {
 
 	// json body arguments
 	rrec = httptest.NewRecorder()
-	req, err = fetch.Post("/hello").JSON(HelloInput{Name: "Matti"}).HttpRequest()
+	req, err = fetch.Post("/hello").JSON(HelloInput{
+		Name: "Matti",
+		Inner: Inner{
+			OverrideName: "Seppo",
+		},
+	}).HttpRequest()
 	if err != nil {
 		t.Fatalf("failed to create request: %s", err)
 	}
