@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -78,11 +79,23 @@ func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func applyInput(v any, r *http.Request) error {
+	var bodyArgs Arguments
+	switch r.Header.Get("Content-Type") {
+	case "application/json":
+		args := make(ArgumentMap)
+		if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
+			return fmt.Errorf("decode json: %w", err)
+		}
+		bodyArgs = args
+	}
 	if err := r.ParseForm(); err != nil {
 		return fmt.Errorf("parse form: %w", err)
 	}
 	args := CombinedArguments{
 		URLValueArguments(r.Form),
+	}
+	if bodyArgs != nil {
+		args = append(args, bodyArgs)
 	}
 	return ApplyArguments(v, assign.NewDefaultConverter(), args)
 }
