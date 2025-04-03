@@ -10,6 +10,7 @@ import (
 )
 
 type Blob interface{ Open() (io.ReadCloser, error) }
+type Reader = Blob // TODO: refactor everything to use Reader instead of Blob
 
 type Func func() (io.ReadCloser, error)
 
