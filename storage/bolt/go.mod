@@ -13,6 +13,6 @@ require (
 
 require (
 	github.com/stretchr/testify v1.9.0 // indirect
-	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
 	golang.org/x/sys v0.31.0 // indirect
 )

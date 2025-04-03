@@ -18,7 +18,8 @@ type Endpoint struct {
 	inType      reflect.Type
 	inTypeIsPtr bool
 	outType     reflect.Type
-	opts        []serve.Option
+
+	opts []serve.Option
 }
 
 func New[T1, T2 any](fn func(context.Context, T1) (T2, error), opt ...serve.Option) Endpoint {

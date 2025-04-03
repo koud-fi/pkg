@@ -3,4 +3,4 @@ github.com/koud-fi/pkg/blob v0.0.0-20220327071929-73cdb37bce2a/go.mod h1:xwDSe3g
 github.com/koud-fi/pkg/rx v0.0.0-20220703120905-a3e8e443c8c4 h1:QKuNed1hIzduc47vULaM8r1HxxiCyoXlP9XbCQTv31U=
 github.com/koud-fi/pkg/rx v0.0.0-20220703120905-a3e8e443c8c4/go.mod h1:11A6myvPh4NirnJHTCf/utpYN9FH8w5DJbWzqjX/QAQ=
 github.com/koud-fi/pkg/storage/storagetest v0.0.0-20220505044251-401d235d2935 h1:YfliAHqisyj7eT2CYfurgaGMI+pppiHjvdxX4jLulNw=
-golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa h1:FRnLl4eNAQl8hwxVVC17teOw8kdjVDVAiFMtgUdTSRQ=
+golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c h1:7dEasQXItcW1xKJ2+gg5VOiBnqWrJc+rq0DPKyvvdbY=
