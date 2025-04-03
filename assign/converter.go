@@ -8,11 +8,7 @@ import (
 	"strconv"
 )
 
-var (
-	DefaultConverter = NewDefaultConverter()
-
-	ErrUnsupportedConversion = errors.New("unsupported conversion")
-)
+var ErrUnsupportedConversion = errors.New("unsupported conversion")
 
 type ConverterFunc func(in any, target reflect.Type) (reflect.Value, error)
 

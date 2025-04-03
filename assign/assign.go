@@ -5,8 +5,10 @@ import (
 	"reflect"
 )
 
+var defaultConverter = NewDefaultConverter()
+
 func Value[T any](out *T, in any) error {
-	return ValueWithConverter(out, in, DefaultConverter)
+	return ValueWithConverter(out, in, defaultConverter)
 }
 
 func ValueWithConverter[T any](out *T, in any, conv *Converter) error {
@@ -15,7 +17,7 @@ func ValueWithConverter[T any](out *T, in any, conv *Converter) error {
 		return errors.New("out must be a non-nil pointer")
 	}
 	target := rv.Elem().Type()
-	convVal, err := DefaultConverter.Convert(in, target)
+	convVal, err := defaultConverter.Convert(in, target)
 	if err != nil {
 		return err
 	}
