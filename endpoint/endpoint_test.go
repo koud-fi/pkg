@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/koud-fi/pkg/assert"
 	"github.com/koud-fi/pkg/endpoint"
 	"github.com/koud-fi/pkg/fetch"
 )
@@ -27,10 +26,25 @@ func TestEndpoint(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.Handle("/hello", endpoint.New(Hello))
 
+	// no arguments
 	rrec := httptest.NewRecorder()
-
-	mux.ServeHTTP(rrec, assert.Must(fetch.Get("/hello").HttpRequest()))
+	req, err := fetch.Get("/hello").HttpRequest()
+	if err != nil {
+		t.Fatalf("failed to create request: %s", err)
+	}
+	mux.ServeHTTP(rrec, req)
 	if rrec.Body.String() != "Hello, Teppo!" {
 		t.Fatalf("expected body to be 'Hello, Teppo!', got '%s'", rrec.Body.String())
+	}
+
+	// url query arguments
+	rrec = httptest.NewRecorder()
+	req, err = fetch.Get("/hello?name=Seppo").HttpRequest()
+	if err != nil {
+		t.Fatalf("failed to create request: %s", err)
+	}
+	mux.ServeHTTP(rrec, req)
+	if rrec.Body.String() != "Hello, Seppo!" {
+		t.Fatalf("expected body to be 'Hello, Seppo!', got '%s'", rrec.Body.String())
 	}
 }
