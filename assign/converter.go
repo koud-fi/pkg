@@ -22,16 +22,16 @@ type Converter struct {
 
 func NewDefaultConverter() *Converter {
 	conv := new(Converter)
-	return conv.Register(ConvertPrimitive).
-		Register(ConvertSlice(conv)).
-		Register(ConvertMap(conv)).
-		Register(ConvertStruct(conv)).
-		Register(ConvertJSON)
+	conv.Register(ConvertPrimitive)
+	conv.Register(ConvertSlice(conv))
+	conv.Register(ConvertMap(conv))
+	conv.Register(ConvertStruct(conv))
+	conv.Register(ConvertJSON)
+	return conv
 }
 
-func (c Converter) Register(conv ConverterFunc) *Converter {
+func (c *Converter) Register(conv ConverterFunc) {
 	c.funcs = append(c.funcs, conv)
-	return &c
 }
 
 func (c *Converter) Convert(in any, target reflect.Type) (reflect.Value, error) {
@@ -154,11 +154,11 @@ func ConvertStruct(conv *Converter) ConverterFunc {
 		for i := range target.NumField() {
 			f := target.Field(i)
 			if val, exists := m[f.Name]; exists {
-				conv, err := conv.Convert(val, f.Type)
+				v, err := conv.Convert(val, f.Type)
 				if err != nil {
 					return reflect.Value{}, fmt.Errorf("field %q: %w", f.Name, err)
 				}
-				out.Field(i).Set(conv)
+				out.Field(i).Set(v)
 			}
 		}
 		return out, nil

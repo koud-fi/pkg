@@ -68,7 +68,7 @@ func TestEndpoint(t *testing.T) {
 		t.Fatalf("failed to create request: %s", err)
 	}
 	mux.ServeHTTP(rrec, req)
-	if rrec.Body.String() != "Hello, Matti!" {
-		t.Fatalf("expected body to be 'Hello, Matti!', got '%s'", rrec.Body.String())
+	if rrec.Body.String() != "Hello, Seppo!" {
+		t.Fatalf("expected body to be 'Hello, Seppo!', got '%s'", rrec.Body.String())
 	}
 }
