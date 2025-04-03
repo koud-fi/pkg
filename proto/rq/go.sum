@@ -2,4 +2,4 @@ github.com/koud-fi/pkg/blob v0.0.0-20221227113902-1dba4a42853d h1:7Ly+2aTgfvueZN
 github.com/koud-fi/pkg/blob v0.0.0-20221227113902-1dba4a42853d/go.mod h1:YANF65nd2qhGIJ4mVrcpV8HV6acwj9NQq4BSE2MSQBk=
 github.com/koud-fi/pkg/rx v0.0.0-20221217060217-20480eb80a99 h1:5j1MG8gsjYO0/y6Gw6UvFF+9TqU2jk6JxyPtSs+rw8c=
 github.com/koud-fi/pkg/rx v0.0.0-20221217060217-20480eb80a99/go.mod h1:11A6myvPh4NirnJHTCf/utpYN9FH8w5DJbWzqjX/QAQ=
-golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa h1:FRnLl4eNAQl8hwxVVC17teOw8kdjVDVAiFMtgUdTSRQ=
+golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c h1:7dEasQXItcW1xKJ2+gg5VOiBnqWrJc+rq0DPKyvvdbY=

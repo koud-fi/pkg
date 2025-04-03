@@ -1,6 +1,6 @@
 module github.com/koud-fi/pkg/datastore
 
-go 1.22.0
+go 1.23.0
 
 toolchain go1.24.2
 
@@ -8,7 +8,7 @@ require (
 	github.com/koud-fi/pkg/blob v0.0.0-20220327071929-73cdb37bce2a
 	github.com/koud-fi/pkg/rx v0.0.0-20230117164436-4f4692216384
 	github.com/koud-fi/pkg/storage/memory v0.0.0-20230511041444-8d55e393caa8
-	golang.org/x/net v0.30.0
+	golang.org/x/net v0.37.0
 )
 
 require (

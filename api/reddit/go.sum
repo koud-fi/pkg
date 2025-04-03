@@ -4,5 +4,5 @@ github.com/koud-fi/pkg/fetch v0.0.0-20230119045743-d364e1ac8938 h1:LgxQK5LnTHnZa
 github.com/koud-fi/pkg/fetch v0.0.0-20230119045743-d364e1ac8938/go.mod h1:IPmi4DxL+lAoCQFJbTtsfGcaawj6EiTZA8BhpbHsmcs=
 github.com/koud-fi/pkg/rx v0.0.0-20220617062645-d7d71be010cb h1:rKZAf1BkYyYmg5uD5sztaTpLGeant9daGe3dOvjy3cc=
 github.com/koud-fi/pkg/rx v0.0.0-20220617062645-d7d71be010cb/go.mod h1:11A6myvPh4NirnJHTCf/utpYN9FH8w5DJbWzqjX/QAQ=
-golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa h1:FRnLl4eNAQl8hwxVVC17teOw8kdjVDVAiFMtgUdTSRQ=
+golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c h1:7dEasQXItcW1xKJ2+gg5VOiBnqWrJc+rq0DPKyvvdbY=
 golang.org/x/time v0.5.0 h1:o7cqy6amK/52YcAKIPlM3a+Fpj35zvRj2TP+e1xFSfk=
