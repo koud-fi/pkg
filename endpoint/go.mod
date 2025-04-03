@@ -5,10 +5,8 @@ go 1.23.0
 toolchain go1.24.2
 
 require (
-	github.com/koud-fi/pkg/assert v0.0.0-20250403045347-3155cc1f1c78
 	github.com/koud-fi/pkg/blob v0.0.0-20220728144657-c6f4d528b26a
 	github.com/koud-fi/pkg/fetch v0.0.0-20250403045347-3155cc1f1c78
-	github.com/koud-fi/pkg/merge v0.0.0-20250402045531-b5abc346d1b3
 	github.com/koud-fi/pkg/serve v0.0.0-20220728144657-c6f4d528b26a
 )
 

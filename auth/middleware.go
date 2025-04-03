@@ -5,30 +5,55 @@ import (
 	"strings"
 )
 
-var requestAuthFuncs = []func(*http.Request) (string, string, bool){
-	urlAuth, basicAuth, bearerAuth,
+// requestAuthEntry ties an extraction function to specific identity/proof types.
+type requestAuthEntry struct {
+	fn           func(*http.Request) (string, string, bool)
+	identityType IdentityType
+	proofType    ProofType
 }
 
-func Middleware(h http.Handler, a Authenticator) http.Handler {
+var requestAuthFuncs = []requestAuthEntry{
+	// For URL or basic auth, assume username/password.
+	{fn: urlAuth, identityType: Username, proofType: Password},
+	{fn: basicAuth, identityType: Username, proofType: Password},
+	// For bearer auth, use the bearer identity and token proof.
+	{fn: bearerAuth, identityType: BearerIdentity, proofType: Token},
+}
+
+func Middleware[UserID comparable](h http.Handler, a Authenticator[UserID]) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var identity, secret string
-		for _, fn := range requestAuthFuncs {
-			var ok bool
-			if identity, secret, ok = fn(r); ok {
+		var (
+			id     string
+			secret string
+			ok     bool
+			it     IdentityType
+			pt     ProofType
+		)
+		for _, entry := range requestAuthFuncs {
+			if id, secret, ok = entry.fn(r); ok {
+				it = entry.identityType
+				pt = entry.proofType
 				break
 			}
 		}
-		identity, err := a.Authenticate(identity, secret)
-		if err != nil {
+		if !ok {
+			// Set WWW-Authenticate header to prompt the browser for credentials.
+			// TODO: Make this configurable.
+			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 
-			// TODO: custom error handlers
-
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
 		}
-		h.ServeHTTP(w, r.WithContext(ContextWithIdentity(r.Context(), identity)))
+		userID, err := a.Authenticate(NewPayload(it, id, pt, secret))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
+		h.ServeHTTP(w, r.WithContext(ContextWithUserID(r.Context(), userID)))
 	})
 }
 
+// urlAuth extracts credentials from the URL's user info.
 func urlAuth(r *http.Request) (string, string, bool) {
 	if r.URL.User != nil {
 		if pass, ok := r.URL.User.Password(); ok {
@@ -38,13 +63,22 @@ func urlAuth(r *http.Request) (string, string, bool) {
 	return "", "", false
 }
 
-func basicAuth(r *http.Request) (string, string, bool) { return r.BasicAuth() }
+// basicAuth extracts basic authentication credentials.
+func basicAuth(r *http.Request) (string, string, bool) {
+	return r.BasicAuth()
+}
 
+// bearerAuth extracts a bearer token from the Authorization header.
 func bearerAuth(r *http.Request) (string, string, bool) {
 	const prefix = "bearer "
-	auth := strings.ToLower(r.Header.Get("Authorization"))
-	if !strings.HasPrefix(auth, prefix) {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
 		return "", "", false
 	}
-	return BearerIdentity, strings.TrimPrefix(auth, prefix), true
+	if !strings.HasPrefix(strings.ToLower(authHeader), prefix) {
+		return "", "", false
+	}
+	token := strings.TrimSpace(authHeader[len(prefix):])
+	// For bearer auth, we leave the identity empty and use the token as secret.
+	return "", token, true
 }

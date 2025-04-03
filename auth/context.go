@@ -1,19 +1,28 @@
 package auth
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
-type identityKey struct{}
+type userIDKey struct{}
 
-func ContextWithIdentity(parent context.Context, identity string) context.Context {
-	if identity == "" {
-		return parent
-	}
-	return context.WithValue(parent, identityKey{}, identity)
+func ContextWithUserID[UserID comparable](
+	parent context.Context, userID UserID,
+) context.Context {
+	return context.WithValue(parent, userIDKey{}, userID)
 }
 
-func Identity(ctx context.Context) (string, error) {
-	if identity, ok := ctx.Value(identityKey{}).(string); ok {
-		return identity, nil
+func ContextUserID[UserID comparable](ctx context.Context) (UserID, error) {
+	v := ctx.Value(userIDKey{})
+	if v == nil {
+		var zero UserID
+		return zero, ErrUnauthorized
 	}
-	return "", ErrUnauthorized
+	userID, ok := v.(UserID)
+	if !ok {
+		var zero UserID
+		return zero, fmt.Errorf("user ID type mismatch, got %T expected %T", v, zero)
+	}
+	return userID, nil
 }

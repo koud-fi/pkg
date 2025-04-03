@@ -1,54 +1,78 @@
 package auth
 
-import "errors"
-
 const (
-	RootIdentity   = "root"
-	BearerIdentity = "bearer"
+	Email          IdentityType = "email"
+	Username       IdentityType = "username"
+	BearerIdentity IdentityType = "bearer"
+	//PhoneNumber       IdentityType = "phone"
+	//APIKey            IdentityType = "apikey"
+	//BlockchainAddress IdentityType = "blockchain"
+
+	Password ProofType = "password"
+	Token    ProofType = "token"
+	//OTP           ProofType = "otp"
+	//OAuthToken    ProofType = "oauth_token"
+	//APISecret     ProofType = "api_secret"
+	//SignedMessage ProofType = "signed_message"
 )
 
-var (
-	ErrBadCredentials = errors.New("bad credentials")
-	ErrUnauthorized   = errors.New("unauthorized")
+type (
+	IdentityType string
+	ProofType    string
+
+	Authenticator[UserID comparable] interface {
+		Authenticate(Payload) (UserID, error)
+	}
+	AuthenticatorFunc[UserID comparable] func(Payload) (UserID, error)
+
+	Payload struct {
+		IdentityType IdentityType
+		Identity     string
+		Proofs       []Proof
+	}
+	Proof struct {
+		Type  ProofType
+		Value string
+	}
 )
 
-type Authenticator interface {
-	Authenticate(identity, secret string) (string, error)
+func (fn AuthenticatorFunc[UserID]) Authenticate(p Payload) (UserID, error) {
+	return fn(p)
 }
 
-type Func func(identity, secret string) (string, error)
+// TODO: multi-method authenticator
 
-func (fn Func) Authenticate(identity, secret string) (string, error) {
-	return fn(identity, secret)
-}
-
-func New(a ...Authenticator) Authenticator {
-	return Func(func(identity, secret string) (string, error) {
-		if identity == "" {
-			return "", nil
+func New[UserID comparable](
+	it IdentityType, pt ProofType,
+	check func(identity, proof string) (UserID, error),
+) Authenticator[UserID] {
+	return AuthenticatorFunc[UserID](func(p Payload) (UserID, error) {
+		if p.IdentityType != it || len(p.Proofs) != 1 || p.Proofs[0].Type != pt {
+			var zero UserID
+			return zero, ErrUnsupportedType
 		}
-		for _, a := range a {
-			authIdentity, err := a.Authenticate(identity, secret)
-			if err != nil {
-				return "", err
-			}
-			switch {
-			case authIdentity == "":
-			case authIdentity != identity:
-				identity = authIdentity
-			case authIdentity == identity:
-				return authIdentity, nil
-			}
-		}
-		return "", ErrBadCredentials
+		return check(p.Identity, p.Proofs[0].Value)
 	})
 }
 
-func Root(password string) Authenticator {
-	return Func(func(identity, secret string) (string, error) {
-		if identity != RootIdentity && secret != password {
-			return "", ErrBadCredentials
+func SingleUser[UserID comparable](
+	username, password string, userID UserID,
+) Authenticator[UserID] {
+	return New(Username, Password, func(identity, proof string) (UserID, error) {
+		if username != identity || password != proof {
+			var zero UserID
+			return zero, ErrBadCredentials
 		}
-		return RootIdentity, nil
+		return userID, nil
 	})
+}
+
+func NewPayload(
+	it IdentityType, identity string, pt ProofType, proofValue string,
+) Payload {
+	return Payload{
+		IdentityType: it,
+		Identity:     identity,
+		Proofs:       []Proof{{Type: pt, Value: proofValue}},
+	}
 }
