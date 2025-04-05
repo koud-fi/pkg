@@ -1,8 +1,6 @@
 module github.com/koud-fi/pkg/endpoint
 
-go 1.23.0
-
-toolchain go1.24.2
+go 1.24.2
 
 require (
 	github.com/koud-fi/pkg/blob v0.0.0-20220728144657-c6f4d528b26a
