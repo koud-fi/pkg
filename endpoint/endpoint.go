@@ -81,7 +81,7 @@ func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func applyInput(v any, r *http.Request) error {
 	var bodyArgs Arguments
 	switch r.Header.Get("Content-Type") {
-	case "application/json":
+	case "application/json", "application/json; charset=UTF-8":
 		args := make(ArgumentMap)
 		if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
 			return fmt.Errorf("decode json: %w", err)
