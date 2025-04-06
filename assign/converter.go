@@ -18,7 +18,7 @@ type Converter struct {
 
 func NewDefaultConverter() *Converter {
 	conv := new(Converter)
-	conv.Register(ConvertJSON) // Do this first to handle json.Unmarshaler before primitive conversions
+	conv.Register(ConvertJSON) // Do this first to handle json.Unmarshaler before primitive conversions.
 	conv.Register(ConvertPrimitive)
 	conv.Register(ConvertSlice(conv))
 	conv.Register(ConvertMap(conv))
