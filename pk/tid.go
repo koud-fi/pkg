@@ -32,9 +32,9 @@ func ParseTID(s string) (TID, error) {
 }
 
 // ParseTIDBytes converts raw bytes into a TID.
-func ParseTIDBytes(data []byte) (TID, error) {
+func ParseTIDBytes(raw []byte) (TID, error) {
 	var b [8]byte
-	n, err := base64.RawURLEncoding.Decode(b[:], data)
+	n, err := base64.RawURLEncoding.Decode(b[:], raw)
 	if err != nil {
 		return 0, fmt.Errorf("tid: %w", err)
 	}
