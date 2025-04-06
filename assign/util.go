@@ -3,5 +3,6 @@ package assign
 import "reflect"
 
 func Implements[T any](t reflect.Type) bool {
-	return t.Implements(reflect.TypeOf((*T)(nil)).Elem())
+	target := reflect.TypeOf((*T)(nil)).Elem()
+	return t.Implements(target) || reflect.PointerTo(t).Implements(target)
 }

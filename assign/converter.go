@@ -18,11 +18,11 @@ type Converter struct {
 
 func NewDefaultConverter() *Converter {
 	conv := new(Converter)
+	conv.Register(ConvertJSON) // Do this first to handle json.Unmarshaler before primitive conversions
 	conv.Register(ConvertPrimitive)
 	conv.Register(ConvertSlice(conv))
 	conv.Register(ConvertMap(conv))
 	conv.Register(ConvertStruct(conv))
-	conv.Register(ConvertJSON)
 	return conv
 }
 
@@ -172,6 +172,13 @@ func ConvertJSON(in any, target reflect.Type) (reflect.Value, error) {
 		data = []byte(v)
 	default:
 		return reflect.Value{}, ErrUnsupportedConversion
+	}
+	if Implements[json.Unmarshaler](target) {
+		ptr := reflect.New(target)
+		if err := ptr.Interface().(json.Unmarshaler).UnmarshalJSON(data); err != nil {
+			return reflect.Value{}, fmt.Errorf("json unmarshal error: %w", err)
+		}
+		return ptr.Elem(), nil
 	}
 	switch target.Kind() {
 	case reflect.Struct, reflect.Map, reflect.Slice:
