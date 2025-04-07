@@ -16,6 +16,7 @@ use (
 	./file
 	./fingerprint
 	./jump
+	./kv
 	./natsort
 	./netx
 	./noise
