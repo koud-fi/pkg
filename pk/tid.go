@@ -62,7 +62,7 @@ func (t TID) Time() time.Time {
 // Int64 is just a cast from TID to int64.
 func (t TID) Int64() int64 { return int64(t) }
 
-// String converts TID to a base-36 string.
+// String converts TID to a base-64 string.
 func (t TID) String() string {
 	var b [8]byte
 	binary.BigEndian.PutUint64(b[:], uint64(t))
