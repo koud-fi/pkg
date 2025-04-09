@@ -27,6 +27,7 @@ func FromFile(name string) Reader {
 }
 
 // Save saves the blob to a file with default permissions, creating the directory if it doesn't exist.
+// Default permissions are 0600 the file and 0700 for directories.
 func Save(toPath string, r Reader) error {
 	const (
 		filePerm = os.FileMode(0600)
