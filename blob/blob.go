@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/fs"
 	"sync/atomic"
 )
 
@@ -42,10 +41,6 @@ func FromReader(r io.Reader) Reader {
 		}
 		return io.NopCloser(r), nil
 	})
-}
-
-func FromFS(fsys fs.FS, name string) Reader {
-	return Func(func() (io.ReadCloser, error) { return fsys.Open(name) })
 }
 
 func Empty() Reader { return FromBytes(nil) }
