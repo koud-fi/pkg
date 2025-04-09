@@ -27,15 +27,15 @@ func FromFile(name string) Reader {
 }
 
 // Save saves the blob to a file with default permissions, creating the directory if it doesn't exist.
-func Save(path string, r Reader) error {
+func Save(toPath string, r Reader) error {
 	const (
 		filePerm = os.FileMode(0600)
 		dirPerm  = os.FileMode(0700)
 	)
-	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(toPath), dirPerm); err != nil {
 		return fmt.Errorf("mkdirall: %w", err)
 	}
-	return WriteToFile(path, r, filePerm)
+	return WriteToFile(toPath, r, filePerm)
 }
 
 // WriteToFile writes the blob to a file with the given permissions.
