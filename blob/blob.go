@@ -9,8 +9,8 @@ import (
 	"sync/atomic"
 )
 
-type Blob interface{ Open() (io.ReadCloser, error) }
-type Reader = Blob // TODO: refactor everything to use Reader instead of Blob
+type Reader interface{ Open() (io.ReadCloser, error) }
+type Blob = Reader // TODO: refactor everything to use Reader instead of Blob
 
 type Func func() (io.ReadCloser, error)
 
@@ -28,13 +28,13 @@ func (fn ByteFunc) Open() (io.ReadCloser, error) {
 
 func (fn ByteFunc) Bytes() ([]byte, error) { return fn() }
 
-func FromBytes(buf []byte) Blob {
+func FromBytes(buf []byte) Reader {
 	return ByteFunc(func() ([]byte, error) { return buf, nil })
 }
 
-func FromString(s string) Blob { return FromBytes([]byte(s)) }
+func FromString(s string) Reader { return FromBytes([]byte(s)) }
 
-func FromReader(r io.Reader) Blob {
+func FromReader(r io.Reader) Reader {
 	var opened int32
 	return Func(func() (io.ReadCloser, error) {
 		if atomic.AddInt32(&opened, 1) > 1 {
@@ -44,19 +44,19 @@ func FromReader(r io.Reader) Blob {
 	})
 }
 
-func FromFS(fsys fs.FS, name string) Blob {
+func FromFS(fsys fs.FS, name string) Reader {
 	return Func(func() (io.ReadCloser, error) { return fsys.Open(name) })
 }
 
-func Empty() Blob { return FromBytes(nil) }
+func Empty() Reader { return FromBytes(nil) }
 
 type BytesReader interface {
 	io.ReadCloser
 	Bytes() []byte
 }
 
-func Bytes(b Blob) ([]byte, error) {
-	rc, err := b.Open()
+func Bytes(r Reader) ([]byte, error) {
+	rc, err := r.Open()
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +67,8 @@ func Bytes(b Blob) ([]byte, error) {
 	return io.ReadAll(rc)
 }
 
-func ReadAt(p []byte, b Blob, n int64) (int, error) {
-	rc, err := b.Open()
+func ReadAt(p []byte, r Reader, n int64) (int, error) {
+	rc, err := r.Open()
 	if err != nil {
 		return 0, err
 	}
@@ -93,8 +93,8 @@ func ReadAt(p []byte, b Blob, n int64) (int, error) {
 	}
 }
 
-func Peek(b Blob, n int) ([]byte, error) {
-	rc, err := b.Open()
+func Peek(r Reader, n int) ([]byte, error) {
+	rc, err := r.Open()
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func Peek(b Blob, n int) ([]byte, error) {
 		}
 		return buf, nil
 	}
-	if br, ok := b.(interface{ Bytes() []byte }); ok {
+	if br, ok := r.(interface{ Bytes() []byte }); ok {
 		return br.Bytes(), nil
 	}
 	buf, err := bufio.NewReaderSize(rc, n).Peek(n)
@@ -116,16 +116,16 @@ func Peek(b Blob, n int) ([]byte, error) {
 	return buf, nil
 }
 
-func String(b Blob) (string, error) {
-	buf, err := Bytes(b)
+func String(r Reader) (string, error) {
+	buf, err := Bytes(r)
 	if err != nil {
 		return "", err
 	}
 	return string(buf), nil
 }
 
-func Error(b Blob) error {
-	rc, err := b.Open()
+func Error(r Reader) error {
+	rc, err := r.Open()
 	if err != nil {
 		return err
 	}

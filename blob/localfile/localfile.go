@@ -17,7 +17,7 @@ type fileBlob struct {
 	path string
 }
 
-func New(path string) blob.Blob {
+func New(path string) blob.Reader {
 	return &fileBlob{path: path}
 }
 
@@ -29,8 +29,8 @@ func (b fileBlob) Open() (io.ReadCloser, error) {
 	return os.Open(absPath)
 }
 
-func Write(path string, b blob.Blob, perm os.FileMode) error {
-	rc, err := b.Open()
+func Write(path string, r blob.Reader, perm os.FileMode) error {
+	rc, err := r.Open()
 	if err != nil {
 		return err
 	}
