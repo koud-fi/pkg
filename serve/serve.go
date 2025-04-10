@@ -92,7 +92,10 @@ func Blob(w http.ResponseWriter, r *http.Request, b blob.Blob, opt ...Option) (*
 
 func Reader(rw http.ResponseWriter, r *http.Request, rd io.Reader, opt ...Option) (*Info, error) {
 	var c = buildConfig(opt)
-	if br, ok := rd.(blob.BytesReader); ok {
+	if br, ok := rd.(interface {
+		blob.Reader
+		Bytes() []byte
+	}); ok {
 		buf := br.Bytes()
 		c.ContentLength = int64(len(buf))
 
