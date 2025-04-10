@@ -76,6 +76,14 @@ func Header(w http.ResponseWriter, opt ...Option) (*Info, error) {
 	return &c.Info, nil
 }
 
+func Redirect(w http.ResponseWriter, r *http.Request, url string, status int) (*Info, error) {
+	http.Redirect(w, r, url, status)
+	return &Info{
+		StatusCode: status,
+		Location:   url,
+	}, nil
+}
+
 func JSON(w http.ResponseWriter, r *http.Request, v any, opt ...Option) (*Info, error) {
 	return Blob(w, r, blob.Marshal(json.Marshal, v),
 		ContentType("application/json; charset=utf-8"))
