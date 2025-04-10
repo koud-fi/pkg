@@ -4,12 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"reflect"
 
 	"github.com/koud-fi/pkg/assign"
-	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/serve"
 )
 
@@ -59,22 +57,7 @@ func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if !out[1].IsNil() {
 			return nil, out[1].Interface().(error)
 		}
-		switch v := out[0].Interface().(type) {
-		case nil:
-			return serve.Blob(w, r, blob.Empty(), e.opts...)
-		case io.Reader:
-			return serve.Reader(w, r, v, e.opts...)
-		case blob.Blob:
-			return serve.Blob(w, r, v, e.opts...)
-		case []byte:
-			return serve.Blob(w, r, blob.FromBytes(v), e.opts...)
-		case string:
-			return serve.Blob(w, r, blob.FromString(v), e.opts...)
-		case fmt.Stringer:
-			return serve.Blob(w, r, blob.FromString(v.String()), e.opts...)
-		default:
-			return serve.JSON(w, r, v, e.opts...)
-		}
+		return serveOutput(w, r, out[0].Interface(), e.opts)
 	})
 }
 
