@@ -75,6 +75,8 @@ func (t TID) String() string {
 	return base64.RawURLEncoding.EncodeToString(b[i:])
 }
 
+func (t TID) IsZero() bool { return t == 0 }
+
 func (t TID) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + t.String() + `"`), nil
 }
