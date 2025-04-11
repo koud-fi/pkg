@@ -24,6 +24,9 @@ func serveOutput(
 	switch v := output.(type) {
 	case nil:
 		return serve.Blob(w, r, blob.Empty(), opts...)
+	case io.ReadCloser:
+		defer v.Close()
+		return serve.Reader(w, r, v, opts...)
 	case io.Reader:
 		return serve.Reader(w, r, v, opts...)
 	case blob.Blob:
