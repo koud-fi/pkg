@@ -2,6 +2,7 @@ package blob
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -41,10 +42,12 @@ func (ir *imageReader) Open() (io.ReadCloser, error) {
 	ir.once.Do(func() {
 		img, err := ir.imgFn()
 		if err != nil {
-			ir.err = err
+			ir.err = fmt.Errorf("resolve image: %w", err)
 			return
 		}
-		ir.err = ir.encode(&ir.buf, img)
+		if err := ir.encode(&ir.buf, img); err != nil {
+			ir.err = fmt.Errorf("encode image: %w", err)
+		}
 	})
 	if ir.err != nil {
 		return nil, ir.err
