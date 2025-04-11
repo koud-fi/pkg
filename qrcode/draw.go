@@ -16,9 +16,14 @@ import (
 // TODO: base all drawing logic to gfx package once it is complete enough
 
 func Draw(payload string, size int, bgImg image.Image, drawFn DrawPxFunc) (image.Image, error) {
+	if bgImg == nil {
+		img := image.NewRGBA(image.Rect(0, 0, size, size))
 
-	// TODO: validate bgImg, generate it automatically if nil
+		// TODO: make this configurable (drawFn should include some "foreground" color info?)
 
+		draw.Draw(img, img.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Src)
+		bgImg = img
+	}
 	mask, err := NewQRMask(payload, size, drawFn)
 	if err != nil {
 		return nil, err
@@ -111,7 +116,6 @@ func NoisePx(seed int64, minSize, maxSize float64) PxSizeFn {
 
 func NewQRMask(data string, size int, drawFn DrawPxFunc) (image.Image, error) {
 	qrc, err := qrcode.New(data, qrcode.Highest)
-	//qrc, err := qrcode.NewWithForcedVersion(data, 12, qrcode.Highest)
 	if err != nil {
 		return nil, fmt.Errorf("could not generate QRCode: %w", err)
 	}
