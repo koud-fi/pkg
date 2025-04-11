@@ -9,24 +9,27 @@ import (
 	"sync"
 )
 
-type ImageEncoder func(w io.Writer, img image.Image) error
+type (
+	ImageFunc    func() (image.Image, error)
+	ImageEncoder func(w io.Writer, img image.Image) error
+)
 
-func FromImage(img image.Image, encode ImageEncoder) Reader {
-	return &imageReader{img: img, encode: encode}
+func (fn ImageFunc) Reader(encode ImageEncoder) Reader {
+	return &imageReader{imgFn: fn, encode: encode}
 }
 
-func FromImagePNG(img image.Image) Reader {
-	return FromImage(img, png.Encode)
+func (fn ImageFunc) PNG() Reader {
+	return fn.Reader(png.Encode)
 }
 
-func FromImageJPEG(img image.Image, quality int) Reader {
-	return FromImage(img, func(w io.Writer, img image.Image) error {
+func (fn ImageFunc) JPEG(quality int) Reader {
+	return fn.Reader(func(w io.Writer, img image.Image) error {
 		return jpeg.Encode(w, img, &jpeg.Options{Quality: quality})
 	})
 }
 
 type imageReader struct {
-	img    image.Image
+	imgFn  ImageFunc
 	encode ImageEncoder
 
 	once sync.Once
@@ -36,7 +39,12 @@ type imageReader struct {
 
 func (ir *imageReader) Open() (io.ReadCloser, error) {
 	ir.once.Do(func() {
-		ir.err = ir.encode(&ir.buf, ir.img)
+		img, err := ir.imgFn()
+		if err != nil {
+			ir.err = err
+			return
+		}
+		ir.err = ir.encode(&ir.buf, img)
 	})
 	if ir.err != nil {
 		return nil, ir.err
