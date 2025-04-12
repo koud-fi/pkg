@@ -7,18 +7,37 @@ import (
 	"iter"
 )
 
-func Values[K comparable, V any](
-	seq iter.Seq[Pair[K, V]], errFn func() error,
-) ([]V, error) {
-	// We ensure that non-nil slice is returned so it's never marshaled as null.
-	values := make([]V, 0) // TODO: use pooled buffers with finalizers?
-	for p := range seq {
-		values = append(values, p.Value())
+type ValueCollector[K comparable, V any] struct {
+	seq   iter.Seq[Pair[K, V]]
+	errFn func() error
+}
+
+func (vc *ValueCollector[K, V]) All() ([]V, error) {
+	return vc.Filter(nil)
+}
+
+func (vc *ValueCollector[K, V]) Filter(pred func(V) bool) ([]V, error) {
+	values := vc.buffer()
+	for p := range vc.seq {
+		if pred == nil || pred(p.Value()) {
+			values = append(values, p.Value())
+		}
 	}
-	if err := errFn(); err != nil {
+	if err := vc.errFn(); err != nil {
 		return nil, fmt.Errorf("scan: %w", err)
 	}
 	return values, nil
+}
+
+func (vc *ValueCollector[K, V]) buffer() []V {
+	// We ensure that non-nil slice is returned so it's never marshaled as null.
+	return make([]V, 0) // TODO: use pooled buffers with finalizers?
+}
+
+func Values[K comparable, V any](
+	seq iter.Seq[Pair[K, V]], errFn func() error,
+) *ValueCollector[K, V] {
+	return &ValueCollector[K, V]{seq: seq, errFn: errFn}
 }
 
 func Update[K comparable, V any](
