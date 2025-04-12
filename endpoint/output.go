@@ -9,15 +9,6 @@ import (
 	"github.com/koud-fi/pkg/serve"
 )
 
-type Redirect struct {
-	url    string
-	status int
-}
-
-func NewRedirect(url string, status int) Redirect {
-	return Redirect{url: url, status: status}
-}
-
 func serveOutput(
 	w http.ResponseWriter, r *http.Request, output any, opts []serve.Option,
 ) (*serve.Info, error) {
@@ -37,8 +28,6 @@ func serveOutput(
 		return serve.Blob(w, r, blob.FromString(v), opts...)
 	case fmt.Stringer:
 		return serve.Blob(w, r, blob.FromString(v.String()), opts...)
-	case Redirect:
-		return serve.Redirect(w, r, v.url, v.status)
 	default:
 		return serve.JSON(w, r, v, opts...)
 	}
