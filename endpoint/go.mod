@@ -10,6 +10,6 @@ require (
 
 require (
 	github.com/koud-fi/pkg/rx v0.0.0-20220617062645-d7d71be010cb // indirect
-	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
-	golang.org/x/time v0.5.0 // indirect
+	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
+	golang.org/x/time v0.11.0 // indirect
 )

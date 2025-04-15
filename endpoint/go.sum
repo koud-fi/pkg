@@ -6,7 +6,5 @@ github.com/koud-fi/pkg/rx v0.0.0-20220617062645-d7d71be010cb h1:rKZAf1BkYyYmg5uD
 github.com/koud-fi/pkg/rx v0.0.0-20220617062645-d7d71be010cb/go.mod h1:11A6myvPh4NirnJHTCf/utpYN9FH8w5DJbWzqjX/QAQ=
 github.com/koud-fi/pkg/serve v0.0.0-20220728144657-c6f4d528b26a h1:QGysZtIjVRLP9Lti4hRiNmvGqkZwZNJYufNItR0eAjA=
 github.com/koud-fi/pkg/serve v0.0.0-20220728144657-c6f4d528b26a/go.mod h1:+JVdYV+bNSu2Ch4eQFILGemv4rcotRVtf8y7QzwCe4U=
-golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c h1:7dEasQXItcW1xKJ2+gg5VOiBnqWrJc+rq0DPKyvvdbY=
-golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c/go.mod h1:NQtJDoLvd6faHhE7m4T/1IY708gDefGGjR/iUW8yQQ8=
-golang.org/x/time v0.5.0 h1:o7cqy6amK/52YcAKIPlM3a+Fpj35zvRj2TP+e1xFSfk=
-golang.org/x/time v0.5.0/go.mod h1:3BpzKBy/shNhVucY/MWOyx10tF3SFh9QdLuxbVysPQM=
+golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 h1:R84qjqJb5nVJMxqWYb3np9L5ZsaDtB+a39EqjV0JSUM=
+golang.org/x/time v0.11.0 h1:/bpjEDfN9tkoN/ryeYHnv5hcMlc8ncjMcM4XBk5NWV0=
