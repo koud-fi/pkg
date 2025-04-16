@@ -36,7 +36,7 @@ func TestEndpoint(t *testing.T) {
 
 	// no arguments
 	rrec := httptest.NewRecorder()
-	req, err := fetch.Get("/hello").HttpRequest()
+	req, err := fetch.Get("/hello").HTTPRequest()
 	if err != nil {
 		t.Fatalf("failed to create request: %s", err)
 	}
@@ -47,7 +47,7 @@ func TestEndpoint(t *testing.T) {
 
 	// url query arguments
 	rrec = httptest.NewRecorder()
-	req, err = fetch.Get("/hello").Query("name", "Seppo").HttpRequest()
+	req, err = fetch.Get("/hello").Query("name", "Seppo").HTTPRequest()
 	if err != nil {
 		t.Fatalf("failed to create request: %s", err)
 	}
@@ -63,7 +63,7 @@ func TestEndpoint(t *testing.T) {
 		Inner: Inner{
 			OverrideName: "Seppo",
 		},
-	}).HttpRequest()
+	}).HTTPRequest()
 	if err != nil {
 		t.Fatalf("failed to create request: %s", err)
 	}
