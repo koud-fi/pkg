@@ -8,23 +8,23 @@ import (
 
 const defaultCost = 12
 
-type Password []byte
+type Hash []byte
 
-func Hash(plain string) (Password, error) {
+func NewHash(plain string) (Hash, error) {
 	return bcrypt.GenerateFromPassword([]byte(plain), defaultCost)
 }
 
-func Compare(plain string, to Password) error {
+func Compare(plain string, to Hash) error {
 	if err := bcrypt.CompareHashAndPassword(to, []byte(plain)); err != nil {
 		return auth.ErrBadCredentials
 	}
 	return nil
 }
 
-func (pw Password) String() string {
+func (Hash) String() string {
 	return "************" // Avoid leaking passwords
 }
 
-func (pw Password) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + pw.String() + `"`), nil
+func (h Hash) MarshalJSON() ([]byte, error) {
+	return []byte(`"` + h.String() + `"`), nil
 }

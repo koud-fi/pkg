@@ -12,7 +12,7 @@ type (
 	}
 	UserLookupFunc[UserID comparable] func(
 		it auth.IdentityType, identity string,
-	) (UserID, []Password, error)
+	) (UserID, []Hash, error)
 )
 
 func NewAuthenticator[UserID comparable](
