@@ -19,7 +19,7 @@ func (r *Request) append(m Middleware) *Request {
 
 func setUrl(u string) Middleware {
 	return func(r *http.Request) (_ *http.Request, err error) {
-		if r.URL.Path != "" { // TODO: this requires more robust handling
+		if r.URL.String() != "" { // TODO: this requires more robust handling
 
 			// TODO: check if u is absolute or relative, and act accordingly
 
