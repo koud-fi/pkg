@@ -40,6 +40,26 @@ func Values[K comparable, V any](
 	return &ValueCollector[K, V]{seq: seq, errFn: errFn}
 }
 
+// Lookup returns the first value that satisfies the predicate.
+// This is essentially a full "table scan" and should be used with caution.
+func Lookup[K comparable, V any](
+	s ScanReader[K, V],
+	ctx context.Context,
+	pred func(V) bool,
+) (V, error) {
+	pairs, errFn := s.Scan(ctx)
+	for p := range pairs {
+		if pred(p.Value()) {
+			return p.Value(), nil
+		}
+	}
+	var zero V
+	if err := errFn(); err != nil {
+		return zero, fmt.Errorf("scan: %w", err)
+	}
+	return zero, ErrNotFound
+}
+
 func Update[K comparable, V any](
 	s Storage[K, V],
 	ctx context.Context,
