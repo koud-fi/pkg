@@ -20,10 +20,10 @@ type (
 	IdentityType string
 	ProofType    string
 
-	Authenticator[UserID comparable] interface {
-		Authenticate(Payload) (UserID, error)
+	Authenticator[User any] interface {
+		Authenticate(Payload) (User, error)
 	}
-	AuthenticatorFunc[UserID comparable] func(Payload) (UserID, error)
+	AuthenticatorFunc[User any] func(Payload) (User, error)
 
 	Payload struct {
 		IdentityType IdentityType
@@ -36,34 +36,34 @@ type (
 	}
 )
 
-func (fn AuthenticatorFunc[UserID]) Authenticate(p Payload) (UserID, error) {
+func (fn AuthenticatorFunc[User]) Authenticate(p Payload) (User, error) {
 	return fn(p)
 }
 
 // TODO: multi-method authenticator
 
-func New[UserID comparable](
+func New[User any](
 	it IdentityType, pt ProofType,
-	check func(identity, proof string) (UserID, error),
-) Authenticator[UserID] {
-	return AuthenticatorFunc[UserID](func(p Payload) (UserID, error) {
+	check func(identity, proof string) (User, error),
+) Authenticator[User] {
+	return AuthenticatorFunc[User](func(p Payload) (User, error) {
 		if p.IdentityType != it || len(p.Proofs) != 1 || p.Proofs[0].Type != pt {
-			var zero UserID
+			var zero User
 			return zero, ErrUnsupportedType
 		}
 		return check(p.Identity, p.Proofs[0].Value)
 	})
 }
 
-func SingleUser[UserID comparable](
-	username, password string, userID UserID,
-) Authenticator[UserID] {
-	return New(Username, Password, func(identity, proof string) (UserID, error) {
+func SingleUser[User any](
+	username, password string, user User,
+) Authenticator[User] {
+	return New(Username, Password, func(identity, proof string) (User, error) {
 		if username != identity || password != proof {
-			var zero UserID
+			var zero User
 			return zero, ErrBadCredentials
 		}
-		return userID, nil
+		return user, nil
 	})
 }
 

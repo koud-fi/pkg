@@ -1,7 +1,6 @@
 github.com/koud-fi/pkg/blob v0.0.0-20220728144657-c6f4d528b26a h1:dWKk+QRtLt33xGscDn78cf1WcG9fyB0/LIqtQs16Exo=
 github.com/koud-fi/pkg/blob v0.0.0-20220728144657-c6f4d528b26a/go.mod h1:O8eBtnFdulkGtisNSLD6ZSoDNGuGJVYW8JF+8Lza2sQ=
-github.com/koud-fi/pkg/fetch v0.0.0-20250403045347-3155cc1f1c78 h1:vwVUv6SMbmin4pkyTwirP7zcbF+UEGlJngPzHpj5sdk=
-github.com/koud-fi/pkg/fetch v0.0.0-20250403045347-3155cc1f1c78/go.mod h1:1qxbmt/FofN/Mh+6PE/2QzGGeCSYnPFwWU8HODSNwE0=
+github.com/koud-fi/pkg/fetch v0.0.0-20250403062906-572a8619814e h1:TETAvM5X6f3r0kZAb6TKoAWOXN/S7mtnE2aJJNG4sSM=
 github.com/koud-fi/pkg/rx v0.0.0-20220617062645-d7d71be010cb h1:rKZAf1BkYyYmg5uD5sztaTpLGeant9daGe3dOvjy3cc=
 github.com/koud-fi/pkg/rx v0.0.0-20220617062645-d7d71be010cb/go.mod h1:11A6myvPh4NirnJHTCf/utpYN9FH8w5DJbWzqjX/QAQ=
 github.com/koud-fi/pkg/serve v0.0.0-20220728144657-c6f4d528b26a h1:QGysZtIjVRLP9Lti4hRiNmvGqkZwZNJYufNItR0eAjA=

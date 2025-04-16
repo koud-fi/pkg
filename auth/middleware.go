@@ -20,7 +20,7 @@ var requestAuthFuncs = []requestAuthEntry{
 	{fn: bearerAuth, identityType: BearerIdentity, proofType: Token},
 }
 
-func Middleware[UserID comparable](h http.Handler, a Authenticator[UserID]) http.Handler {
+func Middleware[User any](h http.Handler, a Authenticator[User]) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
 			id     string
@@ -44,12 +44,12 @@ func Middleware[UserID comparable](h http.Handler, a Authenticator[UserID]) http
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
-		userID, err := a.Authenticate(NewPayload(it, id, pt, secret))
+		user, err := a.Authenticate(NewPayload(it, id, pt, secret))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return
 		}
-		h.ServeHTTP(w, r.WithContext(ContextWithUserID(r.Context(), userID)))
+		h.ServeHTTP(w, r.WithContext(ContextWithUser(r.Context(), user)))
 	})
 }
 

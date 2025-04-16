@@ -7,22 +7,22 @@ import (
 
 type userIDKey struct{}
 
-func ContextWithUserID[UserID comparable](
-	parent context.Context, userID UserID,
+func ContextWithUser[User any](
+	parent context.Context, user User,
 ) context.Context {
-	return context.WithValue(parent, userIDKey{}, userID)
+	return context.WithValue(parent, userIDKey{}, user)
 }
 
-func ContextUserID[UserID comparable](ctx context.Context) (UserID, error) {
+func ContextUser[User any](ctx context.Context) (User, error) {
 	v := ctx.Value(userIDKey{})
 	if v == nil {
-		var zero UserID
+		var zero User
 		return zero, ErrUnauthorized
 	}
-	userID, ok := v.(UserID)
+	user, ok := v.(User)
 	if !ok {
-		var zero UserID
+		var zero User
 		return zero, fmt.Errorf("user ID type mismatch, got %T expected %T", v, zero)
 	}
-	return userID, nil
+	return user, nil
 }

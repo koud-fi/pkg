@@ -7,24 +7,24 @@ import (
 )
 
 type (
-	Authenticator[UserID comparable] struct {
-		userLookup UserLookupFunc[UserID]
+	Authenticator[User any] struct {
+		userLookup UserLookupFunc[User]
 	}
-	UserLookupFunc[UserID comparable] func(
+	UserLookupFunc[User any] func(
 		it auth.IdentityType, identity string,
-	) (UserID, []Hash, error)
+	) (User, []Hash, error)
 )
 
-func NewAuthenticator[UserID comparable](
-	userLookup UserLookupFunc[UserID],
-) *Authenticator[UserID] {
-	return &Authenticator[UserID]{userLookup: userLookup}
+func NewAuthenticator[User any](
+	userLookup UserLookupFunc[User],
+) *Authenticator[User] {
+	return &Authenticator[User]{userLookup: userLookup}
 }
 
-func (a *Authenticator[UserID]) Authenticate(payload auth.Payload) (UserID, error) {
-	userID, passwords, err := a.userLookup(payload.IdentityType, payload.Identity)
+func (a *Authenticator[User]) Authenticate(payload auth.Payload) (User, error) {
+	user, passwords, err := a.userLookup(payload.IdentityType, payload.Identity)
 	if err != nil {
-		return userID, fmt.Errorf("lookup user: %w", err)
+		return user, fmt.Errorf("lookup user: %w", err)
 	}
 	for _, proof := range payload.Proofs {
 		if proof.Type != auth.Password {
@@ -34,8 +34,8 @@ func (a *Authenticator[UserID]) Authenticate(payload auth.Payload) (UserID, erro
 			if err := Compare(proof.Value, password); err != nil {
 				continue
 			}
-			return userID, nil
+			return user, nil
 		}
 	}
-	return userID, auth.ErrBadCredentials
+	return user, auth.ErrBadCredentials
 }
