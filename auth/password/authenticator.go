@@ -16,6 +16,8 @@ type (
 	) (User, []Hash, error)
 )
 
+var _ auth.Authenticator[any] = &Authenticator[any]{}
+
 func NewAuthenticator[User any](
 	userLookup UserLookupFunc[User],
 ) *Authenticator[User] {
