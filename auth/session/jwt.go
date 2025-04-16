@@ -66,6 +66,9 @@ func (a *JWTAuthenticator[User]) Authenticate(
 		if err != nil {
 			return zero, fmt.Errorf("parse token: %w", err)
 		}
+
+		// TODO: Improve security and validation of the token
+
 		user, err := a.userFn(ctx, token.Claims)
 		if err != nil {
 			return zero, fmt.Errorf("get user: %w", err)
