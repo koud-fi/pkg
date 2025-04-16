@@ -39,7 +39,7 @@ func (a *JWTAuthenticator[_]) NewToken(subject string) (string, error) {
 			"sub": subject,
 			"exp": time.Now().Add(defaultJWTLifetime).Unix(),
 
-			// TODO: add more claims to enhance security
+			// TODO: Add more claims to enhance security
 
 		})
 	singedToken, err := token.SignedString([]byte(a.secret))
