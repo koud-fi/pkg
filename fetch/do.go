@@ -11,35 +11,28 @@ import (
 
 const maxErrLen = 1 << 12
 
-func (r *Request) Open() (io.ReadCloser, error) { return r.OpenFile() }
-
-func (r *Request) OpenFile() (fs.File, error) {
+func (r *Request) openFile() (fs.File, error) {
 	res, req, err := r.do()
 	if err != nil {
 		return nil, err
 	}
 	return &file{
-		fileInfo: &fileInfo{url: req.URL, header: res.Header, dr: r.dirReader},
+		fileInfo: newFileInfo(r, res, req),
 		body:     res.Body,
 	}, nil
 }
 
-func (r *Request) Stat() (fs.FileInfo, error) {
+func (r *Request) stat() (fs.FileInfo, error) {
 	res, req, err := r.do()
 	if err != nil {
 		return nil, err
 	}
 	res.Body.Close()
-	return &fileInfo{url: req.URL, header: res.Header, dr: r.dirReader}, nil
-}
-
-func (r *Request) Do() (*http.Response, error) {
-	res, _, err := r.do()
-	return res, err
+	return newFileInfo(r, res, req), nil
 }
 
 func (r *Request) do() (*http.Response, *http.Request, error) {
-	req, err := r.HttpRequest()
+	req, err := r.httpRequest()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -52,6 +45,10 @@ func (r *Request) do() (*http.Response, *http.Request, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// TODO: don't automatically treat all 400 >= statuses as errors
+	// TODO: add custom error decoders?
+
 	if res.StatusCode >= 400 {
 		return nil, nil, processErrorResponse(req, res)
 	}

@@ -14,9 +14,9 @@ func NewFS(reqFn func(name string) *Request) fs.StatFS {
 }
 
 func (fsys *fetchfs) Open(name string) (fs.File, error) {
-	return fsys.reqFn(name).Method(http.MethodGet).OpenFile()
+	return fsys.reqFn(name).Method(http.MethodGet).openFile()
 }
 
 func (fsys *fetchfs) Stat(name string) (fs.FileInfo, error) {
-	return fsys.reqFn(name).Method(http.MethodHead).Stat()
+	return fsys.reqFn(name).Method(http.MethodHead).stat()
 }

@@ -9,4 +9,4 @@ github.com/koud-fi/pkg/sorted v0.0.0-20231014081407-387030119de3 h1:lRobRcE19pXY
 github.com/koud-fi/pkg/sorted v0.0.0-20231014081407-387030119de3/go.mod h1:oS6cT+onc/6Dk8aFHpwTlfQWm4JmpznEnhnUv38ESWM=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72 h1:qLC7fQah7D6K1B0ujays3HV9gkFtllcxhzImRR7ArPQ=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
-golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c h1:7dEasQXItcW1xKJ2+gg5VOiBnqWrJc+rq0DPKyvvdbY=
+golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 h1:R84qjqJb5nVJMxqWYb3np9L5ZsaDtB+a39EqjV0JSUM=

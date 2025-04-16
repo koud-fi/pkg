@@ -33,6 +33,10 @@ type fileInfo struct {
 	dr     DirReader
 }
 
+func newFileInfo(r *Request, res *http.Response, req *http.Request) *fileInfo {
+	return &fileInfo{url: req.URL, header: res.Header, dr: r.dirReader}
+}
+
 func (fi fileInfo) Name() string {
 	name := path.Base(fi.url.Path)
 	if name == "" || name == "/" {

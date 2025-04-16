@@ -1,6 +1,6 @@
 module github.com/koud-fi/pkg/api/timecamp
 
-go 1.22.0
+go 1.23.0
 
 toolchain go1.24.2
 
@@ -10,4 +10,4 @@ require (
 	github.com/koud-fi/pkg/fetch v0.0.0-20220324064510-4720bb485366
 )
 
-require golang.org/x/time v0.5.0 // indirect
+require golang.org/x/time v0.11.0 // indirect
