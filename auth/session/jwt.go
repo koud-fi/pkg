@@ -54,7 +54,7 @@ func (a *JWTAuthenticator[UserID]) Authenticate(
 ) (UserID, error) {
 	var zero UserID
 	for _, proof := range payload.Proofs {
-		if proof.Type != auth.JWT {
+		if proof.Type != auth.Token {
 			continue
 		}
 		token, err := jwt.Parse(proof.Value, func(token *jwt.Token) (any, error) {
