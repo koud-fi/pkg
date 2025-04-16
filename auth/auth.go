@@ -1,5 +1,7 @@
 package auth
 
+import "context"
+
 const (
 	Email          IdentityType = "email"
 	Username       IdentityType = "username"
@@ -21,9 +23,9 @@ type (
 	ProofType    string
 
 	Authenticator[User any] interface {
-		Authenticate(Payload) (User, error)
+		Authenticate(context.Context, Payload) (User, error)
 	}
-	AuthenticatorFunc[User any] func(Payload) (User, error)
+	AuthenticatorFunc[User any] func(context.Context, Payload) (User, error)
 
 	Payload struct {
 		IdentityType IdentityType
@@ -36,29 +38,29 @@ type (
 	}
 )
 
-func (fn AuthenticatorFunc[User]) Authenticate(p Payload) (User, error) {
-	return fn(p)
+func (fn AuthenticatorFunc[User]) Authenticate(ctx context.Context, p Payload) (User, error) {
+	return fn(ctx, p)
 }
 
 // TODO: multi-method authenticator
 
 func New[User any](
 	it IdentityType, pt ProofType,
-	check func(identity, proof string) (User, error),
+	check func(ctx context.Context, identity, proof string) (User, error),
 ) Authenticator[User] {
-	return AuthenticatorFunc[User](func(p Payload) (User, error) {
+	return AuthenticatorFunc[User](func(ctx context.Context, p Payload) (User, error) {
 		if p.IdentityType != it || len(p.Proofs) != 1 || p.Proofs[0].Type != pt {
 			var zero User
 			return zero, ErrUnsupportedType
 		}
-		return check(p.Identity, p.Proofs[0].Value)
+		return check(ctx, p.Identity, p.Proofs[0].Value)
 	})
 }
 
 func SingleUser[User any](
 	username, password string, user User,
 ) Authenticator[User] {
-	return New(Username, Password, func(identity, proof string) (User, error) {
+	return New(Username, Password, func(ctx context.Context, identity, proof string) (User, error) {
 		if username != identity || password != proof {
 			var zero User
 			return zero, ErrBadCredentials

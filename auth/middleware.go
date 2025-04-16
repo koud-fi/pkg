@@ -44,7 +44,7 @@ func Middleware[User any](h http.Handler, a Authenticator[User]) http.Handler {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
-		user, err := a.Authenticate(NewPayload(it, id, pt, secret))
+		user, err := a.Authenticate(r.Context(), NewPayload(it, id, pt, secret))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return

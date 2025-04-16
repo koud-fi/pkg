@@ -1,6 +1,7 @@
 package password
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/koud-fi/pkg/auth"
@@ -11,7 +12,7 @@ type (
 		userLookup UserLookupFunc[User]
 	}
 	UserLookupFunc[User any] func(
-		it auth.IdentityType, identity string,
+		ctx context.Context, it auth.IdentityType, identity string,
 	) (User, []Hash, error)
 )
 
@@ -21,8 +22,8 @@ func NewAuthenticator[User any](
 	return &Authenticator[User]{userLookup: userLookup}
 }
 
-func (a *Authenticator[User]) Authenticate(payload auth.Payload) (User, error) {
-	user, passwords, err := a.userLookup(payload.IdentityType, payload.Identity)
+func (a *Authenticator[User]) Authenticate(ctx context.Context, payload auth.Payload) (User, error) {
+	user, passwords, err := a.userLookup(ctx, payload.IdentityType, payload.Identity)
 	if err != nil {
 		return user, fmt.Errorf("lookup user: %w", err)
 	}
