@@ -12,6 +12,7 @@ const (
 
 	Password ProofType = "password"
 	Token    ProofType = "token"
+	JWT      ProofType = "jwt"
 	//OTP           ProofType = "otp"
 	//OAuthToken    ProofType = "oauth_token"
 	//APISecret     ProofType = "api_secret"

@@ -9,7 +9,7 @@ import (
 
 type (
 	Authenticator[User any] struct {
-		userLookup UserLookupFunc[User]
+		userLookupFn UserLookupFunc[User]
 	}
 	UserLookupFunc[User any] func(
 		ctx context.Context, it auth.IdentityType, identity string,
@@ -19,19 +19,19 @@ type (
 var _ auth.Authenticator[any] = &Authenticator[any]{}
 
 func NewAuthenticator[User any](
-	userLookup UserLookupFunc[User],
+	userLookupFn UserLookupFunc[User],
 ) *Authenticator[User] {
-	return &Authenticator[User]{userLookup: userLookup}
+	return &Authenticator[User]{userLookupFn: userLookupFn}
 }
 
 func (a *Authenticator[User]) Authenticate(ctx context.Context, payload auth.Payload) (User, error) {
-	user, passwords, err := a.userLookup(ctx, payload.IdentityType, payload.Identity)
+	user, passwords, err := a.userLookupFn(ctx, payload.IdentityType, payload.Identity)
 	if err != nil {
 		return user, fmt.Errorf("lookup user: %w", err)
 	}
 	for _, proof := range payload.Proofs {
 		if proof.Type != auth.Password {
-			return user, fmt.Errorf("unsupported proof type: %s", auth.ErrBadCredentials)
+			continue
 		}
 		for _, password := range passwords {
 			if err := Compare(proof.Value, password); err != nil {
