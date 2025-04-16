@@ -12,31 +12,31 @@ import (
 const defaultJWTLifetime = time.Hour
 
 type (
-	JWTAuthenticator[UserID comparable] struct {
-		issuer   string
-		secret   string
-		userIDFn JWTUserIDFunc[UserID]
+	JWTAuthenticator[User any] struct {
+		issuer string
+		secret string
+		userFn JWTUserFunc[User]
 	}
-	JWTUserIDFunc[UserID comparable] func(jwt.MapClaims) (UserID, error)
+	JWTUserFunc[User any] func(jwt.MapClaims) (User, error)
 )
 
 var _ auth.Authenticator[any] = &JWTAuthenticator[any]{}
 
-func NewJWTAuthenticator[UserID comparable](
-	issuer string, secret string, userIDFn JWTUserIDFunc[UserID],
-) *JWTAuthenticator[UserID] {
-	return &JWTAuthenticator[UserID]{
-		issuer:   issuer,
-		secret:   secret,
-		userIDFn: userIDFn,
+func NewJWTAuthenticator[User any](
+	issuer string, secret string, userFn JWTUserFunc[User],
+) *JWTAuthenticator[User] {
+	return &JWTAuthenticator[User]{
+		issuer: issuer,
+		secret: secret,
+		userFn: userFn,
 	}
 }
 
-func (a *JWTAuthenticator[UserID]) NewToken(userID UserID) (string, error) {
+func (a *JWTAuthenticator[_]) NewToken(subject string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"iss": a.issuer,
-			"sub": userID,
+			"sub": subject,
 			"exp": time.Now().Add(defaultJWTLifetime).Unix(),
 
 			// TODO: add more claims to enhance security
@@ -49,10 +49,10 @@ func (a *JWTAuthenticator[UserID]) NewToken(userID UserID) (string, error) {
 	return singedToken, nil
 }
 
-func (a *JWTAuthenticator[UserID]) Authenticate(
+func (a *JWTAuthenticator[User]) Authenticate(
 	_ context.Context, payload auth.Payload,
-) (UserID, error) {
-	var zero UserID
+) (User, error) {
+	var zero User
 	for _, proof := range payload.Proofs {
 		if proof.Type != auth.Token {
 			continue
@@ -74,11 +74,11 @@ func (a *JWTAuthenticator[UserID]) Authenticate(
 		if !ok {
 			return zero, fmt.Errorf("invalid token claims")
 		}
-		userID, err := a.userIDFn(claims)
+		user, err := a.userFn(claims)
 		if err != nil {
-			return zero, fmt.Errorf("get user ID: %w", err)
+			return zero, fmt.Errorf("get user: %w", err)
 		}
-		return userID, nil
+		return user, nil
 	}
 	return zero, auth.ErrBadCredentials
 }
