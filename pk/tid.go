@@ -85,7 +85,7 @@ func (t TID) MarshalJSON() ([]byte, error) {
 func (t *TID) UnmarshalJSON(b []byte) error {
 	tid, err := ParseTIDBytes(b)
 	if err != nil {
-		return err
+		return fmt.Errorf("tid: unmarshal: %w", err)
 	}
 	*t = tid
 	return nil
