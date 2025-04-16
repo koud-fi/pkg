@@ -29,7 +29,7 @@ func (a *Authenticator[User]) Authenticate(ctx context.Context, payload auth.Pay
 	}
 	for _, proof := range payload.Proofs {
 		if proof.Type != auth.Password {
-			continue
+			return user, fmt.Errorf("unsupported proof type: %s", auth.ErrBadCredentials)
 		}
 		for _, password := range passwords {
 			if err := Compare(proof.Value, password); err != nil {
