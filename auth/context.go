@@ -5,24 +5,56 @@ import (
 	"fmt"
 )
 
-type userIDKey struct{}
+type (
+	authContextKey             struct{}
+	authContextValue[User any] struct {
+		authFn func(context.Context) (User, error)
+
+		hasUser bool
+		user    User
+
+		// TODO: add locking, single-flight the user lookup?
+	}
+)
+
+func ContextWithAuthFunc[User any](
+	parent context.Context, fn func(context.Context) (User, error),
+) context.Context {
+	return context.WithValue(parent, authContextKey{}, &authContextValue[User]{
+		authFn: fn,
+	})
+}
 
 func ContextWithUser[User any](
 	parent context.Context, user User,
 ) context.Context {
-	return context.WithValue(parent, userIDKey{}, user)
+	return context.WithValue(parent, authContextKey{}, &authContextValue[User]{
+		hasUser: true,
+		user:    user,
+	})
 }
 
 func ContextUser[User any](ctx context.Context) (User, error) {
-	v := ctx.Value(userIDKey{})
+	var zero User
+	v := ctx.Value(authContextKey{})
 	if v == nil {
-		var zero User
 		return zero, ErrUnauthorized
 	}
-	user, ok := v.(User)
+	val, ok := v.(*authContextValue[User])
 	if !ok {
-		var zero User
 		return zero, fmt.Errorf("user ID type mismatch, got %T expected %T", v, zero)
 	}
+	if val.hasUser {
+		return val.user, nil
+	}
+	if val.authFn == nil {
+		return zero, ErrUnauthorized
+	}
+	user, err := val.authFn(ctx)
+	if err != nil {
+		return zero, fmt.Errorf("context auth: %w", err)
+	}
+	val.user = user
+	val.hasUser = true
 	return user, nil
 }

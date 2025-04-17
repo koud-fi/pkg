@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"net/http"
 	"strings"
 )
@@ -22,34 +23,34 @@ var requestAuthFuncs = []requestAuthEntry{
 
 func Middleware[User any](h http.Handler, a Authenticator[User]) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var (
-			id     string
-			secret string
-			ok     bool
-			it     IdentityType
-			pt     ProofType
-		)
-		for _, entry := range requestAuthFuncs {
-			if id, secret, ok = entry.fn(r); ok {
-				it = entry.identityType
-				pt = entry.proofType
-				break
-			}
-		}
-		if !ok {
-			// Set WWW-Authenticate header to prompt the browser for credentials.
-			// TODO: Make this configurable.
-			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+		h.ServeHTTP(w, r.WithContext(ContextWithAuthFunc(
+			r.Context(),
+			func(ctx context.Context) (User, error) {
+				var (
+					id     string
+					secret string
+					ok     bool
+					it     IdentityType
+					pt     ProofType
+				)
+				for _, entry := range requestAuthFuncs {
+					if id, secret, ok = entry.fn(r); ok {
+						it = entry.identityType
+						pt = entry.proofType
+						break
+					}
+				}
+				if !ok {
+					// Set WWW-Authenticate header to prompt the browser for credentials.
+					// TODO: Make this configurable.
+					w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 
-			http.Error(w, "unauthorized", http.StatusUnauthorized)
-			return
-		}
-		user, err := a.Authenticate(r.Context(), NewPayload(it, id, pt, secret))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusForbidden)
-			return
-		}
-		h.ServeHTTP(w, r.WithContext(ContextWithUser(r.Context(), user)))
+					var zero User
+					return zero, ErrUnauthorized
+				}
+				return a.Authenticate(ctx, NewPayload(it, id, pt, secret))
+			},
+		)))
 	})
 }
 
