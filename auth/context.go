@@ -10,7 +10,7 @@ type (
 	authContextKey             struct{}
 	authContextValue[User any] struct {
 		authFn  func(context.Context) (User, error)
-		once    sync.Once
+		mu      sync.RWMutex
 		authErr error
 
 		hasUser bool
@@ -45,23 +45,41 @@ func ContextUser[User any](ctx context.Context) (User, error) {
 	if !ok {
 		return zero, fmt.Errorf("user ID type mismatch, got %T expected %T", v, zero)
 	}
-	if val.hasUser {
-		return val.user, nil
+	user, ok := val.cachedUser()
+	if ok {
+		return user, nil
 	}
-	if val.authFn == nil {
+	return val.resolveUser(ctx)
+}
+
+func (acv *authContextValue[User]) cachedUser() (User, bool) {
+	acv.mu.RLock()
+	defer acv.mu.RUnlock()
+
+	if acv.hasUser {
+		return acv.user, true
+	}
+	var zero User
+	return zero, false
+}
+
+func (acv *authContextValue[User]) resolveUser(ctx context.Context) (User, error) {
+	var zero User
+	if acv.authFn == nil { // authFn is only set in constructor so it's safe to check without locking
 		return zero, ErrUnauthorized
 	}
-	val.once.Do(func() {
-		user, err := val.authFn(ctx)
-		if err != nil {
-			val.authErr = fmt.Errorf("context auth: %w", err)
-			return
-		}
-		val.user = user
-		val.hasUser = true
-	})
-	if val.authErr != nil {
-		return zero, val.authErr
+	acv.mu.Lock()
+	defer acv.mu.Unlock()
+
+	if acv.authErr != nil {
+		return zero, acv.authErr
 	}
-	return val.user, nil
+	user, err := acv.authFn(ctx)
+	if err != nil {
+		acv.authErr = fmt.Errorf("context auth: %w", err)
+		return zero, acv.authErr
+	}
+	acv.user = user
+	acv.hasUser = true
+	return user, nil
 }
