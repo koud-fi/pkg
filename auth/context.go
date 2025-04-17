@@ -3,17 +3,18 @@ package auth
 import (
 	"context"
 	"fmt"
+	"sync"
 )
 
 type (
 	authContextKey             struct{}
 	authContextValue[User any] struct {
-		authFn func(context.Context) (User, error)
+		authFn  func(context.Context) (User, error)
+		once    sync.Once
+		authErr error
 
 		hasUser bool
 		user    User
-
-		// TODO: add locking, single-flight the user lookup?
 	}
 )
 
@@ -50,11 +51,17 @@ func ContextUser[User any](ctx context.Context) (User, error) {
 	if val.authFn == nil {
 		return zero, ErrUnauthorized
 	}
-	user, err := val.authFn(ctx)
-	if err != nil {
-		return zero, fmt.Errorf("context auth: %w", err)
+	val.once.Do(func() {
+		user, err := val.authFn(ctx)
+		if err != nil {
+			val.authErr = fmt.Errorf("context auth: %w", err)
+			return
+		}
+		val.user = user
+		val.hasUser = true
+	})
+	if val.authErr != nil {
+		return zero, val.authErr
 	}
-	val.user = user
-	val.hasUser = true
-	return user, nil
+	return val.user, nil
 }
