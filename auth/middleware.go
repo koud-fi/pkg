@@ -40,14 +40,17 @@ func Middleware[User any](h http.Handler, a Authenticator[User]) http.Handler {
 						break
 					}
 				}
-				if !ok {
-					// Set WWW-Authenticate header to prompt the browser for credentials.
-					// TODO: Make this configurable.
-					w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+				// TODO: This has no place being here, find a proper way to handle this.
+				/*
+					if !ok {
+						// Set WWW-Authenticate header to prompt the browser for credentials.
+						// TODO: Make this configurable.
+						w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 
-					var zero User
-					return zero, ErrUnauthorized
-				}
+						var zero User
+						return zero, ErrUnauthorized
+					}
+				*/
 				return a.Authenticate(ctx, NewPayload(it, id, pt, secret))
 			},
 		)))
