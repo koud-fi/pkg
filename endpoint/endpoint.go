@@ -16,11 +16,9 @@ type Endpoint struct {
 	inType      reflect.Type
 	inTypeIsPtr bool
 	outType     reflect.Type
-
-	opts []serve.Option
 }
 
-func New[T1, T2 any](fn func(context.Context, T1) (T2, error), opt ...serve.Option) Endpoint {
+func New[T1, T2 any](fn func(context.Context, T1) (T2, error)) Endpoint {
 	var (
 		fnVal  = reflect.ValueOf(fn)
 		fnType = fnVal.Type()
@@ -28,7 +26,6 @@ func New[T1, T2 any](fn func(context.Context, T1) (T2, error), opt ...serve.Opti
 			fn:      fnVal,
 			inType:  fnType.In(1),
 			outType: fnType.Out(0),
-			opts:    opt,
 		}
 	)
 	if e.inType.Kind() == reflect.Ptr {
@@ -53,11 +50,15 @@ func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if !e.inTypeIsPtr {
 			args[1] = args[1].Elem()
 		}
-		out := e.fn.Call(args[:])
+		var (
+			out    = e.fn.Call(args[:])
+			outVal = out[0].Interface()
+			outErr error
+		)
 		if !out[1].IsNil() {
-			return nil, out[1].Interface().(error)
+			outErr = out[1].Interface().(error)
 		}
-		return serveOutput(w, r, out[0].Interface(), e.opts)
+		return serveOutput(w, r, outVal, outErr)
 	})
 }
 
