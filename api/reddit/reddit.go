@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"sync"
 
+	"github.com/koud-fi/pkg/auth/oauth"
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/fetch"
 
@@ -66,7 +67,7 @@ type Client struct {
 	rateLimiter *rate.Limiter
 
 	tokenLock sync.Mutex
-	token     *fetch.OAuthToken
+	token     *oauth.Token
 }
 
 func New(appID, appSecret, userAgent string) *Client {
@@ -115,5 +116,5 @@ func (c *Client) resolveAuthHeader() (string, error) {
 			return "", fmt.Errorf("reddit.resolveAuthHeader: %w", err)
 		}
 	}
-	return c.token.Header()
+	return c.token.HTTPHeader()
 }
