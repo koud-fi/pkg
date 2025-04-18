@@ -11,8 +11,8 @@ import (
 
 type JSONWrapper[T any] struct {
 	Ok    bool  `json:"ok"`
-	Error error `json:"error"`
-	Data  T     `json:"data"`
+	Error error `json:"error,omitempty"`
+	Data  T     `json:"data,omitempty"`
 }
 
 func serveOutput(
