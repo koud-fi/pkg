@@ -1,4 +1,4 @@
-module github.com/koud-fi/pkg/api/timecamp
+module github.com/koud-fi/pkg/gateway/timecamp
 
 go 1.23.0
 

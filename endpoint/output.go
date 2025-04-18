@@ -18,14 +18,11 @@ type JSONWrapper[T any] struct {
 func serveOutput(
 	w http.ResponseWriter, r *http.Request, output any, err error,
 ) (*serve.Info, error) {
-	if err != nil {
-		return serve.JSON(w, r,
-			JSONWrapper[any]{Ok: false, Error: err},
-			serve.StatusCode(http.StatusBadRequest),
-		)
-	}
 	switch v := output.(type) {
 	case nil:
+		if err != nil {
+			return nil, err
+		}
 		return serve.Blob(w, r, blob.Empty())
 	case io.ReadCloser:
 		defer v.Close()
@@ -41,6 +38,10 @@ func serveOutput(
 	case fmt.Stringer:
 		return serve.Blob(w, r, blob.FromString(v.String()))
 	default:
-		return serve.JSON(w, r, JSONWrapper[any]{Ok: true, Data: v})
+		return serve.JSON(w, r, JSONWrapper[any]{
+			Ok:    true,
+			Data:  v,
+			Error: err,
+		})
 	}
 }

@@ -1,8 +1,6 @@
 go 1.24.2
 
 use (
-	./api/reddit
-	./api/timecamp
 	./assert
 	./assign
 	./auth
@@ -16,6 +14,8 @@ use (
 	./fetch
 	./file
 	./fingerprint
+	./gateway/reddit
+	./gateway/timecamp
 	./jump
 	./kv
 	./natsort

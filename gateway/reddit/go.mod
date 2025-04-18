@@ -1,4 +1,4 @@
-module github.com/koud-fi/pkg/api/reddit
+module github.com/koud-fi/pkg/gateway/reddit
 
 go 1.23.0
 
