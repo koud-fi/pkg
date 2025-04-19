@@ -4,7 +4,7 @@ go 1.24.2
 
 require (
 	github.com/koud-fi/pkg/assign v0.0.0-20250418040716-347af193268a
-	github.com/koud-fi/pkg/blob v0.0.0-20250418040716-347af193268a
+	github.com/koud-fi/pkg/blob v0.0.0-20250418103528-e7c0693a93ff
 	github.com/koud-fi/pkg/serve v0.0.0-20250418040716-347af193268a
 )
 
