@@ -13,9 +13,9 @@ type (
 		endpoint
 	}
 	RPCOutput[T any] struct {
-		Ok    bool  `json:"ok"`
-		Error error `json:"error,omitempty"`
-		Data  T     `json:"data,omitempty"`
+		Ok    bool  `json:""`
+		Error error `json:",omitempty"`
+		Data  T     `json:",omitempty"`
 	}
 )
 
