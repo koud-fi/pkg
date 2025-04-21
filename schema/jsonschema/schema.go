@@ -102,5 +102,5 @@ func FromType(t reflect.Type) *Schema {
 	default:
 		s.Type = flex.One(String)
 	}
-	return s
+	return &s
 }
