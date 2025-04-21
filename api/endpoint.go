@@ -38,8 +38,9 @@ func NewEndpoint(converter *assign.Converter, fn any) (*Endpoint, error) {
 	var inPos int
 
 	switch fnType.NumIn() {
+	case 0:
+		inPos = -1
 	case 1:
-		e.useCtx = false
 		inPos = 0
 	case 2:
 		ctxType := fnType.In(0)
@@ -52,21 +53,21 @@ func NewEndpoint(converter *assign.Converter, fn any) (*Endpoint, error) {
 		}
 	default:
 		return nil, fmt.Errorf(
-			"fn must take 1 (arg) or 2 (context, arg) parameters, got %d", fnType.NumIn())
+			"fn must take 0, 1 (arg) or 2 (context, arg) parameters, got %d", fnType.NumIn())
 	}
-	inType := fnType.In(inPos)
+	if inPos >= 0 {
+		inType := fnType.In(inPos)
 
-	if inType.Kind() == reflect.Ptr {
-		e.inTypeIsPtr = true
-		e.inType = inType.Elem()
-	} else {
-		e.inType = inType
+		if inType.Kind() == reflect.Ptr {
+			e.inTypeIsPtr = true
+			e.inType = inType.Elem()
+		} else {
+			e.inType = inType
+		}
 	}
 	switch fnType.NumOut() {
 	case 1:
-		e.returnErr = false
 		e.outType = fnType.Out(0)
-
 	case 2:
 		errTy := fnType.Out(1)
 		if errTy == reflect.TypeOf((*error)(nil)).Elem() {
@@ -92,23 +93,26 @@ func Blob[T any](fn func(context.Context, T) blob.Reader) *Endpoint {
 }
 
 func (e *Endpoint) Call(ctx context.Context, args Arguments) (any, error) {
-	var (
-		argPtr = reflect.New(e.inType)
-		argVal reflect.Value
-	)
-	if e.inTypeIsPtr {
-		argVal = argPtr
-	} else {
-		argVal = argPtr.Elem()
-	}
-	if err := ApplyArguments(argPtr.Interface(), e.converter, args); err != nil {
-		return nil, fmt.Errorf("can't apply input: %w", err)
+	var argVal reflect.Value
+	if e.inType != nil {
+		argPtr := reflect.New(e.inType)
+		if e.inTypeIsPtr {
+			argVal = argPtr
+		} else {
+			argVal = argPtr.Elem()
+		}
+		if err := ApplyArguments(argPtr.Interface(), e.converter, args); err != nil {
+			return nil, fmt.Errorf("can't apply input: %w", err)
+		}
 	}
 	var inputs []reflect.Value
 	if e.useCtx {
 		inputs = append(inputs, reflect.ValueOf(ctx))
 	}
-	results := e.fn.Call(append(inputs, argVal))
+	if argVal.IsValid() {
+		inputs = append(inputs, argVal)
+	}
+	results := e.fn.Call(inputs)
 
 	var err error
 	if e.returnErr {
