@@ -7,6 +7,16 @@ import "encoding/json"
 // be represented as a single value or as a list.
 type OneOrMany[T any] []T
 
+// One creates a OneOrMany with a single value.
+func One[T any](value T) OneOrMany[T] {
+	return OneOrMany[T]{value}
+}
+
+// Many creates a OneOrMany from multiple values.
+func Many[T any](values ...T) OneOrMany[T] {
+	return OneOrMany[T](values)
+}
+
 // Value return the first value of the underlying slice, or a zero value.
 func (o OneOrMany[T]) Value() T {
 	if len(o) == 0 {
