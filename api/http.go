@@ -10,7 +10,7 @@ import (
 	"github.com/koud-fi/pkg/serve"
 )
 
-type OutputWrapper[T any] struct {
+type RPCOutput[T any] struct {
 	Ok    bool  `json:"ok"`
 	Error error `json:"error,omitempty"`
 	Data  T     `json:"data,omitempty"`
@@ -67,7 +67,7 @@ func serveOutput(
 	case fmt.Stringer:
 		return serve.Blob(w, r, blob.FromString(v.String()))
 	default:
-		return serve.JSON(w, r, OutputWrapper[any]{
+		return serve.JSON(w, r, RPCOutput[any]{
 			Ok:    err == nil,
 			Data:  v,
 			Error: err,
