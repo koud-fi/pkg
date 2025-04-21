@@ -4,7 +4,6 @@ import "github.com/koud-fi/pkg/schema/jsonschema"
 
 type (
 	EndpointSchema struct {
-		Name   string             `json:"name,omitempty" yaml:"name,omitempty"`
 		Input  *jsonschema.Schema `json:"in,omitempty" yaml:"in,omitempty"`
 		Output *jsonschema.Schema `json:"out,omitempty" yaml:"out,omitempty"`
 	}
