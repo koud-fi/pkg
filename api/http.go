@@ -16,7 +16,7 @@ type HTTPOutput[T any] struct {
 	Data  T     `json:"data,omitempty"`
 }
 
-func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (e *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	serve.Handle(w, r, func() (*serve.Info, error) {
 		args, err := httpRequestArgs(r)
 		if err != nil {

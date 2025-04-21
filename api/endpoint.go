@@ -18,19 +18,22 @@ type Endpoint struct {
 	inTypeIsPtr bool
 	outType     reflect.Type
 	returnErr   bool
+
+	converter *assign.Converter
 }
 
 // NewEndpoint inspects the signature of fn and creates an Endpoint.
-func NewEndpoint(fn any) (Endpoint, error) {
+func NewEndpoint(converter *assign.Converter, fn any) (*Endpoint, error) {
 	var (
 		fnVal  = reflect.ValueOf(fn)
 		fnType = fnVal.Type()
 	)
 	if fnType.Kind() != reflect.Func {
-		return Endpoint{}, errors.New("fn must be a function")
+		return nil, errors.New("fn must be a function")
 	}
 	e := Endpoint{
-		fn: fnVal,
+		converter: converter,
+		fn:        fnVal,
 	}
 	var inPos int
 
@@ -44,11 +47,11 @@ func NewEndpoint(fn any) (Endpoint, error) {
 			e.useCtx = true
 			inPos = 1
 		} else {
-			return Endpoint{}, fmt.Errorf(
+			return nil, fmt.Errorf(
 				"if two parameters, first must be context.Context, got %v", ctxType)
 		}
 	default:
-		return Endpoint{}, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"fn must take 1 (arg) or 2 (context, arg) parameters, got %d", fnType.NumIn())
 	}
 	inType := fnType.In(inPos)
@@ -70,25 +73,25 @@ func NewEndpoint(fn any) (Endpoint, error) {
 			e.returnErr = true
 			e.outType = fnType.Out(0)
 		} else {
-			return Endpoint{}, fmt.Errorf(
+			return nil, fmt.Errorf(
 				"second return value must be error, got %v", errTy)
 		}
 	default:
-		return Endpoint{}, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"fn must return 1 or 2 values, got %d", fnType.NumOut())
 	}
-	return e, nil
+	return &e, nil
 }
 
-func RPC[T1, T2 any](fn func(context.Context, T1) (T2, error)) Endpoint {
-	return assert.Must(NewEndpoint(fn))
+func RPC[T1, T2 any](fn func(context.Context, T1) (T2, error)) *Endpoint {
+	return assert.Must(NewEndpoint(assign.NewDefaultConverter(), fn))
 }
 
-func Blob[T any](fn func(context.Context, T) blob.Reader) Endpoint {
-	return assert.Must(NewEndpoint(fn))
+func Blob[T any](fn func(context.Context, T) blob.Reader) *Endpoint {
+	return assert.Must(NewEndpoint(assign.NewDefaultConverter(), fn))
 }
 
-func (e Endpoint) Call(ctx context.Context, args Arguments) (any, error) {
+func (e *Endpoint) Call(ctx context.Context, args Arguments) (any, error) {
 	var (
 		argPtr = reflect.New(e.inType)
 		argVal reflect.Value
@@ -98,7 +101,7 @@ func (e Endpoint) Call(ctx context.Context, args Arguments) (any, error) {
 	} else {
 		argVal = argPtr.Elem()
 	}
-	if err := ApplyArguments(argPtr.Interface(), assign.NewDefaultConverter(), args); err != nil {
+	if err := ApplyArguments(argPtr.Interface(), e.converter, args); err != nil {
 		return nil, fmt.Errorf("can't apply input: %w", err)
 	}
 	var inputs []reflect.Value
