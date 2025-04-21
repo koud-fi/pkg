@@ -7,7 +7,7 @@ type EndpointSchema struct {
 	Output *jsonschema.Schema `json:"output,omitempty" yaml:"output,omitempty"`
 }
 
-func (e endpoint) Schema() *EndpointSchema {
+func (e Endpoint) Schema() *EndpointSchema {
 
 	// TODO: this can't really handle all possible output types
 

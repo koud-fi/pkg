@@ -2,72 +2,117 @@ package api
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"net/http"
 	"reflect"
 
+	"github.com/koud-fi/pkg/assert"
 	"github.com/koud-fi/pkg/assign"
+	"github.com/koud-fi/pkg/blob"
 )
 
-type endpoint struct {
+type Endpoint struct {
 	fn          reflect.Value
+	useCtx      bool
 	inType      reflect.Type
 	inTypeIsPtr bool
 	outType     reflect.Type
+	returnErr   bool
 }
 
-func newEndpoint(fn any) endpoint {
+// NewEndpoint inspects the signature of fn and creates an Endpoint.
+func NewEndpoint(fn any) (Endpoint, error) {
 	var (
 		fnVal  = reflect.ValueOf(fn)
 		fnType = fnVal.Type()
-		e      = endpoint{
-			fn:      fnVal,
-			inType:  fnType.In(1),
-			outType: fnType.Out(0),
-		}
 	)
-	if e.inType.Kind() == reflect.Ptr {
-		e.inType = e.inType.Elem()
-		e.inTypeIsPtr = true
+	if fnType.Kind() != reflect.Func {
+		return Endpoint{}, errors.New("fn must be a function")
 	}
-	return e
+	e := Endpoint{
+		fn: fnVal,
+	}
+	var inPos int
+
+	switch fnType.NumIn() {
+	case 1:
+		e.useCtx = false
+		inPos = 0
+	case 2:
+		ctxType := fnType.In(0)
+		if ctxType == reflect.TypeOf((*context.Context)(nil)).Elem() {
+			e.useCtx = true
+			inPos = 1
+		} else {
+			return Endpoint{}, fmt.Errorf(
+				"if two parameters, first must be context.Context, got %v", ctxType)
+		}
+	default:
+		return Endpoint{}, fmt.Errorf(
+			"fn must take 1 (arg) or 2 (context, arg) parameters, got %d", fnType.NumIn())
+	}
+	inType := fnType.In(inPos)
+
+	if inType.Kind() == reflect.Ptr {
+		e.inTypeIsPtr = true
+		e.inType = inType.Elem()
+	} else {
+		e.inType = inType
+	}
+	switch fnType.NumOut() {
+	case 1:
+		e.returnErr = false
+		e.outType = fnType.Out(0)
+
+	case 2:
+		errTy := fnType.Out(1)
+		if errTy == reflect.TypeOf((*error)(nil)).Elem() {
+			e.returnErr = true
+			e.outType = fnType.Out(0)
+		} else {
+			return Endpoint{}, fmt.Errorf(
+				"second return value must be error, got %v", errTy)
+		}
+	default:
+		return Endpoint{}, fmt.Errorf(
+			"fn must return 1 or 2 values, got %d", fnType.NumOut())
+	}
+	return e, nil
 }
 
-func (e endpoint) call(
-	ctx context.Context, applyArgs func(any) error,
-) ([]reflect.Value, error) {
-	args := [2]reflect.Value{
-		reflect.ValueOf(ctx),
-		reflect.New(e.inType),
+func RPC[T1, T2 any](fn func(context.Context, T1) (T2, error)) Endpoint {
+	return assert.Must(NewEndpoint(fn))
+}
+
+func Blob[T any](fn func(context.Context, T) blob.Reader) Endpoint {
+	return assert.Must(NewEndpoint(fn))
+}
+
+func (e Endpoint) Call(ctx context.Context, args Arguments) (any, error) {
+	var (
+		argPtr = reflect.New(e.inType)
+		argVal reflect.Value
+	)
+	if e.inTypeIsPtr {
+		argVal = argPtr
+	} else {
+		argVal = argPtr.Elem()
 	}
-	if err := applyArgs(args[1].Interface()); err != nil {
+	if err := ApplyArguments(argPtr.Interface(), assign.NewDefaultConverter(), args); err != nil {
 		return nil, fmt.Errorf("can't apply input: %w", err)
 	}
-	if !e.inTypeIsPtr {
-		args[1] = args[1].Elem()
+	var inputs []reflect.Value
+	if e.useCtx {
+		inputs = append(inputs, reflect.ValueOf(ctx))
 	}
-	return e.fn.Call(args[:]), nil
-}
+	results := e.fn.Call(append(inputs, argVal))
 
-func applyHTTPInput(v any, r *http.Request) error {
-	var bodyArgs Arguments
-	switch r.Header.Get("Content-Type") {
-	case "application/json", "application/json; charset=UTF-8":
-		args := make(ArgumentMap)
-		if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
-			return fmt.Errorf("decode json: %w", err)
+	var err error
+	if e.returnErr {
+		errVal := results[1]
+		if !errVal.IsNil() {
+			err = errVal.Interface().(error)
 		}
-		bodyArgs = args
 	}
-	if err := r.ParseForm(); err != nil {
-		return fmt.Errorf("parse form: %w", err)
-	}
-	args := CombinedArguments{
-		URLValueArguments(r.Form),
-	}
-	if bodyArgs != nil {
-		args = append(args, bodyArgs)
-	}
-	return ApplyArguments(v, assign.NewDefaultConverter(), args)
+	return results[0].Interface(), err
 }
