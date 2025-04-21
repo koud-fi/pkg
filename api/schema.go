@@ -5,8 +5,8 @@ import "github.com/koud-fi/pkg/schema/jsonschema"
 type (
 	EndpointSchema struct {
 		Name   string             `json:"name,omitempty" yaml:"name,omitempty"`
-		Input  *jsonschema.Schema `json:"input,omitempty" yaml:"input,omitempty"`
-		Output *jsonschema.Schema `json:"output,omitempty" yaml:"output,omitempty"`
+		Input  *jsonschema.Schema `json:"in,omitempty" yaml:"in,omitempty"`
+		Output *jsonschema.Schema `json:"out,omitempty" yaml:"out,omitempty"`
 	}
 	MuxSchema struct {
 		Endpoints []MuxEndpointSchema `json:"endpoints" yaml:"endpoints"`
