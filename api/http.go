@@ -20,7 +20,7 @@ func (e Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	serve.Handle(w, r, func() (*serve.Info, error) {
 		args, err := httpRequestArgs(r)
 		if err != nil {
-			return nil, fmt.Errorf("arguments from http request: %w", err)
+			return nil, fmt.Errorf("http request args: %w", err)
 		}
 		out, err := e.Call(r.Context(), args)
 		return serveOutput(w, r, out, err)
