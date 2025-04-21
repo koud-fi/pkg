@@ -39,7 +39,7 @@ func FromType(t reflect.Type) *Schema {
 	if t.Kind() == reflect.Ptr {
 		return FromType(t.Elem())
 	}
-	s := &Schema{}
+	var s Schema
 	switch t.Kind() {
 	case reflect.Bool:
 		s.Type = flex.One(Boolean)
@@ -69,6 +69,7 @@ func FromType(t reflect.Type) *Schema {
 		var required []string
 		for i := range t.NumField() {
 			f := t.Field(i)
+
 			// skip unexported
 			if f.PkgPath != "" {
 				continue
@@ -90,7 +91,7 @@ func FromType(t reflect.Type) *Schema {
 			}
 			s.Properties[name] = child
 
-			// mark required if omitempty not present
+			// mark required if "omitempty" is not present
 			if !strings.Contains(f.Tag.Get("json"), "omitempty") {
 				required = append(required, name)
 			}
