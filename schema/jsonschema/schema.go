@@ -20,13 +20,14 @@ const (
 // Schema models a JSON Schema object and can be encoded/decoded as JSON or YAML.
 type (
 	Schema struct {
-		Schema      string               `json:"$schema,omitempty" yaml:"$schema,omitempty"`
-		Title       string               `json:"title,omitempty" yaml:"title,omitempty"`
-		Description string               `json:"description,omitempty" yaml:"description,omitempty"`
-		Type        flex.OneOrMany[Type] `json:"type,omitempty" yaml:"type,omitempty"`
-		Properties  map[string]*Schema   `json:"properties,omitempty" yaml:"properties,omitempty"`
-		Items       *Schema              `json:"items,omitempty" yaml:"items,omitempty"`
-		Required    []string             `json:"required,omitempty" yaml:"required,omitempty"`
+		Schema               string               `json:"$schema,omitempty" yaml:"$schema,omitempty"`
+		Title                string               `json:"title,omitempty" yaml:"title,omitempty"`
+		Description          string               `json:"description,omitempty" yaml:"description,omitempty"`
+		Type                 flex.OneOrMany[Type] `json:"type,omitempty" yaml:"type,omitempty"`
+		Properties           map[string]*Schema   `json:"properties,omitempty" yaml:"properties,omitempty"`
+		Items                *Schema              `json:"items,omitempty" yaml:"items,omitempty"`
+		Required             []string             `json:"required,omitempty" yaml:"required,omitempty"`
+		AdditionalProperties any                  `json:"additionalProperties,omitempty" yaml:"additionalProperties,omitempty"`
 		// Extend with fields like Enum, Format, etc.
 	}
 	Type string
