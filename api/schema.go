@@ -1,11 +1,13 @@
 package api
 
-import "github.com/koud-fi/pkg/schema/jsonschema"
+import (
+	"github.com/koud-fi/pkg/schema"
+)
 
 type (
 	EndpointSchema struct {
-		Input  *jsonschema.Schema `json:"in,omitempty" yaml:"in,omitempty"`
-		Output *jsonschema.Schema `json:"out,omitempty" yaml:"out,omitempty"`
+		Input  schema.Type `json:"in,omitempty" yaml:"in,omitempty"`
+		Output schema.Type `json:"out,omitempty" yaml:"out,omitempty"`
 	}
 	MuxSchema struct {
 		Endpoints []MuxEndpointSchema `json:"endpoints" yaml:"endpoints"`
@@ -21,8 +23,8 @@ func (e *Endpoint) Schema() EndpointSchema {
 	// TODO: this can't really handle all possible output types
 
 	return EndpointSchema{
-		Input:  jsonschema.FromType(e.inType),
-		Output: jsonschema.FromType(e.outType),
+		Input:  schema.ResolveTypeOf(e.inType),
+		Output: schema.ResolveTypeOf(e.outType),
 	}
 }
 

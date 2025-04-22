@@ -155,6 +155,11 @@ func (t Type) resolve(c config, v any) Type {
 		t.allocProps(rt.NumField())
 		t.Properties.fromStructFields(c, rt)
 
+	case reflect.Map:
+		t.Type = Object
+
+		// TODO: missing fields
+
 	case reflect.Slice:
 		t.Type = Array
 		it := Type{}.resolve(c, rt.Elem())

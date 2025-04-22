@@ -35,6 +35,9 @@ type (
 
 // FromType inspects a Go type and returns the corresponding JSON Schema.
 func FromType(t reflect.Type) *Schema {
+	if t == nil {
+		return nil
+	}
 	// Dereference pointers
 	if t.Kind() == reflect.Ptr {
 		return FromType(t.Elem())
