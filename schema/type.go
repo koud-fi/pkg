@@ -165,6 +165,9 @@ func (t Type) resolve(c config, v any) Type {
 		it := Type{}.resolve(c, rt.Elem())
 		t.Items = &it
 
+	case reflect.Interface:
+		// TODO: ???
+
 	default:
 		panic("cannot resolve schema for type: " + rt.Kind().String())
 	}
