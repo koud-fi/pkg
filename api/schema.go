@@ -1,6 +1,8 @@
 package api
 
 import (
+	"sort"
+
 	"github.com/koud-fi/pkg/schema"
 )
 
@@ -38,5 +40,9 @@ func (m *Mux) Schema() MuxSchema {
 			EndpointSchema: endpoint.Schema(),
 		})
 	}
+	// Sort endpoints by name for consistent ordering
+	sort.Slice(schema.Endpoints, func(i, j int) bool {
+		return schema.Endpoints[i].Name < schema.Endpoints[j].Name
+	})
 	return schema
 }
