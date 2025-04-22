@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/koud-fi/pkg/blob"
 	"github.com/koud-fi/pkg/serve"
@@ -23,6 +24,19 @@ func (e *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return nil, fmt.Errorf("http request args: %w", err)
 		}
 		out, err := e.Call(r.Context(), args)
+		return serveOutput(w, r, out, err)
+	})
+}
+
+func (m *Mux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	serve.Handle(w, r, func() (*serve.Info, error) {
+		args, err := httpRequestArgs(r)
+		if err != nil {
+			return nil, fmt.Errorf("http request args: %w", err)
+		}
+		name := strings.TrimPrefix(r.URL.Path, "/")
+
+		out, err := m.Call(r.Context(), name, args)
 		return serveOutput(w, r, out, err)
 	})
 }
