@@ -34,7 +34,8 @@ func (m *Mux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return nil, fmt.Errorf("http request args: %w", err)
 		}
-		name := strings.TrimPrefix(r.URL.Path, "/")
+		pathParts := strings.Split(r.URL.Path, "/")
+		name := pathParts[len(pathParts)-1]
 
 		out, err := m.Call(r.Context(), name, args)
 		return serveOutput(w, r, out, err)
