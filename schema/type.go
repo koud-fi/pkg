@@ -56,7 +56,7 @@ func ResolveTypeOf(v any, opts ...Option) Type {
 	for _, opt := range opts {
 		opt(&c)
 	}
-	return Type{}.resolve(c, v)
+	return resolveType(c, v)
 }
 
 // JSONName returns the JSON field name based on the struct tag, if present.
@@ -101,8 +101,8 @@ func (t Type) ExampleJSON() string {
 	return string(data)
 }
 
-// resolve is the core recursive resolver with cycle detection.
-func (Type) resolve(c config, v any) Type {
+// resolveType is the core recursive resolver with cycle detection.
+func resolveType(c config, v any) Type {
 	// Handle map[string]any as an object literal
 	switch vv := v.(type) {
 	case map[string]any:
@@ -113,10 +113,7 @@ func (Type) resolve(c config, v any) Type {
 	case []any:
 		full := Type{Type: Array}
 		for _, elem := range vv {
-			if full.Items == nil {
-				full.Items = new(Type)
-			}
-			it := full.Items.resolve(c, elem)
+			it := resolveType(c, elem)
 			full.Items = &it
 		}
 		return full
@@ -134,13 +131,16 @@ func (Type) resolve(c config, v any) Type {
 		return Type{}
 	}
 
-	// Cycle detection: if we already started resolving this type, emit a $ref.
-	if _, seen := c.inProgress[rt]; seen {
-		return Type{Tags: map[string]string{"$ref": "#/definitions/" + rt.Name()}}
+	// Cycle detection: if we already started resolving this struct type, emit a $ref.
+	var placeholder *Type
+	if rt.Kind() == reflect.Struct {
+		if _, seen := c.inProgress[rt]; seen {
+			// Emit a $ref to break the cycle
+			return Type{Tags: map[string]string{"$ref": "#/definitions/" + rt.Name()}}
+		}
+		placeholder = &Type{}
+		c.inProgress[rt] = placeholder
 	}
-	// Mark as in-progress with a placeholder
-	placeholder := &Type{}
-	c.inProgress[rt] = placeholder
 
 	// Custom type overrides (e.g. time.Time)
 	if ct, ok := c.customTypes[typeKey{rt.PkgPath(), strings.TrimLeft(rt.Name(), "*")}]; ok {
@@ -153,34 +153,45 @@ func (Type) resolve(c config, v any) Type {
 	var full Type
 	switch rt.Kind() {
 	case reflect.Ptr:
-		full = Type{}.resolve(c, rt.Elem())
+		full = resolveType(c, rt.Elem())
+
 	case reflect.String:
 		full.Type = String
+
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		full.Type = Integer
+
 	case reflect.Float32, reflect.Float64:
 		full.Type = Number
+
 	case reflect.Bool:
 		full.Type = Boolean
+
 	case reflect.Struct:
 		full.Type = Object
 		full.allocProps(rt.NumField())
 		full.Properties.fromStructFields(c, rt)
+
 	case reflect.Map:
 		full.Type = Object // free-form map
+
 	case reflect.Slice:
-		item := Type{}.resolve(c, rt.Elem())
+		item := resolveType(c, rt.Elem())
 		full.Type = Array
 		full.Items = &item
+
 	case reflect.Interface:
 		// no constraints for interface
+
 	default:
 		panic("cannot resolve schema for type: " + rt.Kind().String())
 	}
 
-	// Fill the placeholder and return
-	*placeholder = full
+	// If we registered a placeholder, fill it now and return
+	if placeholder != nil {
+		*placeholder = full
+	}
 	return full
 }
 

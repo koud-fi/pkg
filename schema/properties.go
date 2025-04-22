@@ -11,7 +11,7 @@ func (p Properties) fromStructFields(c config, rt reflect.Type) {
 			p.fromStructFields(c, sf.Type)
 			continue
 		}
-		t := Type{}.resolve(c, sf.Type)
+		t := resolveType(c, sf.Type)
 		for _, tag := range c.tags {
 			if v, ok := sf.Tag.Lookup(tag); ok {
 				if t.Tags == nil {
@@ -30,6 +30,6 @@ func (p Properties) fromMap(c config, m map[string]any) {
 
 		// TODO: handle possible mixed types for a same field
 
-		p[k] = Type{}.resolve(c, v)
+		p[k] = resolveType(c, v)
 	}
 }
