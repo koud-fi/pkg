@@ -3,9 +3,12 @@ package api
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/koud-fi/pkg/assign"
 )
+
+var endpointNameValidator = regexp.MustCompile(`^[a-z0-9.-]+$`)
 
 type Mux struct {
 	endpoints map[string]*Endpoint
@@ -20,6 +23,9 @@ func NewMux() *Mux {
 }
 
 func (m *Mux) Register(name string, fn any) {
+	if !endpointNameValidator.MatchString(name) {
+		panic(fmt.Errorf("endpoint name %q must match %q", name, endpointNameValidator))
+	}
 	e, err := NewEndpoint(m.converter, fn)
 	if err != nil {
 		panic(err)
