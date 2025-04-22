@@ -1,4 +1,4 @@
-package api
+package rpcapi
 
 import (
 	"encoding/json"
