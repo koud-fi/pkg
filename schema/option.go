@@ -4,18 +4,22 @@ import "reflect"
 
 type Option func(*config)
 
-func CustomType(packagePath, typeName string, fn func(reflect.Type) Type) Option {
-	return func(c *config) { c.customTypes[typeKey{packagePath, typeName}] = fn }
+func WithCustomType(pkgPath, name string, fn func(reflect.Type) Type) Option {
+	return func(c *config) { c.customTypes[typeKey{pkgPath, name}] = fn }
 }
 
-func Tags(tag ...string) Option { return func(c *config) { c.tags = tag } }
+// WithTags allows overriding which struct tags to honor (e.g. "json", "xml").
+func WithTags(tags ...string) Option {
+	return func(c *config) { c.tags = tags }
+}
 
 type config struct {
 	customTypes map[typeKey]func(reflect.Type) Type
 	tags        []string
+	inProgress  map[reflect.Type]*Type
 }
 
 type typeKey struct {
-	packagePath string
-	typeName    string
+	pkgPath string
+	name    string
 }

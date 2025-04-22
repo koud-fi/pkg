@@ -1,3 +1,4 @@
+// schema.go
 package schema
 
 import (
@@ -23,6 +24,9 @@ const (
 	// TODO: Binary   Format = "binary"
 )
 
+type TypeName string
+type Format string
+
 type Type struct {
 	Type       TypeName   `json:"type,omitempty"`
 	Format     Format     `json:"format,omitempty"`
@@ -32,16 +36,13 @@ type Type struct {
 	Tags map[string]string `json:"tags,omitempty"`
 }
 
-type (
-	TypeName string
-	Format   string
-)
-
+// ResolveType infers a JSON-Schema Type for a generic Go type T.
 func ResolveType[T any](opts ...Option) Type {
 	var v T
 	return ResolveTypeOf(v, opts...)
 }
 
+// ResolveTypeOf infers a JSON-Schema Type for the value or type v.
 func ResolveTypeOf(v any, opts ...Option) Type {
 	c := config{
 		customTypes: map[typeKey]func(reflect.Type) Type{
@@ -49,6 +50,8 @@ func ResolveTypeOf(v any, opts ...Option) Type {
 				return Type{Type: String, Format: DateTime}
 			},
 		},
+		tags:       []string{},
+		inProgress: make(map[reflect.Type]*Type),
 	}
 	for _, opt := range opts {
 		opt(&c)
@@ -56,126 +59,134 @@ func ResolveTypeOf(v any, opts ...Option) Type {
 	return Type{}.resolve(c, v)
 }
 
+// JSONName returns the JSON field name based on the struct tag, if present.
 func (t Type) JSONName(key string) string {
 	if jsonTag, ok := t.Tags["json"]; ok {
 		return strings.Split(jsonTag, ",")[0]
 	}
-	return key // TODO: proper JSON formatting
+	return key
 }
 
+// ExampleValue produces a native Go value matching the schema.
 func (t Type) ExampleValue() any {
 	switch t.Type {
 	case String:
-		switch t.Format {
-		case DateTime:
+		if t.Format == DateTime {
 			return time.RFC3339
 		}
 		return ""
-
 	case Number, Integer:
 		return 0
-
 	case Object:
 		o := make(map[string]any, len(t.Properties))
 		for name, typ := range t.Properties {
 			o[name] = typ.ExampleValue()
 		}
 		return o
-
 	case Array:
 		if t.Items == nil {
 			return []any{nil}
 		}
 		return []any{t.Items.ExampleValue()}
-
 	case Boolean:
 		return false
-
 	default:
 		return nil
 	}
 }
 
+// ExampleJSON returns a pretty-printed JSON example for the schema.
 func (t Type) ExampleJSON() string {
 	data, _ := json.MarshalIndent(t.ExampleValue(), "", "\t")
 	return string(data)
 }
 
-func (t Type) resolve(c config, v any) Type {
-	var rt reflect.Type
-	switch v := v.(type) {
-	case reflect.Type:
-		rt = v
+// resolve is the core recursive resolver with cycle detection.
+func (Type) resolve(c config, v any) Type {
+	// Handle map[string]any as an object literal
+	switch vv := v.(type) {
 	case map[string]any:
-		t.Type = Object
-		t.allocProps(len(v))
-		t.Properties.fromMap(c, v)
-
+		full := Type{Type: Object}
+		full.allocProps(len(vv))
+		full.Properties.fromMap(c, vv)
+		return full
 	case []any:
-		t.Type = Array
-		for i := range v {
-			if t.Items == nil {
-				t.Items = new(Type)
+		full := Type{Type: Array}
+		for _, elem := range vv {
+			if full.Items == nil {
+				full.Items = new(Type)
 			}
-
-			// TODO: handle possible mixed types
-
-			it := t.Items.resolve(c, v[i])
-			t.Items = &it
+			it := full.Items.resolve(c, elem)
+			full.Items = &it
 		}
+		return full
+	}
+
+	// Fallback to reflect
+	var rt reflect.Type
+	switch vv := v.(type) {
+	case reflect.Type:
+		rt = vv
 	default:
 		rt = reflect.TypeOf(v)
 	}
 	if rt == nil {
-		return t
+		return Type{}
 	}
+
+	// Cycle detection: if we already started resolving this type, emit a $ref.
+	if _, seen := c.inProgress[rt]; seen {
+		return Type{Tags: map[string]string{"$ref": "#/definitions/" + rt.Name()}}
+	}
+	// Mark as in-progress with a placeholder
+	placeholder := &Type{}
+	c.inProgress[rt] = placeholder
+
+	// Custom type overrides (e.g. time.Time)
 	if ct, ok := c.customTypes[typeKey{rt.PkgPath(), strings.TrimLeft(rt.Name(), "*")}]; ok {
-		return ct(rt)
+		full := ct(rt)
+		*placeholder = full
+		return full
 	}
+
+	// Build the full schema for rt
+	var full Type
 	switch rt.Kind() {
 	case reflect.Ptr:
-		t = Type{}.resolve(c, rt.Elem())
-
+		full = Type{}.resolve(c, rt.Elem())
 	case reflect.String:
-		t.Type = String
-
-	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8,
-		reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
-
-		t.Type = Integer
-
-	case reflect.Float64, reflect.Float32:
-		t.Type = Number
-
+		full.Type = String
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		full.Type = Integer
+	case reflect.Float32, reflect.Float64:
+		full.Type = Number
 	case reflect.Bool:
-		t.Type = Boolean
-
+		full.Type = Boolean
 	case reflect.Struct:
-		t.Type = Object
-		t.allocProps(rt.NumField())
-		t.Properties.fromStructFields(c, rt)
-
+		full.Type = Object
+		full.allocProps(rt.NumField())
+		full.Properties.fromStructFields(c, rt)
 	case reflect.Map:
-		t.Type = Object
-
-		// TODO: missing fields
-
+		full.Type = Object // free-form map
 	case reflect.Slice:
-		t.Type = Array
-		it := Type{}.resolve(c, rt.Elem())
-		t.Items = &it
-
+		item := Type{}.resolve(c, rt.Elem())
+		full.Type = Array
+		full.Items = &item
 	case reflect.Interface:
-		// TODO: ???
-
+		// no constraints for interface
 	default:
 		panic("cannot resolve schema for type: " + rt.Kind().String())
 	}
-	return t
+
+	// Fill the placeholder and return
+	*placeholder = full
+	return full
 }
 
+// allocProps initializes the Properties map if nil.
 func (t *Type) allocProps(lenHint int) {
 	if t.Properties == nil {
-		t.Properties = make(map[string]Type, lenHint)
+		t.Properties = make(Properties, lenHint)
 	}
 }
