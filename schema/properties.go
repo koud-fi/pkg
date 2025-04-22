@@ -5,7 +5,7 @@ import "reflect"
 type Properties map[string]Type
 
 func (p Properties) fromStructFields(c config, rt reflect.Type) {
-	for i := 0; i < rt.NumField(); i++ {
+	for i := range rt.NumField() {
 		sf := rt.Field(i)
 		if sf.Anonymous {
 			p.fromStructFields(c, sf.Type)
