@@ -1,6 +1,7 @@
 package pk_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/koud-fi/pkg/pk"
@@ -19,5 +20,26 @@ func TestTID(t *testing.T) {
 		if parsed != original {
 			t.Errorf("Parsed TID %v does not match original %v", parsed, original)
 		}
+	}
+}
+
+func TestTID_MarshalJSON(t *testing.T) {
+	type TIDAlias pk.TID
+	type TIDWrapper struct {
+		pk.TID
+	}
+	tid := pk.TID(123)
+	testTIDMarshalJSON(t, tid, `"ew"`)
+	testTIDMarshalJSON(t, TIDAlias(tid), "123") // NOTE: Aliasing breaks MarshalJSON
+	testTIDMarshalJSON(t, TIDWrapper{tid}, `"ew"`)
+}
+
+func testTIDMarshalJSON(t *testing.T, tid any, expected string) {
+	json, err := json.Marshal(tid)
+	if err != nil {
+		t.Errorf("Failed to marshal TID: %v", err)
+	}
+	if string(json) != expected {
+		t.Errorf("Unexpected JSON output: %s, expected %s", json, expected)
 	}
 }
