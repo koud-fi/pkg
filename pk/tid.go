@@ -14,8 +14,7 @@ const tidTimeStep = int64(time.Millisecond)
 // TID is an 63-bit "temporal" ID that is generated from current time and a magic number.
 // 1 million new TIDs can be generated each millisecond, they will run out around year 2262.
 type TID struct {
-	value int64  // We use a signed int64 as some datastores don't support unsigned integers.
-	_     []byte // Prevent direct comparison with equals operator.
+	value int64 // We use a signed int64 as some datastores don't support unsigned integers.
 }
 
 // New creates a TID from given time and number, N must be a positive integer under 1 million.
@@ -58,9 +57,6 @@ func ParseTIDBytes(raw []byte) (TID, error) {
 	}
 	return TID{value: int64(binary.BigEndian.Uint64(b[:]))}, nil
 }
-
-// Equal returns true if the TID is equal to the other TID.
-func (t TID) Equal(o TID) bool { return t.value == o.value }
 
 // IsZero returns true if the TID is zero (uninitialized).
 func (t TID) IsZero() bool { return t.value == 0 }

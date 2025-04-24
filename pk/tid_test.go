@@ -18,7 +18,7 @@ func TestTID(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to parse TID string %q: %v", str, err)
 		}
-		if !parsed.Equal(original) {
+		if parsed != original {
 			t.Errorf("Parsed TID %v does not match original %v", parsed, original)
 		}
 	}
