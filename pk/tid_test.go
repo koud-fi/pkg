@@ -9,15 +9,16 @@ import (
 
 func TestTID(t *testing.T) {
 	for i := range 1000 {
-		var (
-			original = pk.TID(i)
-			str      = original.String()
-		)
+		var original pk.TID
+		original.Set(int64(i))
+
+		str := original.String()
+
 		parsed, err := pk.ParseTID(str)
 		if err != nil {
 			t.Errorf("Failed to parse TID string %q: %v", str, err)
 		}
-		if parsed != original {
+		if !parsed.Equal(original) {
 			t.Errorf("Parsed TID %v does not match original %v", parsed, original)
 		}
 	}
@@ -25,12 +26,15 @@ func TestTID(t *testing.T) {
 
 func TestTID_MarshalJSON(t *testing.T) {
 	type TIDAlias pk.TID
-	type TIDWrapper struct {
-		pk.TID
-	}
-	tid := pk.TID(123)
+	type TIDPtrAlias *pk.TID
+	type TIDWrapper struct{ pk.TID }
+
+	var tid pk.TID
+	tid.Set(123)
+
 	testTIDMarshalJSON(t, tid, `"ew"`)
-	testTIDMarshalJSON(t, TIDAlias(tid), "123") // NOTE: Aliasing breaks MarshalJSON
+	testTIDMarshalJSON(t, TIDAlias(tid), "{}") // NOTE: Non-pointer aliasing breaks MarshalJSON
+	testTIDMarshalJSON(t, TIDPtrAlias(&tid), `"ew"`)
 	testTIDMarshalJSON(t, TIDWrapper{tid}, `"ew"`)
 }
 
