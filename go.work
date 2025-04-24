@@ -1,7 +1,6 @@
 go 1.24.2
 
 use (
-	./api
 	./assert
 	./assign
 	./auth
@@ -30,6 +29,7 @@ use (
 	./proto/rr
 	./proto/serializable
 	./qrcode
+	./rpcapi
 	./rx
 	./schema
 	./search
