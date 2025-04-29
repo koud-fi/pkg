@@ -12,9 +12,9 @@ import (
 )
 
 type HTTPOutput[T any] struct {
-	Ok    bool  `json:"ok"`
-	Error error `json:"error,omitempty"`
-	Data  T     `json:"data,omitempty"`
+	Ok    bool   `json:"ok"`
+	Error string `json:"error,omitempty"`
+	Data  T      `json:"data,omitzero"`
 }
 
 func (e *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -85,7 +85,7 @@ func serveOutput(
 		return serve.JSON(w, r, HTTPOutput[any]{
 			Ok:    err == nil,
 			Data:  v,
-			Error: err,
+			Error: err.Error(),
 		})
 	}
 }
