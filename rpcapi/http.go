@@ -82,10 +82,14 @@ func serveOutput(
 	case fmt.Stringer:
 		return serve.Blob(w, r, blob.FromString(v.String()))
 	default:
+		var errStr string
+		if err != nil {
+			errStr = err.Error()
+		}
 		return serve.JSON(w, r, HTTPOutput[any]{
 			Ok:    err == nil,
 			Data:  v,
-			Error: err.Error(),
+			Error: errStr,
 		})
 	}
 }
