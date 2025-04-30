@@ -48,7 +48,7 @@ func httpRequestArgs(r *http.Request) (Arguments, error) {
 	if n, _ := strconv.Atoi(r.Header.Get("Content-Length")); n > 0 {
 		contentType := r.Header.Get("Content-Type")
 		switch {
-		case strings.HasPrefix(contentType, "application/json"):
+		case strings.HasPrefix(contentType, "application/json"): // TODO: improve this
 			args := make(ArgumentMap)
 			if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
 				return nil, fmt.Errorf("decode json: %w", err)
