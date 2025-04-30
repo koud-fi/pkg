@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/koud-fi/pkg/blob"
@@ -44,13 +45,18 @@ func (m *Mux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func httpRequestArgs(r *http.Request) (Arguments, error) {
 	var bodyArgs Arguments
-	switch r.Header.Get("Content-Type") {
-	case "application/json", "application/json; charset=UTF-8": // TODO: Make this more robust
-		args := make(ArgumentMap)
-		if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
-			return nil, fmt.Errorf("decode json: %w", err)
+	if n, _ := strconv.Atoi(r.Header.Get("Content-Length")); n > 0 {
+		contentType := r.Header.Get("Content-Type")
+		switch contentType {
+		case "application/json", "application/json; charset=UTF-8": // TODO: Make this more robust
+			args := make(ArgumentMap)
+			if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
+				return nil, fmt.Errorf("decode json: %w", err)
+			}
+			bodyArgs = args
+		default:
+			return nil, fmt.Errorf("unsupported content type: %s", contentType)
 		}
-		bodyArgs = args
 	}
 	if err := r.ParseForm(); err != nil {
 		return nil, fmt.Errorf("parse form: %w", err)
