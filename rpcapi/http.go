@@ -47,8 +47,8 @@ func httpRequestArgs(r *http.Request) (Arguments, error) {
 	var bodyArgs Arguments
 	if n, _ := strconv.Atoi(r.Header.Get("Content-Length")); n > 0 {
 		contentType := r.Header.Get("Content-Type")
-		switch contentType {
-		case "application/json", "application/json; charset=UTF-8": // TODO: Make this more robust
+		switch {
+		case strings.HasPrefix(contentType, "application/json"):
 			args := make(ArgumentMap)
 			if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
 				return nil, fmt.Errorf("decode json: %w", err)
