@@ -4,7 +4,7 @@ import "reflect"
 
 type Properties map[string]Type
 
-func (p Properties) fromStructFields(c config, rt reflect.Type) {
+func (p Properties) fromStructFields(c *config, rt reflect.Type) {
 	for i := range rt.NumField() {
 		sf := rt.Field(i)
 		if sf.Anonymous {
@@ -25,7 +25,7 @@ func (p Properties) fromStructFields(c config, rt reflect.Type) {
 	}
 }
 
-func (p Properties) fromMap(c config, m map[string]any) {
+func (p Properties) fromMap(c *config, m map[string]any) {
 	for k, v := range m {
 
 		// TODO: handle possible mixed types for a same field

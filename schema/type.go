@@ -55,7 +55,7 @@ func ResolveTypeOf(v any, opts ...Option) Type {
 	for _, opt := range opts {
 		opt(&c)
 	}
-	return resolveType(c, v)
+	return resolveType(&c, v)
 }
 
 // JSONName returns the JSON field name based on the struct tag, if present.
@@ -101,7 +101,7 @@ func (t Type) ExampleJSON() string {
 }
 
 // resolveType is the core recursive resolver with cycle detection.
-func resolveType(c config, v any) Type {
+func resolveType(c *config, v any) Type {
 	// Handle map[string]any as an object literal
 	switch vv := v.(type) {
 	case map[string]any:
