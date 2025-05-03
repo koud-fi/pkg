@@ -1,4 +1,3 @@
-// schema.go
 package schema
 
 import (
