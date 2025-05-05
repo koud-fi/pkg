@@ -11,6 +11,7 @@ use (
 	./datastore
 	./dump
 	./endpoint
+	./errx
 	./fetch
 	./file
 	./fingerprint
