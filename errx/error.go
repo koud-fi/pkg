@@ -15,27 +15,27 @@ type Error struct {
 
 // E wraps err (if non-nil) capturing the current stack.
 func E(err error) error {
-	return Wrap(err)
+	return wrap(err)
 }
 
 // E1 wraps an error while preserving a single return value.
 func E1[T any](v T, err error) (T, error) {
-	return v, Wrap(err)
+	return v, wrap(err)
 }
 
 // E2 wraps an error while preserving two return values.
 func E2[T1, T2 any](v1 T1, v2 T2, err error) (T1, T2, error) {
-	return v1, v2, Wrap(err)
+	return v1, v2, wrap(err)
 }
 
 // E3 wraps an error while preserving three return values.
 func E3[T1, T2, T3 any](v1 T1, v2 T2, v3 T3, err error) (T1, T2, T3, error) {
-	return v1, v2, v3, Wrap(err)
+	return v1, v2, v3, wrap(err)
 }
 
 // E4 wraps an error while preserving four return values.
 func E4[T1, T2, T3, T4 any](v1 T1, v2 T2, v3 T3, v4 T4, err error) (T1, T2, T3, T4, error) {
-	return v1, v2, v3, v4, Wrap(err)
+	return v1, v2, v3, v4, wrap(err)
 }
 
 func (e *Error) Error() string { return e.cause.Error() }

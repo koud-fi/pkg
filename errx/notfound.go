@@ -25,5 +25,5 @@ func IsNotFound(err error) bool {
 
 // NewNotFound constructs a NotFoundError for the given kind and key.
 func NewNotFound(kind string, key any) error {
-	return Wrap(&NotFoundError{Kind: kind, Key: key})
+	return wrap(&NotFoundError{Kind: kind, Key: key})
 }

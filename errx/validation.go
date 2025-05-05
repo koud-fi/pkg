@@ -21,11 +21,11 @@ func (e *ValidationError) Error() string {
 
 // NewValidation constructs a ValidationError for the given field, reason, and value.
 func NewValidation(field, reason string, value any) error {
-	return &ValidationError{
+	return wrap(&ValidationError{
 		Field:  field,
 		Reason: reason,
 		Value:  value,
-	}
+	})
 }
 
 // IsValidation reports whether err is (or wraps) a ValidationError.

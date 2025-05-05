@@ -5,8 +5,8 @@ import (
 	"runtime"
 )
 
-// Wrap is the common error wrapping logic used by all E functions.
-func Wrap(err error) error {
+// wrap is the common error wrapping logic used by all E functions.
+func wrap(err error) error {
 	if err == nil {
 		return nil
 	}
