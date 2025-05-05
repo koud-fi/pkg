@@ -1,6 +1,7 @@
 package errx
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"runtime"
@@ -36,6 +37,14 @@ func E3[T1, T2, T3 any](v1 T1, v2 T2, v3 T3, err error) (T1, T2, T3, error) {
 // E4 wraps an error while preserving four return values.
 func E4[T1, T2, T3, T4 any](v1 T1, v2 T2, v3 T3, v4 T4, err error) (T1, T2, T3, T4, error) {
 	return v1, v2, v3, v4, wrap(err)
+}
+
+// New is alias for errors.New, that wraps the error with a stack trace.
+func New(text string) error { return wrap(errors.New(text)) }
+
+// Fmt is an alias for fmt.Errorf, that wraps the error with a stack trace.
+func Fmt(format string, args ...any) error {
+	return wrap(fmt.Errorf(format, args...))
 }
 
 func (e *Error) Error() string { return e.cause.Error() }
