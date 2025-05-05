@@ -25,7 +25,6 @@ use (
 	./num
 	./pk
 	./proto/grf
-	./proto/router
 	./proto/rq
 	./proto/rr
 	./proto/serializable
