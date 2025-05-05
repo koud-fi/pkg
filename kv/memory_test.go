@@ -8,7 +8,7 @@ import (
 )
 
 func TestMemoryStorage(t *testing.T) {
-	if err := kvtest.TestKV(kv.NewMemoryStorage[string, string]()); err != nil {
+	if err := kvtest.TestKV(kv.NewMemoryStorage[string, string]("test")); err != nil {
 		t.Fatal(err)
 	}
 }

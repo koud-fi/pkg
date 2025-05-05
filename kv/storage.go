@@ -2,13 +2,7 @@ package kv
 
 import (
 	"context"
-	"errors"
 	"iter"
-)
-
-var (
-	ErrNotFound        = errors.New("not found")
-	ErrVersionMismatch = errors.New("version mismatch") // not used yet
 )
 
 type (

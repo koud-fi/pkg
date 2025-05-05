@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/koud-fi/pkg/errx"
 	"github.com/koud-fi/pkg/kv"
 )
 
@@ -27,30 +28,30 @@ func TestKV(s kv.Storage[string, string]) error {
 	// Insert key/value pairs.
 	for k, v := range testData {
 		if err := s.Set(ctx, k, v); err != nil {
-			return fmt.Errorf("Set failed for key %q: %w", k, err)
+			return fmt.Errorf("set failed for key %q: %w", k, err)
 		}
 	}
 
 	// Delete one key.
 	if err := s.Del(ctx, "bb"); err != nil {
-		return fmt.Errorf("Del failed for key 'bb': %w", err)
+		return fmt.Errorf("del failed for key 'bb': %w", err)
 	}
 
 	// Get test: existing key.
 	if v, err := s.Get(ctx, "a"); err != nil {
-		return fmt.Errorf("Get failed for key 'a': %w", err)
+		return fmt.Errorf("get failed for key 'a': %w", err)
 	} else if v != "av" {
 		return fmt.Errorf("unexpected value for key 'a': got %q, want %q", v, "av")
 	}
 
 	// Get test: deleted key should return ErrNotFound.
-	if v, err := s.Get(ctx, "bb"); err != kv.ErrNotFound {
+	if v, err := s.Get(ctx, "bb"); !errx.IsNotFound(err) {
 		return fmt.Errorf("expected ErrNotFound for key 'bb', got value %q and error %v", v, err)
 	}
 
 	// Get test: another existing key.
 	if v, err := s.Get(ctx, "gggg/ggg"); err != nil {
-		return fmt.Errorf("Get failed for key 'gggg/ggg': %w", err)
+		return fmt.Errorf("get failed for key 'gggg/ggg': %w", err)
 	} else if v != "gv" {
 		return fmt.Errorf("unexpected value for key 'gggg/ggg': got %q, want %q", v, "gv")
 	}

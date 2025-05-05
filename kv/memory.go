@@ -5,6 +5,8 @@ import (
 	"context"
 	"iter"
 	"sync"
+
+	"github.com/koud-fi/pkg/errx"
 )
 
 var _ interface {
@@ -14,6 +16,8 @@ var _ interface {
 
 type (
 	MemoryStorage[K comparable, V any] struct {
+		kind string
+
 		mu             sync.RWMutex
 		dataList       *list.List
 		dataMap        map[K]*list.Element
@@ -29,7 +33,7 @@ type (
 func (p memoryPair[K, V]) Key() K   { return p.key }
 func (p memoryPair[K, V]) Value() V { return p.value }
 
-func NewMemoryStorage[K comparable, V any]() *MemoryStorage[K, V] {
+func NewMemoryStorage[K comparable, V any](kind string) *MemoryStorage[K, V] {
 	return &MemoryStorage[K, V]{
 		dataList:       list.New(),
 		dataMap:        make(map[K]*list.Element),
@@ -44,7 +48,7 @@ func (s *MemoryStorage[K, V]) Get(ctx context.Context, key K) (V, error) {
 	el, ok := s.dataMap[key]
 	if !ok {
 		var zero V
-		return zero, ErrNotFound
+		return zero, errx.NewNotFound(s.kind, key)
 	}
 	return el.Value.(memoryPair[K, V]).value, nil
 }

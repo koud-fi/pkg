@@ -2,9 +2,9 @@ package kv
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"iter"
+
+	"github.com/koud-fi/pkg/errx"
 )
 
 type ValueCollector[K comparable, V any] struct {
@@ -24,7 +24,7 @@ func (vc *ValueCollector[K, V]) Filter(pred func(V) bool) ([]V, error) {
 		}
 	}
 	if err := vc.errFn(); err != nil {
-		return nil, fmt.Errorf("scan: %w", err)
+		return nil, errx.Fmt("scan: %w", err)
 	}
 	return values, nil
 }
@@ -46,6 +46,7 @@ func Lookup[K comparable, V any](
 	s ScanReader[K, V],
 	ctx context.Context,
 	pred func(V) bool,
+	notFound func() (V, error),
 ) (V, error) {
 	pairs, errFn := s.Scan(ctx)
 	for p := range pairs {
@@ -55,9 +56,9 @@ func Lookup[K comparable, V any](
 	}
 	var zero V
 	if err := errFn(); err != nil {
-		return zero, fmt.Errorf("scan: %w", err)
+		return zero, errx.Fmt("scan: %w", err)
 	}
-	return zero, ErrNotFound
+	return notFound()
 }
 
 func Update[K comparable, V any](
@@ -68,12 +69,12 @@ func Update[K comparable, V any](
 ) (V, error) {
 	v, err := s.Get(ctx, key)
 	if err != nil {
-		return v, fmt.Errorf("get current value: %w", err)
+		return v, errx.Fmt("get current value: %w", err)
 	}
 	if v, err = update(v); err != nil {
-		return v, fmt.Errorf("update: %w", err)
+		return v, errx.Fmt("update: %w", err)
 	}
-	return v, s.Set(ctx, key, v)
+	return v, errx.E(s.Set(ctx, key, v))
 }
 
 func Upsert[K comparable, V any](
@@ -91,21 +92,21 @@ func Upsert[K comparable, V any](
 	case err != nil:
 	}
 	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return v, fmt.Errorf("get current value: %w", err)
+		if !errx.IsNotFound(err) {
+			return v, errx.Fmt("lookup: %w", err)
 		}
 	}
 	if key == zeroKey {
 		if key, v, err = create(); err != nil {
-			return v, fmt.Errorf("create: %w", err)
+			return v, errx.Fmt("create: %w", err)
 		}
 		if key == zeroKey {
-			return v, fmt.Errorf("create: key is zero")
+			return v, errx.New("create: key is zero")
 		}
 	} else {
 		if v, err = update(v); err != nil {
-			return v, fmt.Errorf("update: %w", err)
+			return v, errx.Fmt("update: %w", err)
 		}
 	}
-	return v, s.Set(ctx, key, v)
+	return v, errx.E(s.Set(ctx, key, v))
 }
