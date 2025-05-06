@@ -15,11 +15,23 @@ type Mux struct {
 	converter *assign.Converter
 }
 
-func NewMux() *Mux {
-	return &Mux{
+type MuxOption func(*Mux)
+
+func WithConverter(converter *assign.Converter) MuxOption {
+	return func(m *Mux) { m.converter = converter }
+}
+
+func NewMux(opts ...MuxOption) *Mux {
+	m := &Mux{
 		endpoints: make(map[string]*Endpoint),
-		converter: assign.NewDefaultConverter(),
 	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	if m.converter == nil {
+		m.converter = assign.NewDefaultConverter()
+	}
+	return m
 }
 
 func (m *Mux) Register(name string, fn any) {
