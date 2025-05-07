@@ -20,6 +20,7 @@ type Friend struct {
 
 type ComplexDemo struct {
 	Title      string
+	Subtitle   *string
 	Count      int
 	Price      float64
 	Active     bool
@@ -37,11 +38,12 @@ func TestValue(t *testing.T) {
 	// - Some as native maps.
 	// - Some require basic conversion from strings.
 	input := map[string]any{
-		"Title":  "Complex Example",
-		"Count":  "7",
-		"Price":  "19.99",
-		"Active": "true",
-		"Tags":   `["go", "reflection", "conversion"]`,
+		"Title":    "Complex Example",
+		"Subtitle": "Subtitle Example",
+		"Count":    "7",
+		"Price":    "19.99",
+		"Active":   "true",
+		"Tags":     `["go", "reflection", "conversion"]`,
 		"Attributes": map[string]any{
 			"version": "1.0",
 			"env":     "production",
