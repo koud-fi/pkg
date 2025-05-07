@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+
+	"github.com/koud-fi/pkg/errx"
 )
 
 var ErrUnsupportedConversion = errors.New("unsupported conversion")
@@ -37,10 +39,10 @@ func (c *Converter) Convert(in any, target reflect.Type) (reflect.Value, error) 
 			return v, nil
 		}
 		if !errors.Is(err, ErrUnsupportedConversion) {
-			return reflect.Value{}, err
+			return reflect.Value{}, errx.E(err)
 		}
 	}
-	return reflect.Value{}, fmt.Errorf("cannot convert %v to %v", reflect.TypeOf(in), target)
+	return reflect.Value{}, errx.Fmt("can't convert %v to %v", reflect.TypeOf(in), target)
 }
 
 func ConvertPrimitive(in any, target reflect.Type) (reflect.Value, error) {
@@ -87,24 +89,24 @@ func ConvertPrimitive(in any, target reflect.Type) (reflect.Value, error) {
 	case reflect.String:
 		return reflect.ValueOf(fmt.Sprint(in)), nil
 	}
-	return reflect.Value{}, ErrUnsupportedConversion
+	return reflect.Value{}, errx.E(ErrUnsupportedConversion)
 }
 
 func ConvertSlice(conv *Converter) ConverterFunc {
 	return func(in any, target reflect.Type) (reflect.Value, error) {
 		if target.Kind() != reflect.Slice {
-			return reflect.Value{}, ErrUnsupportedConversion
+			return reflect.Value{}, errx.E(ErrUnsupportedConversion)
 		}
 		rv := reflect.ValueOf(in)
 		if rv.Kind() != reflect.Slice {
-			return reflect.Value{}, ErrUnsupportedConversion
+			return reflect.Value{}, errx.E(ErrUnsupportedConversion)
 		}
 		n := rv.Len()
 		out := reflect.MakeSlice(target, n, n)
 		for i := 0; i < n; i++ {
 			elem, err := conv.Convert(rv.Index(i).Interface(), target.Elem())
 			if err != nil {
-				return reflect.Value{}, fmt.Errorf("slice index %d: %w", i, err)
+				return reflect.Value{}, errx.Fmt("slice index %d: %w", i, err)
 			}
 			out.Index(i).Set(elem)
 		}
@@ -115,21 +117,21 @@ func ConvertSlice(conv *Converter) ConverterFunc {
 func ConvertMap(conv *Converter) ConverterFunc {
 	return func(in any, target reflect.Type) (reflect.Value, error) {
 		if target.Kind() != reflect.Map {
-			return reflect.Value{}, ErrUnsupportedConversion
+			return reflect.Value{}, errx.E(ErrUnsupportedConversion)
 		}
 		rv := reflect.ValueOf(in)
 		if rv.Kind() != reflect.Map {
-			return reflect.Value{}, ErrUnsupportedConversion
+			return reflect.Value{}, errx.E(ErrUnsupportedConversion)
 		}
 		out := reflect.MakeMap(target)
 		for _, key := range rv.MapKeys() {
 			newKey, err := conv.Convert(key.Interface(), target.Key())
 			if err != nil {
-				return reflect.Value{}, fmt.Errorf("map key %v: %w", key, err)
+				return reflect.Value{}, errx.Fmt("map key %v: %w", key, err)
 			}
 			newVal, err := conv.Convert(rv.MapIndex(key).Interface(), target.Elem())
 			if err != nil {
-				return reflect.Value{}, fmt.Errorf("map value for key %v: %w", key, err)
+				return reflect.Value{}, errx.Fmt("map value for key %v: %w", key, err)
 			}
 			out.SetMapIndex(newKey, newVal)
 		}
@@ -140,11 +142,11 @@ func ConvertMap(conv *Converter) ConverterFunc {
 func ConvertStruct(conv *Converter) ConverterFunc {
 	return func(in any, target reflect.Type) (reflect.Value, error) {
 		if target.Kind() != reflect.Struct {
-			return reflect.Value{}, ErrUnsupportedConversion
+			return reflect.Value{}, errx.E(ErrUnsupportedConversion)
 		}
 		m, ok := in.(map[string]any)
 		if !ok {
-			return reflect.Value{}, ErrUnsupportedConversion
+			return reflect.Value{}, errx.E(ErrUnsupportedConversion)
 		}
 		out := reflect.New(target).Elem()
 		for i := range target.NumField() {
@@ -152,7 +154,7 @@ func ConvertStruct(conv *Converter) ConverterFunc {
 			if val, exists := m[f.Name]; exists {
 				v, err := conv.Convert(val, f.Type)
 				if err != nil {
-					return reflect.Value{}, fmt.Errorf("field %q: %w", f.Name, err)
+					return reflect.Value{}, errx.Fmt("field %q: %w", f.Name, err)
 				}
 				out.Field(i).Set(v)
 			}
@@ -171,7 +173,7 @@ func ConvertJSON(in any, target reflect.Type) (reflect.Value, error) {
 	case json.RawMessage:
 		data = []byte(v)
 	default:
-		return reflect.Value{}, ErrUnsupportedConversion
+		return reflect.Value{}, errx.E(ErrUnsupportedConversion)
 	}
 	if Implements[json.Unmarshaler](target) {
 		ptr := reflect.New(target)
@@ -188,5 +190,5 @@ func ConvertJSON(in any, target reflect.Type) (reflect.Value, error) {
 		}
 		return ptr.Elem(), nil
 	}
-	return reflect.Value{}, ErrUnsupportedConversion
+	return reflect.Value{}, errx.E(ErrUnsupportedConversion)
 }
