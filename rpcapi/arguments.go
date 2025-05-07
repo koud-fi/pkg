@@ -1,13 +1,12 @@
 package rpcapi
 
 import (
-	"errors"
-	"fmt"
 	"net/url"
 	"reflect"
 	"strings"
 
 	"github.com/koud-fi/pkg/assign"
+	"github.com/koud-fi/pkg/errx"
 )
 
 type Arguments interface {
@@ -37,7 +36,7 @@ func (u URLValueArguments) Get(key string) any {
 func ApplyArguments(dst any, converter *assign.Converter, args Arguments) error {
 	rv := reflect.ValueOf(dst)
 	if rv.Kind() != reflect.Ptr || rv.Elem().Kind() != reflect.Struct {
-		return errors.New("dst must be a pointer to a struct")
+		return errx.New("dst must be a pointer to a struct")
 	}
 	rv = rv.Elem()
 	rt := rv.Type()
@@ -59,7 +58,7 @@ func ApplyArguments(dst any, converter *assign.Converter, args Arguments) error 
 		}
 		conv, err := converter.Convert(val, f.Type)
 		if err != nil {
-			return fmt.Errorf("field %q: %w", key, err)
+			return errx.Fmt("field %q: %w", key, err)
 		}
 		rv.Field(i).Set(conv)
 	}
