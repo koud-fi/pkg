@@ -60,7 +60,7 @@ func TestValue(t *testing.T) {
 	}
 	var demo ComplexDemo
 	if err := assign.Value(&demo, input); err != nil {
-		t.Fatalf("Unmarshal failed: %v", err)
+		t.Fatalf("Unmarshal failed: %+v", err)
 	}
 	if demo.Title != "Complex Example" {
 		t.Errorf("Expected Title %q, got %q", "Complex Example", demo.Title)
