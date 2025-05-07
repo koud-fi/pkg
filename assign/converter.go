@@ -58,7 +58,7 @@ func ConvertPrimitive(in any, target reflect.Type) (reflect.Value, error) {
 		s := fmt.Sprint(in)
 		n, err := strconv.ParseInt(s, 10, target.Bits())
 		if err != nil {
-			return reflect.Value{}, fmt.Errorf("cannot parse %q as int: %w", s, err)
+			return reflect.Value{}, fmt.Errorf("can't parse %q as int: %w", s, err)
 		}
 		return reflect.ValueOf(n).Convert(target), nil
 
@@ -66,7 +66,7 @@ func ConvertPrimitive(in any, target reflect.Type) (reflect.Value, error) {
 		s := fmt.Sprint(in)
 		n, err := strconv.ParseUint(s, 10, target.Bits())
 		if err != nil {
-			return reflect.Value{}, fmt.Errorf("cannot parse %q as uint: %w", s, err)
+			return reflect.Value{}, fmt.Errorf("can't parse %q as uint: %w", s, err)
 		}
 		return reflect.ValueOf(n).Convert(target), nil
 
@@ -74,7 +74,7 @@ func ConvertPrimitive(in any, target reflect.Type) (reflect.Value, error) {
 		s := fmt.Sprint(in)
 		n, err := strconv.ParseFloat(s, target.Bits())
 		if err != nil {
-			return reflect.Value{}, fmt.Errorf("cannot parse %q as float: %w", s, err)
+			return reflect.Value{}, fmt.Errorf("can't parse %q as float: %w", s, err)
 		}
 		return reflect.ValueOf(n).Convert(target), nil
 
@@ -82,12 +82,22 @@ func ConvertPrimitive(in any, target reflect.Type) (reflect.Value, error) {
 		s := fmt.Sprint(in)
 		b, err := strconv.ParseBool(s)
 		if err != nil {
-			return reflect.Value{}, fmt.Errorf("cannot parse %q as bool: %w", s, err)
+			return reflect.Value{}, fmt.Errorf("can't parse %q as bool: %w", s, err)
 		}
 		return reflect.ValueOf(b), nil
 
 	case reflect.String:
 		return reflect.ValueOf(fmt.Sprint(in)), nil
+
+	case reflect.Pointer:
+		elType := target.Elem()
+		elVal, err := ConvertPrimitive(in, elType)
+		if err != nil {
+			return reflect.Value{}, errx.E(err)
+		}
+		ptr := reflect.New(elType)
+		ptr.Elem().Set(elVal)
+		return ptr, nil
 	}
 	return reflect.Value{}, errx.E(ErrUnsupportedConversion)
 }

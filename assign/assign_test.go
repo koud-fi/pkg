@@ -30,6 +30,7 @@ type ComplexDemo struct {
 	Friends    []Friend
 	Scores     []float64
 	Metadata   map[string]any
+	ExtraDemo  *ComplexDemo
 }
 
 func TestValue(t *testing.T) {
@@ -57,6 +58,9 @@ func TestValue(t *testing.T) {
 		             {"Name": "Bob", "Email": "bob@example.com"}]`,
 		"Scores":   "[95.5, 82.3, 76]",
 		"Metadata": `{"key1": "value1", "key2": 2}`,
+		"ExtraDemo": ComplexDemo{
+			Title: "Extra Example",
+		},
 	}
 	var demo ComplexDemo
 	if err := assign.Value(&demo, input); err != nil {
@@ -64,6 +68,9 @@ func TestValue(t *testing.T) {
 	}
 	if demo.Title != "Complex Example" {
 		t.Errorf("Expected Title %q, got %q", "Complex Example", demo.Title)
+	}
+	if *demo.Subtitle != "Subtitle Example" {
+		t.Errorf("Expected Subtitle %q, got %q", "Subtitle Example", *demo.Subtitle)
 	}
 	if demo.Count != 7 {
 		t.Errorf("Expected Count 7, got %d", demo.Count)
@@ -91,5 +98,8 @@ func TestValue(t *testing.T) {
 	}
 	if demo.Metadata["key1"] != "value1" {
 		t.Errorf("Expected Metadata key1 %q, got %v", "value1", demo.Metadata["key1"])
+	}
+	if demo.ExtraDemo.Title != "Extra Example" {
+		t.Errorf("Expected ExtraDemo.Title %q, got %q", "Extra Example", demo.ExtraDemo.Title)
 	}
 }
