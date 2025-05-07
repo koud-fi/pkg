@@ -103,7 +103,7 @@ func ConvertSlice(conv *Converter) ConverterFunc {
 		}
 		n := rv.Len()
 		out := reflect.MakeSlice(target, n, n)
-		for i := 0; i < n; i++ {
+		for i := range n {
 			elem, err := conv.Convert(rv.Index(i).Interface(), target.Elem())
 			if err != nil {
 				return reflect.Value{}, errx.Fmt("slice index %d: %w", i, err)
