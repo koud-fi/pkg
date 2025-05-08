@@ -34,6 +34,7 @@ func Addr(addr string) ListenOption {
 	}
 }
 
+/*
 func TLS(c *tls.Config) ListenOption {
 	return func(lc *listenConfig) {
 		if c == nil {
@@ -45,6 +46,7 @@ func TLS(c *tls.Config) ListenOption {
 		lc.tlsConfig = c
 	}
 }
+*/
 
 func Listen(h http.Handler, opt ...ListenOption) {
 	c := listenConfig{
