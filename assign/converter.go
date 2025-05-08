@@ -161,12 +161,24 @@ func ConvertStruct(conv *Converter) ConverterFunc {
 		out := reflect.New(target).Elem()
 		for i := range target.NumField() {
 			f := target.Field(i)
-			if val, exists := m[f.Name]; exists {
-				v, err := conv.Convert(val, f.Type)
+
+			switch {
+			case f.Anonymous && f.Type.Kind() == reflect.Struct:
+				embeddedVal, err := conv.Convert(m, f.Type)
 				if err != nil {
-					return reflect.Value{}, errx.Fmt("field %q: %w", f.Name, err)
+					return reflect.Value{}, errx.Fmt("embedded field %q: %w", f.Name, err)
 				}
-				out.Field(i).Set(v)
+				out.Field(i).Set(embeddedVal)
+				continue
+
+			default:
+				if val, exists := m[f.Name]; exists {
+					v, err := conv.Convert(val, f.Type)
+					if err != nil {
+						return reflect.Value{}, errx.Fmt("field %q: %w", f.Name, err)
+					}
+					out.Field(i).Set(v)
+				}
 			}
 		}
 		return out, nil

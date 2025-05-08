@@ -31,6 +31,11 @@ type ComplexDemo struct {
 	Scores     []float64
 	Metadata   map[string]any
 	ExtraDemo  *ComplexDemo
+	EmbeddedStruct
+}
+
+type EmbeddedStruct struct {
+	Embedded string
 }
 
 func TestValue(t *testing.T) {
@@ -61,6 +66,7 @@ func TestValue(t *testing.T) {
 		"ExtraDemo": ComplexDemo{
 			Title: "Extra Example",
 		},
+		"Embedded": "Embedded Example",
 	}
 	var demo ComplexDemo
 	if err := assign.Value(&demo, input); err != nil {
@@ -101,5 +107,8 @@ func TestValue(t *testing.T) {
 	}
 	if demo.ExtraDemo.Title != "Extra Example" {
 		t.Errorf("Expected ExtraDemo.Title %q, got %q", "Extra Example", demo.ExtraDemo.Title)
+	}
+	if demo.Embedded != "Embedded Example" {
+		t.Errorf("Expected Embedded %q, got %q", "Embedded Example", demo.Embedded)
 	}
 }
