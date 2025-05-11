@@ -2,25 +2,41 @@ package pk_test
 
 import (
 	"encoding/json"
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/koud-fi/pkg/pk"
 )
 
 func TestTID(t *testing.T) {
-	for i := range 1000 {
-		var original pk.TID
-		original.Set(int64(i))
+	for i := range 1 << 20 {
+		testTID(t, int64(i))
+	}
+	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for range 1 << 20 {
+		testTID(t, rnd.Int63())
+	}
+}
 
-		str := original.String()
-
-		parsed, err := pk.ParseTID(str)
-		if err != nil {
-			t.Errorf("Failed to parse TID string %q: %v", str, err)
-		}
-		if parsed != original {
-			t.Errorf("Parsed TID %v does not match original %v", parsed, original)
-		}
+func testTID(t *testing.T, n int64) {
+	var (
+		original = pk.NewRawValueTID(n)
+		raw      = original.Value()
+		str      = original.String()
+	)
+	parsed, err := pk.ParseTID(str)
+	if err != nil {
+		t.Errorf("Failed to parse TID string %q: %v", str, err)
+	}
+	if parsed != original {
+		t.Errorf("Parsed TID %v does not match original %v", parsed, original)
+	}
+	if parsed.Value() != raw {
+		t.Errorf("Parsed TID value %v does not match raw value %v", parsed.Value(), raw)
+	}
+	if raw != n {
+		t.Errorf("Raw value %d does not match expected value %d", raw, n)
 	}
 }
 
@@ -29,8 +45,7 @@ func TestTID_MarshalJSON(t *testing.T) {
 	type TIDPtrAlias *pk.TID
 	type TIDWrapper struct{ pk.TID }
 
-	var tid pk.TID
-	tid.Set(123)
+	tid := pk.NewRawValueTID(123)
 
 	testTIDMarshalJSON(t, tid, `"ew"`)
 	testTIDMarshalJSON(t, TIDAlias(tid), "{}") // NOTE: Non-pointer aliasing breaks MarshalJSON
