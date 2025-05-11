@@ -64,8 +64,9 @@ func (t TID) IsZero() bool { return t.value == 0 }
 // Time converts TID into a unique time.Time with millisecond precision,
 // the micro/nanosecond part is effectively noise.
 func (t TID) Time() time.Time {
-	s := int64(t.value) / int64(time.Second)
-	n := int64(t.value) % int64(time.Second)
+	const sec = int64(time.Second)
+	s := t.value / sec
+	n := t.value % sec
 	return time.Unix(s, n)
 }
 
@@ -102,8 +103,8 @@ func (t *TID) UnmarshalJSON(b []byte) error {
 
 type TIDSource struct {
 	mu sync.Mutex
-	ts int64
-	n  int
+	ts int64 // current "time step" (millisecond timestamp)
+	n  int   // last number in the current "time step"
 
 	// TODO: support for node ID
 }
@@ -119,7 +120,7 @@ func (t *TIDSource) Next(now time.Time) TID {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	nowTs := now.UTC().UnixNano() / int64(time.Millisecond)
+	nowTs := now.UTC().UnixNano() / tidTimeStep
 	if nowTs <= t.ts {
 		if t.n == 1000 {
 			t.ts++
