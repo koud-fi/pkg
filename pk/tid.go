@@ -71,6 +71,8 @@ func (t TID) Time() time.Time {
 }
 
 // Value returns the TID as an int64.
+// We use a signed 64-bit integer as some datastores don't support unsigned integers,
+// the signing bit is never used, so effectively we have a 63-bit unsigned integer.
 func (t TID) Value() int64 { return t.value }
 
 // String converts TID to a base-64 string.
