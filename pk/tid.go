@@ -49,7 +49,7 @@ func NewTID(now time.Time, n, c uint, virtual bool) TID {
 	}
 }
 
-func NewSerialTID(batch, n uint) TID {
+func NewSerialTID(batch uint64, n uint) TID {
 	if batch == 0 || batch > MaxTIDSerialBatch {
 		panic(fmt.Sprintf("invalid 'batch' for serial TID, must be >0 and <=%d",
 			MaxTIDSerialBatch))
