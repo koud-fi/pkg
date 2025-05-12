@@ -18,7 +18,7 @@ func NewTIDSource(now time.Time, n uint) *TIDSource {
 		panic(fmt.Sprintf("n must be greater than 0 and less than %d", tidNumberMax))
 	}
 	return &TIDSource{
-		ts: now.UTC().UnixNano() / tidTimeStep,
+		ts: nowTimeStep(now),
 		n:  n,
 		c:  tidCounterMax, // Don't generate any new IDs for the current time step
 	}
@@ -31,7 +31,7 @@ func (src *TIDSource) next(now time.Time, virtual bool) TID {
 	src.mu.Lock()
 	defer src.mu.Unlock()
 
-	nowTs := now.UTC().UnixNano() / tidTimeStep
+	nowTs := nowTimeStep(now)
 	if nowTs <= src.ts {
 		if src.c == tidCounterMax {
 			src.ts++
@@ -45,4 +45,8 @@ func (src *TIDSource) next(now time.Time, virtual bool) TID {
 		src.c = 1
 	}
 	return NewTID(time.Unix(src.ts, 0), src.n, src.c-1, virtual)
+}
+
+func nowTimeStep(now time.Time) int64 {
+	return now.UTC().UnixNano() / tidTimeStep
 }

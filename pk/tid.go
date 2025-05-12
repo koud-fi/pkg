@@ -14,15 +14,16 @@ const (
 	tidCounterOffset = 0
 	tidCounterMax    = 1 << tidCounterBits
 	tidNumberBits    = 13
-	tidNumberOffset  = tidNumberBits
+	tidNumberOffset  = tidCounterBits
 	tidNumberMax     = 1 << tidNumberBits
-	tidTimeStep      = int64(1 << tidTimeOffset)
-	tidTimeOffset    = tidCounterOffset + tidCounterBits
-	tidTimeStepMax   = 1 << tidTimeBits
+	tidTimeOffset    = tidCounterBits + tidNumberBits
+	tidTimeMax       = 1 << tidTimeBits
 	tidTimeBits      = 63 - tidTimeOffset
 
+	tidTimeStep = int64(1 << tidTimeOffset)
+
 	MaxTIDSerialN     = tidCounterMax - 1
-	MaxTIDSerialBatch = tidTimeStepMax - 1
+	MaxTIDSerialBatch = tidTimeMax - 1
 )
 
 // TID is an 63-bit "temporal" ID that is generated from current time and a magic numbers.
