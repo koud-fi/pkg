@@ -33,6 +33,7 @@ use (
 	./rx
 	./schema
 	./search
+	./secret
 	./serve
 	./shell
 	./sorted
