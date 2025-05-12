@@ -20,6 +20,9 @@ const (
 	tidTimeOffset    = tidCounterOffset + tidCounterBits
 	tidTimeStepMax   = 1 << tidTimeBits
 	tidTimeBits      = 63 - tidTimeOffset
+
+	MaxTIDSerialN     = tidCounterMax - 1
+	MaxTIDSerialBatch = tidTimeStepMax - 1
 )
 
 // TID is an 63-bit "temporal" ID that is generated from current time and a magic numbers.
@@ -46,13 +49,13 @@ func NewTID(now time.Time, n, c uint, virtual bool) TID {
 	}
 }
 
-func NewSerialNumberTID(batch, n uint) TID {
-	if batch == 0 || batch >= tidTimeStepMax {
-		panic(fmt.Sprintf("invalid 'batch' for TID, must be greater than 0 and less than %d",
-			tidTimeStepMax))
+func NewSerialTID(batch, n uint) TID {
+	if batch == 0 || batch > MaxTIDSerialBatch {
+		panic(fmt.Sprintf("invalid 'batch' for serial TID, must be >0 and <=%d",
+			MaxTIDSerialBatch))
 	}
-	if n >= tidNumberMax {
-		panic(fmt.Sprintf("invalid 'n' for TID, must be less than %d", tidNumberMax))
+	if n > MaxTIDSerialN {
+		panic(fmt.Sprintf("invalid 'n' for serial TID, must be <=%d", MaxTIDSerialN))
 	}
 	return TID{
 		ts: int64(batch),
@@ -124,12 +127,12 @@ func (t TID) Time() time.Time {
 	return time.Unix(s, n)
 }
 
-func (t TID) SerialNumber() int64 {
+func (t TID) Serial() int64 {
 	if t.IsVirtual() {
-		panic("can't extract serial number from a virtual TID")
+		panic("can't extract serial from a virtual TID")
 	}
 	if t.n != 0 {
-		panic("can't extract serial number from TID with 'n' of >0")
+		panic("can't extract serial from TID with 'n' of >0")
 	}
 	return t.ts*(1<<tidCounterBits) + int64(t.c)
 }
