@@ -2,6 +2,8 @@ github.com/koud-fi/pkg/assert v0.0.0-20250512053203-54207857439e h1:0bxE/sVxZ0uK
 github.com/koud-fi/pkg/assert v0.0.0-20250512053203-54207857439e/go.mod h1:X1p1TCf2hFWrpwk2G93aoT5S/5tDXJtRegRKFMmfhp4=
 github.com/koud-fi/pkg/assign v0.0.0-20250512053203-54207857439e h1:5bPNlwAHjIDH7R55v5Kk5nIRIyWvmX/m7Hqhgy90Bmo=
 github.com/koud-fi/pkg/assign v0.0.0-20250512053203-54207857439e/go.mod h1:eOGeTspm/2WcmYTR9zk/2sUo/SC2uHbHNqH5n+XBMdY=
+github.com/koud-fi/pkg/assign v0.0.0-20250514074333-0dca359fece5 h1:ta/j0ycUAYMhKO+eDyGcrIUMmMgHgeMyV++GVYnZ4Gs=
+github.com/koud-fi/pkg/assign v0.0.0-20250514074333-0dca359fece5/go.mod h1:eOGeTspm/2WcmYTR9zk/2sUo/SC2uHbHNqH5n+XBMdY=
 github.com/koud-fi/pkg/blob v0.0.0-20250512053203-54207857439e h1:fyX8vhSvvjFpBO97tBXsXOyLf0u14HPaodzust2J8Ps=
 github.com/koud-fi/pkg/blob v0.0.0-20250512053203-54207857439e/go.mod h1:/B6Zq6hDMsWzBpMXyx0wdwUIg8jee5Z+wNRLSqRlWCE=
 github.com/koud-fi/pkg/errx v0.0.0-20250512053203-54207857439e h1:hXbXrD/j3E8fPW+8jsvVPITwlOH2yaH+vXoHeo6MXZA=
@@ -12,6 +14,8 @@ github.com/koud-fi/pkg/rx v0.0.0-20250512053203-54207857439e h1:wQvqjS6z1KwGSaBO
 github.com/koud-fi/pkg/rx v0.0.0-20250512053203-54207857439e/go.mod h1:7BxbnPEsZaiLLmaWJXK6ezVbCiAl0iF7Co/CWAujT4Q=
 github.com/koud-fi/pkg/schema v0.0.0-20250512053203-54207857439e h1:vH6RVnkqlh8d647mPrFVLalDQ6rZPTGU1NyNDg6T+JU=
 github.com/koud-fi/pkg/schema v0.0.0-20250512053203-54207857439e/go.mod h1:rc/f/+PWiTdm0gUKAK91r2Yr6vYVluADA9S8OeUzCdU=
+github.com/koud-fi/pkg/schema v0.0.0-20250514074333-0dca359fece5 h1:pZZDCUvIJCdV570Vnsq3YCbc5L5eJmfACTJk5JJoW+A=
+github.com/koud-fi/pkg/schema v0.0.0-20250514074333-0dca359fece5/go.mod h1:rc/f/+PWiTdm0gUKAK91r2Yr6vYVluADA9S8OeUzCdU=
 github.com/koud-fi/pkg/serve v0.0.0-20250512053203-54207857439e h1:0QjOLULwT9eP3PfoIYAiVZdSnQf9BobYNYVn7SY1gtg=
 github.com/koud-fi/pkg/serve v0.0.0-20250512053203-54207857439e/go.mod h1:zqQ2hg87QdplAPYmjEi2NPIzwyZeh7eNDRpO5qFU4uQ=
 golang.org/x/crypto v0.38.0 h1:jt+WWG8IZlBnVbomuhg2Mdq0+BBQaHbtqHEFEigjUV8=
