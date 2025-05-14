@@ -9,4 +9,4 @@ require (
 	github.com/koud-fi/pkg/rx v0.0.0-20221217060217-20480eb80a99
 )
 
-require golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
+require golang.org/x/exp v0.0.0-20250506013437-ce4c2cf36ca6 // indirect
