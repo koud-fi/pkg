@@ -24,6 +24,7 @@ type ComplexDemo struct {
 	Count      int
 	Price      float64
 	Active     bool
+	Passive    *bool
 	Tags       []string
 	Attributes map[string]string
 	Address    Address
@@ -49,6 +50,7 @@ func TestValue(t *testing.T) {
 		"Count":    "7",
 		"Price":    "19.99",
 		"Active":   "true",
+		"Passive":  "false",
 		"Tags":     `["go", "reflection", "conversion"]`,
 		"Attributes": map[string]any{
 			"version": "1.0",
@@ -86,6 +88,9 @@ func TestValue(t *testing.T) {
 	}
 	if !demo.Active {
 		t.Error("Expected Active true")
+	}
+	if demo.Passive == nil || *demo.Passive {
+		t.Error("Expected Passive false")
 	}
 	if !reflect.DeepEqual(demo.Tags, []string{"go", "reflection", "conversion"}) {
 		t.Errorf("Tags mismatch: %v", demo.Tags)
