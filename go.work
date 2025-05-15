@@ -10,7 +10,6 @@ use (
 	./calendar
 	./datastore
 	./dump
-	./endpoint
 	./errx
 	./fetch
 	./file
