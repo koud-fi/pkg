@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/koud-fi/pkg/blob"
@@ -44,19 +43,25 @@ func (m *Mux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func httpRequestArgs(r *http.Request) (Arguments, error) {
-	var bodyArgs Arguments
-	if n, _ := strconv.Atoi(r.Header.Get("Content-Length")); n > 0 {
-		contentType := r.Header.Get("Content-Type")
-		switch {
-		case strings.HasPrefix(contentType, "application/json"): // TODO: improve this
-			args := make(ArgumentMap)
-			if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
-				return nil, fmt.Errorf("decode json: %w", err)
-			}
-			bodyArgs = args
-		default:
-			return nil, fmt.Errorf("unsupported content type: %s", contentType)
+	var (
+		bodyArgs    Arguments
+		contentType = r.Header.Get("Content-Type")
+	)
+	switch {
+	case contentType == "":
+		break // no body
+
+	case strings.HasPrefix(contentType, "application/x-www-form-urlencoded"):
+		break // form is parsed later (to also handle possible query params)
+
+	case strings.HasPrefix(contentType, "application/json"):
+		args := make(ArgumentMap)
+		if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
+			return nil, fmt.Errorf("decode json: %w", err)
 		}
+		bodyArgs = args
+	default:
+		return nil, fmt.Errorf("unsupported content type: %s", contentType)
 	}
 	if err := r.ParseForm(); err != nil {
 		return nil, fmt.Errorf("parse form: %w", err)
