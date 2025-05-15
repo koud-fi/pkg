@@ -2,6 +2,7 @@ package rpcapi
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -57,6 +58,9 @@ func httpRequestArgs(r *http.Request) (Arguments, error) {
 	case strings.HasPrefix(contentType, "application/json"):
 		args := make(ArgumentMap)
 		if err := json.NewDecoder(r.Body).Decode(&args); err != nil {
+			if errors.Is(err, io.EOF) {
+				break // body was empty
+			}
 			return nil, fmt.Errorf("decode json: %w", err)
 		}
 		bodyArgs = args
