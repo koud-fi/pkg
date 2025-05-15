@@ -1,13 +1,10 @@
 package fetch
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/koud-fi/pkg/blob"
@@ -87,17 +84,12 @@ func setUser(u *url.Userinfo) Middleware {
 
 func setBody(b blob.Reader, mime string) Middleware {
 	return func(r *http.Request) (_ *http.Request, err error) {
-		data, err := blob.Bytes(b)
+		rc, err := b.Open()
 		if err != nil {
 			return nil, fmt.Errorf("failed to read body: %w", err)
 		}
-
-		// TODO: avoid reading the entire body to memory to resolve content length
-
-		r.Body = io.NopCloser(bytes.NewReader(data))
-
+		r.Body = rc
 		setReqHeader(r, "Content-Type", mime)
-		setReqHeader(r, "Content-Length", strconv.Itoa(len(data)))
 		return r, nil
 	}
 }
