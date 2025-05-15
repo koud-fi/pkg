@@ -40,10 +40,19 @@ func ApplyArguments(dst any, converter *assign.Converter, args Arguments) error 
 	}
 	rv = rv.Elem()
 	rt := rv.Type()
-
 	for i := range rt.NumField() {
+		f := rt.Field(i)
+
+		// Handle embedded struct fields
+		if f.Anonymous && f.Type.Kind() == reflect.Struct {
+			embedded := reflect.New(f.Type).Interface()
+			if err := ApplyArguments(embedded, converter, args); err != nil {
+				return errx.Fmt("embedded field %q: %w", f.Name, err)
+			}
+			rv.Field(i).Set(reflect.ValueOf(embedded).Elem())
+			continue
+		}
 		var (
-			f   = rt.Field(i)
 			key = f.Name
 			val = args.Get(key)
 		)
