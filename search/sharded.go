@@ -9,20 +9,24 @@ import (
 	"github.com/koud-fi/pkg/jump"
 )
 
-type ShardedTagIndex[T Entry] struct {
+type ShardedTagIndex[T any] struct {
+	adapter    Adapter[T]
 	shards     []TagIndex[T]
 	queryOrder []int
 	resPool    *sync.Pool
 }
 
-func NewShardedTagIndex[T Entry](
-	numShards int32, shardInitFn func(n int32) TagIndex[T],
+func NewShardedTagIndex[T any](
+	adapter Adapter[T],
+	numShards int32,
+	shardInitFn func(adapter Adapter[T], n int32) TagIndex[T],
 ) ShardedTagIndex[T] {
 	shards := make([]TagIndex[T], numShards)
 	for n := int32(0); n < numShards; n++ {
-		shards[n] = shardInitFn(n)
+		shards[n] = shardInitFn(adapter, n)
 	}
 	return ShardedTagIndex[T]{
+		adapter:    adapter,
 		shards:     shards,
 		queryOrder: queryOrder(len(shards), 0),
 		resPool: &sync.Pool{
@@ -106,7 +110,7 @@ func (sti ShardedTagIndex[T]) Query(dst *QueryResult[T], tags []string, limit in
 func (sti ShardedTagIndex[T]) Put(e ...T) {
 	shardEnts := make(map[int][]T)
 	for _, e := range e {
-		n := shardByID(e.ID(), len(sti.shards))
+		n := shardByID(sti.adapter.ID(e), len(sti.shards))
 		shardEnts[n] = append(shardEnts[n], e)
 	}
 	for n, es := range shardEnts {

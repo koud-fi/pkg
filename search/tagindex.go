@@ -2,16 +2,6 @@ package search
 
 import "strconv"
 
-type Entry interface {
-	ID() string
-	Tags() []string
-}
-
-type OrderedEntry interface {
-	Entry
-	Order() int64
-}
-
 type QueryResult[T any] struct {
 	Data       []T
 	TotalCount int
@@ -54,7 +44,7 @@ type TagInfo struct {
 	Count int
 }
 
-type TagIndex[T Entry] interface {
+type TagIndex[T any] interface {
 	Get(id ...string) ([]T, error)
 	Query(dst *QueryResult[T], tags []string, limit int) error
 	Put(e ...T)

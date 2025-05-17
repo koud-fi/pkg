@@ -12,17 +12,21 @@ type testEntry struct {
 	order int64
 }
 
-func (te testEntry) ID() string     { return te.id }
-func (te testEntry) Tags() []string { return te.tags }
-func (te testEntry) Order() int64   { return te.order }
-
 func TestTagIndex(t *testing.T) {
 
 	// TODO: proper test with actual assertion
 
-	idx := search.NewShardedTagIndex[testEntry](32, func(_ int32) search.TagIndex[testEntry] {
-		return search.NewMemoryTagIndex[testEntry]()
-	})
+	adapter := search.NewAdapter(
+		func(te testEntry) string { return te.id },
+		func(te testEntry) []string { return te.tags },
+	)
+	idx := search.NewShardedTagIndex(
+		adapter,
+		32,
+		func(adapter search.Adapter[testEntry], _ int32) search.TagIndex[testEntry] {
+			return search.NewMemoryTagIndex(adapter)
+		},
+	)
 	idx.Put(testEntry{"1", []string{"a"}, 4})
 	idx.Put(testEntry{"4", []string{"b", "d"}, 1})
 	idx.Put(testEntry{"2", []string{"a", "b", "c"}, 3})

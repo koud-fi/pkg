@@ -11,7 +11,8 @@ import (
 
 const bloomFilterK = 9
 
-type memTagIdx[T Entry] struct {
+type memTagIdx[T any] struct {
+	adapter      Adapter[T]
 	mu           sync.RWMutex
 	data         []memEntry[T]
 	dataIndex    map[string]int
@@ -29,8 +30,9 @@ type memEntry[T any] struct {
 	isDeleted bool
 }
 
-func NewMemoryTagIndex[T Entry]() TagIndex[T] {
+func NewMemoryTagIndex[T any](adapter Adapter[T]) TagIndex[T] {
 	return &memTagIdx[T]{
+		adapter:   adapter,
 		dataIndex: make(map[string]int, 1<<8),
 		tagIDs:    make(map[string]uint32, 1<<8),
 		tagCounts: make(map[string]int, 1<<8),
@@ -90,17 +92,17 @@ func (mti *memTagIdx[T]) Put(e ...T) {
 		// TODO: compare to existing entry to avoid pointless commits
 
 		var (
-			tagIDs, _ = mti.resolveTagIDs(e.Tags(), true)
+			id        = mti.adapter.ID(e)
+			tags      = mti.adapter.Tags(e)
+			tagIDs, _ = mti.resolveTagIDs(tags, true)
 			me        = memEntry[T]{
 				entry:  e,
+				order:  mti.adapter.Order(e),
 				tagIDs: tagIDs,
 				bloom:  bloom.New32(tagIDs.Data(), bloomFilterK),
 			}
 		)
-		if ord, ok := any(e).(OrderedEntry); ok {
-			me.order = ord.Order()
-		}
-		if i, ok := mti.dataIndex[e.ID()]; ok {
+		if i, ok := mti.dataIndex[id]; ok {
 			if me.order <= 0 {
 				me.isDeleted = me.order < 0
 				me.order = mti.data[i].order
@@ -110,17 +112,14 @@ func (mti *memTagIdx[T]) Put(e ...T) {
 
 			mti.data[i] = me
 		} else {
-			if ord, ok := any(e).(OrderedEntry); ok {
-				me.order = ord.Order()
-			}
 			if me.order == 0 {
 				mti.orderCounter++
 				me.order = -mti.orderCounter
 			}
-			for _, tag := range e.Tags() {
+			for _, tag := range tags {
 				mti.tagCounts[tag]++
 			}
-			mti.dataIndex[e.ID()] = len(mti.data)
+			mti.dataIndex[id] = len(mti.data)
 			mti.data = append(mti.data, me)
 		}
 		mti.isDirty = true
@@ -155,7 +154,11 @@ func (mti *memTagIdx[_]) Commit() error {
 	}
 	sort.Slice(mti.data, func(i, j int) bool {
 		if mti.data[i].order == mti.data[j].order {
-			return mti.data[i].entry.ID() < mti.data[j].entry.ID()
+			var (
+				id1 = mti.adapter.ID(mti.data[i].entry)
+				id2 = mti.adapter.ID(mti.data[j].entry)
+			)
+			return id1 < id2
 		}
 		return mti.data[i].order > mti.data[j].order
 	})
@@ -163,7 +166,7 @@ func (mti *memTagIdx[_]) Commit() error {
 		mti.dataIndex = make(map[string]int, len(mti.data))
 	}
 	for i, e := range mti.data {
-		mti.dataIndex[e.entry.ID()] = i
+		mti.dataIndex[mti.adapter.ID(e.entry)] = i
 	}
 	mti.isDirty = false
 	return nil

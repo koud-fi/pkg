@@ -1,10 +1,10 @@
 package search
 
-type Autocompleter[T Entry] struct {
+type Autocompleter[T any] struct {
 	idx TagIndex[T]
 }
 
-func NewAutocompleter[T Entry](idx TagIndex[T]) *Autocompleter[T] {
+func NewAutocompleter[T any](idx TagIndex[T]) *Autocompleter[T] {
 	return &Autocompleter[T]{idx: idx}
 }
 
