@@ -5,7 +5,7 @@ github.com/koud-fi/pkg/rx v0.0.0-20220703120905-a3e8e443c8c4 h1:QKuNed1hIzduc47v
 github.com/koud-fi/pkg/rx v0.0.0-20220703120905-a3e8e443c8c4/go.mod h1:11A6myvPh4NirnJHTCf/utpYN9FH8w5DJbWzqjX/QAQ=
 github.com/koud-fi/pkg/storage/storagetest v0.0.0-20220505044251-401d235d2935 h1:YfliAHqisyj7eT2CYfurgaGMI+pppiHjvdxX4jLulNw=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
-github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
+github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOfJA=
 go.etcd.io/bbolt v1.3.7 h1:j+zJOnnEjF/kyHlDDgGnVL/AIqIJPq8UoB2GSNfkUfQ=
 golang.org/x/exp v0.0.0-20250506013437-ce4c2cf36ca6 h1:y5zboxd6LQAqYIhHnB48p0ByQ/GnQx2BE33L8BOHQkI=
 golang.org/x/sys v0.33.0 h1:q3i8TbbEz+JRD9ywIRlyRAQbM0qF7hu24q3teo2hbuw=
