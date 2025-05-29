@@ -6,16 +6,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const DefaultCost = 12
+var DefaultConfig = Config{
+	Cost: 12,
+}
 
 type Hash []byte
 
-func NewHash(plain string) (Hash, error) {
-	return bcrypt.GenerateFromPassword([]byte(plain), DefaultCost)
+type Config struct {
+	Cost int
 }
 
-func NewHashWithCost(plain string, cost int) (Hash, error) {
-	return bcrypt.GenerateFromPassword([]byte(plain), cost)
+func (conf Config) NewHash(plain string) (Hash, error) {
+	return bcrypt.GenerateFromPassword([]byte(plain), conf.Cost)
 }
 
 func Compare(plain string, to Hash) error {
