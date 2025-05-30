@@ -13,7 +13,7 @@ var DefaultConfig = Config{
 type Hash []byte
 
 type Config struct {
-	Cost int
+	Cost int `json:"-"`
 }
 
 func (conf Config) NewHash(plain string) (Hash, error) {
