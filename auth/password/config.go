@@ -32,9 +32,9 @@ var (
 
 // Config for password hashing and validation, zero values are ignored.
 type Config struct {
-	Cost      int `json:"-"`
-	MinLength int `json:",omitempty"`
-	MaxLength int `json:",omitempty"`
+	Cost      int `json:"-"`          // bcrypt cost, between MinCost and MaxCost, default is DefaultCost
+	MinLength int `json:",omitempty"` // Minimum number of characters required
+	MaxLength int `json:",omitempty"` // Maximum number of bytes allowed
 
 	RequireUppercase    int `json:",omitempty"` // Minimum number of uppercase letters required
 	RequireLowercase    int `json:",omitempty"` // Minimum number of lowercase letters required
@@ -49,8 +49,8 @@ func (conf Config) Validate(plain string) error {
 		return fmt.Errorf("%w: must be at least %d characters",
 			ErrPasswordTooShort, conf.MinLength)
 	}
-	if conf.MaxLength > 0 && len(plain) > conf.MaxLength {
-		return fmt.Errorf("%w: must be at most %d characters",
+	if conf.MaxLength > 0 && len([]byte(plain)) > conf.MaxLength {
+		return fmt.Errorf("%w: must be at most %d bytes",
 			ErrPasswordTooLong, conf.MaxLength)
 	}
 
