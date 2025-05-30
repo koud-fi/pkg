@@ -6,6 +6,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const (
+	MinCost = bcrypt.MinCost
+	MaxCost = bcrypt.MaxCost
+)
+
 var DefaultConfig = Config{
 	Cost: 12,
 }
