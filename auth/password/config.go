@@ -18,7 +18,7 @@ const (
 var (
 	DefaultConfig = Config{
 		Cost:      DefaultCost,
-		MinLength: 8,
+		MinLength: 8, // Based on NIST SP 800-63B
 		MaxLength: DefaultMaxLength,
 	}
 	ErrPasswordTooShort         = errors.New("password is too short")
