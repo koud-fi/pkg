@@ -49,7 +49,7 @@ func (conf Config) Validate(plain string) error {
 		return fmt.Errorf("%w: must be at least %d characters",
 			ErrPasswordTooShort, conf.MinLength)
 	}
-	if len(plain) > conf.MaxLength {
+	if conf.MaxLength > 0 && len(plain) > conf.MaxLength {
 		return fmt.Errorf("%w: must be at most %d characters",
 			ErrPasswordTooLong, conf.MaxLength)
 	}
