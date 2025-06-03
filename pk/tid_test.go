@@ -66,6 +66,8 @@ func testTIDMarshalJSON(t *testing.T, tid any, expected string) {
 }
 
 func TestTID_DatabaseRoundTrip(t *testing.T) {
+	type TIDWrapper struct{ pk.TID }
+
 	db, err := sql.Open("sqlite3", ":memory:")
 	if err != nil {
 		t.Fatalf("Failed to open database: %v", err)
@@ -86,6 +88,7 @@ func TestTID_DatabaseRoundTrip(t *testing.T) {
 		{"serial_tid", pk.NewSerialTID(1, 456)},
 		{"raw_value_tid", pk.NewRawValueTID(999999)},
 		{"zero_tid", pk.TID{}},
+		{"wrapped_tid", TIDWrapper{pk.NewRawValueTID(123456)}.TID},
 	}
 	// Test round-trip for each TID
 	for _, tc := range testCases {
