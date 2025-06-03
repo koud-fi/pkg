@@ -2,6 +2,7 @@ package pk
 
 import (
 	"bytes"
+	"database/sql/driver"
 	"encoding/base64"
 	"encoding/binary"
 	"fmt"
@@ -66,15 +67,8 @@ func NewSerialTID(batch uint64, n uint) TID {
 	}
 }
 
-func NewRawValueTID(v int64) TID {
-	var t TID
-	if v < 0 {
-		t.v = true
-		v = -v
-	}
-	t.c = int32(unpack(uint64(v), tidCounterOffset, tidCounterBits))
-	t.n = int32(unpack(uint64(v), tidNumberOffset, tidNumberBits))
-	t.ts = int64(unpack(uint64(v), tidTimeOffset, tidTimeBits))
+func NewRawValueTID(v int64) (t TID) {
+	t.ApplyRawValue(v)
 	return t
 }
 
@@ -103,7 +97,17 @@ func ParseTIDBytes(raw []byte) (TID, error) {
 	return NewRawValueTID(int64(binary.BigEndian.Uint64(b[:]))), nil
 }
 
-func (t TID) Int64() int64 {
+func (t *TID) ApplyRawValue(v int64) {
+	if v < 0 {
+		t.v = true
+		v = -v
+	}
+	t.c = int32(unpack(uint64(v), tidCounterOffset, tidCounterBits))
+	t.n = int32(unpack(uint64(v), tidNumberOffset, tidNumberBits))
+	t.ts = int64(unpack(uint64(v), tidTimeOffset, tidTimeBits))
+}
+
+func (t TID) RawValue() int64 {
 	var v uint64
 	v = pack(v, tidCounterOffset, tidCounterBits, uint64(t.c))
 	v = pack(v, tidNumberOffset, tidNumberBits, uint64(t.n))
@@ -119,7 +123,7 @@ func (t TID) Time() time.Time {
 	if t.n == 0 {
 		panic("can't extract time from TID with 'n' of 0")
 	}
-	v := t.Int64()
+	v := t.RawValue()
 	if t.IsVirtual() {
 		v = -v
 	}
@@ -157,11 +161,24 @@ func (t TID) String() string {
 
 func (t TID) Bytes() []byte {
 	var b [8]byte
-	binary.BigEndian.PutUint64(b[:], uint64(t.Int64()))
+	binary.BigEndian.PutUint64(b[:], uint64(t.RawValue()))
 
 	// TODO: apply feistel encoding
 
 	return b[:]
+}
+
+func (t TID) Value() (driver.Value, error) {
+	return t.RawValue(), nil
+}
+
+func (t *TID) Scan(value any) error {
+	v, ok := value.(int64)
+	if !ok {
+		return fmt.Errorf("TID.Scan: invalid type %T, expected int64", value)
+	}
+	t.ApplyRawValue(v)
+	return nil
 }
 
 // MarshalJSON implements the json.Marshaler interface.
