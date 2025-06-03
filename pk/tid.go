@@ -168,10 +168,12 @@ func (t TID) Bytes() []byte {
 	return b[:]
 }
 
+// Value implements the sql.Valuer interface.
 func (t TID) Value() (driver.Value, error) {
 	return t.RawValue(), nil
 }
 
+// Scan implements the sql.Scanner interface.
 func (t *TID) Scan(value any) error {
 	v, ok := value.(int64)
 	if !ok {
