@@ -22,7 +22,7 @@ func TestTID(t *testing.T) {
 func testTID(t *testing.T, n int64) {
 	var (
 		original = pk.NewRawValueTID(n)
-		raw      = original.Value()
+		raw      = original.Int64()
 		str      = original.String()
 	)
 	parsed, err := pk.ParseTID(str)
@@ -32,8 +32,8 @@ func testTID(t *testing.T, n int64) {
 	if parsed != original {
 		t.Errorf("Parsed TID %v does not match original %v", parsed, original)
 	}
-	if parsed.Value() != raw {
-		t.Errorf("Parsed TID value %v does not match raw value %v", parsed.Value(), raw)
+	if parsed.Int64() != raw {
+		t.Errorf("Parsed TID value %v does not match raw value %v", parsed.Int64(), raw)
 	}
 	if raw != n {
 		t.Errorf("Raw value %d does not match expected value %d", raw, n)

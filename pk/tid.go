@@ -103,7 +103,7 @@ func ParseTIDBytes(raw []byte) (TID, error) {
 	return NewRawValueTID(int64(binary.BigEndian.Uint64(b[:]))), nil
 }
 
-func (t TID) Value() int64 {
+func (t TID) Int64() int64 {
 	var v uint64
 	v = pack(v, tidCounterOffset, tidCounterBits, uint64(t.c))
 	v = pack(v, tidNumberOffset, tidNumberBits, uint64(t.n))
@@ -119,7 +119,7 @@ func (t TID) Time() time.Time {
 	if t.n == 0 {
 		panic("can't extract time from TID with 'n' of 0")
 	}
-	v := t.Value()
+	v := t.Int64()
 	if t.IsVirtual() {
 		v = -v
 	}
@@ -157,7 +157,7 @@ func (t TID) String() string {
 
 func (t TID) Bytes() []byte {
 	var b [8]byte
-	binary.BigEndian.PutUint64(b[:], uint64(t.Value()))
+	binary.BigEndian.PutUint64(b[:], uint64(t.Int64()))
 
 	// TODO: apply feistel encoding
 
