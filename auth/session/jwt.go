@@ -12,23 +12,43 @@ import (
 const defaultJWTLifetime = time.Hour
 
 type (
+	JWTConfig struct {
+		expireTime time.Duration
+	}
+
 	JWTAuthenticator[User any] struct {
 		issuer string
 		secret string
 		userFn JWTUserFunc[User]
+		JWTConfig
 	}
 	JWTUserFunc[User any] func(context.Context, jwt.Claims) (User, error)
+	JWTOption             func(*JWTConfig)
 )
 
 var _ auth.Authenticator[any] = &JWTAuthenticator[any]{}
 
+func WithExpireTime(expireTime time.Duration) JWTOption {
+	return func(c *JWTConfig) {
+		c.expireTime = expireTime
+	}
+}
+
 func NewJWTAuthenticator[User any](
-	issuer string, secret string, userFn JWTUserFunc[User],
+	issuer string, secret string, userFn JWTUserFunc[User], opts ...JWTOption,
 ) *JWTAuthenticator[User] {
+	config := JWTConfig{
+		expireTime: defaultJWTLifetime,
+	}
+	for _, opt := range opts {
+		opt(&config)
+	}
+
 	return &JWTAuthenticator[User]{
-		issuer: issuer,
-		secret: secret,
-		userFn: userFn,
+		issuer:    issuer,
+		secret:    secret,
+		userFn:    userFn,
+		JWTConfig: config,
 	}
 }
 
@@ -37,7 +57,7 @@ func (a *JWTAuthenticator[_]) NewToken(subject string) (string, error) {
 		jwt.MapClaims{
 			"iss": a.issuer,
 			"sub": subject,
-			"exp": time.Now().Add(defaultJWTLifetime).Unix(),
+			"exp": time.Now().Add(a.expireTime).Unix(),
 
 			// TODO: Add more claims to enhance security
 
